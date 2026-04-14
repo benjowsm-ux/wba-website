@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Weston Business Authority — Local Marketing for Local Businesses</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0a1628;color:#fff;}
+a{color:inherit;text-decoration:none;}
+
+nav{background:rgba(10,22,40,0.97);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-text{font-size:0.95rem;font-weight:800;letter-spacing:1px;color:#fff;line-height:1.2;}
+.logo-text span{color:#f5c416;}
+.nav-links{display:flex;gap:1.5rem;font-size:0.8rem;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;}
+.nav-links a{color:rgba(255,255,255,0.65);transition:color 0.2s;}
+.nav-links a:hover{color:#f5c416;}
+.nav-cta{background:#25D366;color:#fff;padding:0.5rem 1.1rem;border-radius:4px;font-weight:800;font-size:0.8rem;letter-spacing:0.5px;text-transform:uppercase;white-space:nowrap;display:flex;align-items:center;gap:6px;}
+.nav-cta:hover{background:#1ebe5a;}
+
+.hero{position:relative;padding:7rem 2rem 5.5rem;text-align:center;overflow:hidden;min-height:560px;display:flex;align-items:center;justify-content:center;}
+.hero-bg{position:absolute;inset:0;background-size:cover;background-position:center top;background-color:#0d1e35;}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(8,18,34,0.58) 0%,rgba(8,18,34,0.8) 100%);}
+.hero-content{position:relative;z-index:1;max-width:820px;margin:0 auto;}
+.hero-tag{display:inline-block;background:rgba(245,196,22,0.15);color:#f5c416;font-size:0.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:0.4rem 1rem;border-radius:2px;margin-bottom:1.5rem;border:1px solid rgba(245,196,22,0.25);}
+.hero h1{font-size:clamp(2.2rem,5.5vw,4rem);font-weight:900;line-height:1.08;text-transform:uppercase;margin-bottom:1.25rem;}
+.hero h1 span{color:#f5c416;}
+.hero-sub{font-size:1.05rem;color:rgba(255,255,255,0.8);max-width:580px;margin:0 auto 2.25rem;line-height:1.75;}
+.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+.btn-gold{background:#f5c416;color:#0a1628;padding:0.9rem 2rem;font-weight:800;font-size:0.88rem;letter-spacing:1px;text-transform:uppercase;border-radius:4px;display:inline-flex;align-items:center;gap:8px;transition:background 0.2s;cursor:pointer;border:none;font-family:inherit;}
+.btn-gold:hover{background:#ffd83d;}
+.btn-wa{background:#25D366;color:#fff;padding:0.9rem 2rem;font-weight:800;font-size:0.88rem;letter-spacing:1px;text-transform:uppercase;border-radius:4px;display:inline-flex;align-items:center;gap:8px;transition:opacity 0.2s;}
+.btn-wa:hover{opacity:0.88;}
+.btn-ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,0.3);padding:0.9rem 2rem;font-weight:700;font-size:0.88rem;letter-spacing:1px;text-transform:uppercase;border-radius:4px;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;}
+.btn-ghost:hover{border-color:#f5c416;color:#f5c416;}
+.gold-line{height:3px;background:linear-gradient(90deg,transparent,#f5c416,transparent);}
+
+/* CLIENTS TICKER */
+.clients-bar{background:#fff;padding:1.5rem 2rem;overflow:hidden;}
+.clients-label{text-align:center;font-size:0.65rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#aaa;margin-bottom:1rem;}
+.clients-row{display:flex;justify-content:center;flex-wrap:wrap;gap:2rem 3rem;align-items:center;}
+.client-name{font-size:0.85rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#ccc;}
+.client-name.active{color:#0a1628;}
+
+.sec-label{font-size:0.68rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:0.55rem;}
+.sec-dark .sec-label{color:#f5c416;}
+.sec-light .sec-label{color:#b8960a;}
+.sec-title{font-size:clamp(1.55rem,3vw,2.25rem);font-weight:900;text-transform:uppercase;line-height:1.15;margin-bottom:0.9rem;}
+.sec-dark .sec-title{color:#fff;}
+.sec-light .sec-title{color:#0a1628;}
+.sec-title em{color:#f5c416;font-style:normal;}
+.sec-light .sec-title em{color:#c9970f;}
+.body-copy{font-size:0.9rem;line-height:1.75;max-width:600px;}
+.sec-dark .body-copy{color:rgba(255,255,255,0.6);}
+.sec-light .body-copy{color:#4a5568;}
+.inner{max-width:1020px;margin:0 auto;}
+.sec-light{background:#fff;padding:4.5rem 2rem;}
+.sec-dark{background:#0a1628;padding:4.5rem 2rem;}
+.sec-mid{background:#0d1e35;padding:4.5rem 2rem;}
+
+/* PAIN */
+.pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:0.8rem;margin-top:2rem;}
+.pain-card{background:#f5f6f8;border:1px solid rgba(10,22,40,0.09);border-radius:6px;padding:1.1rem 1rem;display:flex;gap:10px;align-items:flex-start;}
+.px{width:25px;height:25px;min-width:25px;background:rgba(210,160,20,0.12);border:1.5px solid #c9970f;border-radius:3px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.82rem;color:#c9970f;}
+.pain-card p{font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.3px;color:#1a2a40;line-height:1.45;margin:2px 0 0;}
+
+/* SOLUTION */
+.sol-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:1rem;margin-top:2rem;}
+.sol-card{background:#0d1e35;border-top:3px solid #f5c416;border-radius:6px;padding:1.4rem 1.2rem;}
+.sol-card h3{font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#f5c416;margin-bottom:0.45rem;}
+.sol-card p{font-size:0.8rem;color:rgba(255,255,255,0.55);line-height:1.65;}
+
+/* CONTENT DAY */
+.callout-strip{background:#f5c416;padding:3rem 2rem;}
+.callout-inner{max-width:1020px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1.5rem;}
+.callout-text h3{font-size:clamp(1.2rem,2.5vw,1.7rem);font-weight:900;text-transform:uppercase;color:#0a1628;margin-bottom:0.4rem;}
+.callout-text p{font-size:0.88rem;color:rgba(10,22,40,0.7);max-width:520px;line-height:1.65;}
+.callout-deliverables{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.85rem;}
+.cd-pill{background:#0a1628;border-radius:20px;padding:0.35rem 0.85rem;font-size:0.75rem;font-weight:700;color:#f5c416;letter-spacing:0.3px;}
+.btn-dark{background:#0a1628;color:#f5c416;padding:0.85rem 1.75rem;font-weight:800;font-size:0.85rem;letter-spacing:1px;text-transform:uppercase;border-radius:4px;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;transition:opacity 0.2s;cursor:pointer;border:none;font-family:inherit;}
+.btn-dark:hover{opacity:0.85;}
+
+/* AVENUES */
+.av-platforms{display:flex;flex-wrap:wrap;gap:0.55rem;margin:1.5rem 0;}
+.av-pill{background:#0a1628;border-radius:20px;padding:0.4rem 1rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:#f5c416;}
+.av-note{background:#f5f6f8;border-left:3px solid #c9970f;border-radius:0 6px 6px 0;padding:1rem 1.3rem;font-size:0.85rem;color:#2d3748;line-height:1.75;}
+.av-note strong{color:#0a1628;}
+
+/* CASE STUDIES */
+.cases-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem;margin-top:2rem;}
+.case-card{background:#fff;border-radius:8px;overflow:hidden;border:1px solid rgba(10,22,40,0.08);}
+.case-img{height:160px;background:#0d1e35;display:flex;align-items:flex-end;padding:1rem;position:relative;overflow:hidden;}
+.case-img-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0.35;}
+.case-result{position:relative;z-index:1;background:#f5c416;color:#0a1628;font-size:0.72rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;padding:0.35rem 0.85rem;border-radius:2px;}
+.case-body{padding:1.25rem;}
+.case-body h3{font-size:0.95rem;font-weight:800;color:#0a1628;margin-bottom:0.3rem;}
+.case-type{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#b8960a;margin-bottom:0.65rem;}
+.case-body p{font-size:0.8rem;color:#4a5568;line-height:1.65;margin-bottom:1rem;}
+.case-tags{display:flex;flex-wrap:wrap;gap:0.4rem;}
+.case-tag{background:#f0f1f3;color:#555;font-size:0.68rem;font-weight:700;padding:0.25rem 0.65rem;border-radius:20px;text-transform:uppercase;letter-spacing:0.3px;}
+
+/* STATS */
+.stats-section{background:#0d1e35;padding:4.5rem 2rem;}
+.stats-divider{border:none;border-top:1px solid rgba(255,255,255,0.07);margin:2.75rem 0;}
+.client-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:1rem;}
+.client-stat{background:#f5c416;border-radius:6px;padding:1.3rem 1rem;text-align:center;}
+.client-stat .num{font-size:1.85rem;font-weight:900;color:#0a1628;line-height:1;}
+.client-stat .lbl{font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:rgba(10,22,40,0.6);margin-top:0.3rem;}
+.client-stat .sub{font-size:0.62rem;color:rgba(10,22,40,0.38);margin-top:0.15rem;}
+.general-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:1rem;}
+.gen-stat{background:#0a1628;border:1px solid rgba(255,255,255,0.07);border-radius:6px;padding:1.3rem 1rem;text-align:center;}
+.gen-stat .num{font-size:1.6rem;font-weight:900;color:#f5c416;line-height:1;}
+.gen-stat .lbl{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:rgba(255,255,255,0.45);margin-top:0.3rem;}
+.gen-stat .sub{font-size:0.62rem;color:rgba(255,255,255,0.25);margin-top:0.15rem;}
+
+/* HOW */
+.steps{display:flex;justify-content:center;gap:0;flex-wrap:wrap;max-width:760px;margin:2rem auto 0;}
+.step{flex:1;min-width:175px;position:relative;padding:0 1rem;}
+.step-num{width:48px;height:48px;border-radius:50%;background:#f5c416;color:#0a1628;font-size:1.25rem;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 0.85rem;}
+.step h3{font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.35rem;color:#0a1628;}
+.step p{font-size:0.78rem;color:#4a5568;line-height:1.6;}
+.step-arrow{position:absolute;right:-8px;top:12px;font-size:1rem;color:rgba(10,22,40,0.18);}
+
+/* SERVICES */
+.svc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:1rem;margin-top:2rem;}
+.svc{border:1px solid rgba(245,196,22,0.15);border-radius:6px;padding:1.4rem;transition:border-color 0.2s;}
+.svc:hover{border-color:#f5c416;}
+.svc-icon{font-size:1.35rem;margin-bottom:0.6rem;}
+.svc h3{font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#f5c416;margin-bottom:0.35rem;}
+.svc p{font-size:0.8rem;color:rgba(255,255,255,0.52);line-height:1.65;}
+
+/* PACKAGES */
+.pkg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;margin-top:2rem;}
+.pkg{background:#f5f6f8;border:1px solid rgba(10,22,40,0.1);border-radius:8px;padding:1.75rem 1.5rem;position:relative;}
+.pkg.featured{background:#fff;border:2px solid #c9970f;box-shadow:0 4px 24px rgba(200,150,15,0.13);}
+.pkg-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:#c9970f;color:#fff;font-size:0.68rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:0.3rem 0.9rem;border-radius:20px;white-space:nowrap;}
+.pkg h3{font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#b8960a;margin-bottom:0.3rem;}
+.pkg-name{font-size:1.2rem;font-weight:900;color:#0a1628;margin-bottom:0.75rem;}
+.pkg p{font-size:0.82rem;color:#4a5568;line-height:1.65;margin-bottom:1rem;}
+.pkg-features{list-style:none;margin-bottom:1.25rem;}
+.pkg-features li{font-size:0.8rem;color:#2d3748;padding:0.3rem 0;border-bottom:1px solid rgba(10,22,40,0.06);display:flex;gap:8px;align-items:flex-start;}
+.pkg-features li::before{content:'✓';color:#c9970f;font-weight:900;font-size:0.75rem;margin-top:2px;}
+.pkg .btn-dark{width:100%;justify-content:center;font-size:0.82rem;}
+
+/* AREAS */
+.areas-grid{display:flex;flex-wrap:wrap;gap:0.55rem;margin-top:1.5rem;}
+.area-pill{background:#0d1e35;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:0.4rem 1rem;font-size:0.78rem;font-weight:600;color:rgba(255,255,255,0.7);}
+.area-pill.primary{border-color:rgba(245,196,22,0.4);color:#f5c416;}
+
+/* BOOKING */
+.booking-card{background:#fff;border:1px solid rgba(10,22,40,0.1);border-radius:8px;padding:2rem;text-align:left;margin-top:1.5rem;box-shadow:0 2px 18px rgba(10,22,40,0.06);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;margin-bottom:0.85rem;}
+.form-row.full{grid-template-columns:1fr;}
+input,textarea,select{width:100%;background:#f5f6f8;border:1px solid rgba(10,22,40,0.14);border-radius:4px;padding:0.72rem 0.9rem;color:#0a1628;font-size:0.85rem;font-family:inherit;outline:none;transition:border-color 0.2s;}
+input:focus,textarea:focus,select:focus{border-color:#c9970f;background:#fff;}
+input::placeholder,textarea::placeholder{color:rgba(10,22,40,0.28);}
+select option{background:#fff;color:#0a1628;}
+textarea{resize:vertical;min-height:85px;}
+.form-note{font-size:0.72rem;color:rgba(10,22,40,0.38);margin-top:0.75rem;text-align:center;line-height:1.65;}
+.form-note a{color:#b8960a;}
+.send-status{font-size:0.82rem;margin-top:0.75rem;text-align:center;min-height:1.1em;}
+.send-status.err{color:#c0392b;}
+
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(8,16,30,0.72);z-index:500;align-items:center;justify-content:center;}
+.modal-bg.show{display:flex;}
+.modal{background:#fff;border-radius:10px;padding:2.5rem 2rem;max-width:380px;width:90%;text-align:center;}
+.modal-icon{font-size:2.75rem;margin-bottom:1rem;}
+.modal h3{font-size:1.15rem;font-weight:900;text-transform:uppercase;color:#0a1628;margin-bottom:0.5rem;}
+.modal p{font-size:0.86rem;color:#4a5568;line-height:1.75;margin-bottom:1.5rem;}
+
+footer{background:#050e1a;padding:2.5rem 2rem 1.5rem;border-top:1px solid rgba(245,196,22,0.1);}
+.footer-inner{max-width:1020px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:2rem;}
+.footer-brand p{font-size:0.78rem;color:rgba(255,255,255,0.38);margin-top:0.5rem;line-height:1.75;max-width:260px;}
+.footer-info{font-size:0.8rem;color:rgba(255,255,255,0.42);line-height:2.2;}
+.footer-info a{color:#f5c416;}
+.footer-bottom{text-align:center;font-size:0.68rem;color:rgba(255,255,255,0.15);padding-top:1.5rem;margin-top:1.5rem;border-top:1px solid rgba(255,255,255,0.05);}
+
+@media(max-width:640px){
+  .nav-links{display:none;}
+  .form-row{grid-template-columns:1fr;}
+  .step-arrow{display:none;}
+  .callout-inner{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-icon">✅</div>
+    <h3>Message Sent</h3>
+    <p>Thanks for getting in touch. The WBA team will be back to you shortly to arrange a visit to your business. If it's urgent, message us on WhatsApp.</p>
+    <button class="btn-dark" onclick="document.getElementById('modal').classList.remove('show')" style="margin:0 auto;">Close</button>
+  </div>
+</div>
+
+<nav>
+  <div class="logo">
+    <svg width="38" height="38" viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="22" fill="#0d1e35"/><path d="M6 30 Q10 24 14 28 Q18 32 22 24 Q26 16 30 20 Q34 24 38 18" stroke="#f5c416" stroke-width="2.5" fill="none" stroke-linecap="round"/><text x="22" y="20" text-anchor="middle" fill="#fff" font-size="9" font-weight="900" font-family="Arial">WBA</text></svg>
+    <div class="logo-text">WESTON <span>BUSINESS</span><br>AUTHORITY</div>
+  </div>
+  <div class="nav-links">
+    <a href="#services">Services</a>
+    <a href="#packages">Packages</a>
+    <a href="#clients">Results</a>
+    <a href="#areas">Areas</a>
+    <a href="#booking">Contact</a>
+  </div>
+  <a href="https://wa.me/447902376369" class="nav-cta" target="_blank">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    WhatsApp Us
+  </a>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-tag">📍 Weston-Super-Mare, North Somerset</div>
+    <h1>We Are <span>Local,</span><br>Hands On &<br><span>Affordable.</span></h1>
+    <p class="hero-sub">Your local marketing team — we show up, create the content, run the socials, manage the ads, and handle the work that busy business owners simply don't have time for.</p>
+    <div class="hero-btns">
+      <a href="#booking" class="btn-gold">📅 Book a Free Visit</a>
+      <a href="https://wa.me/447902376369" class="btn-wa" target="_blank">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Message Us on WhatsApp
+      </a>
+    </div>
+  </div>
+</section>
+<div class="gold-line"></div>
+
+<!-- CLIENTS BAR -->
+<div class="clients-bar" id="clients">
+  <p class="clients-label">Businesses we work with in Weston</p>
+  <div class="clients-row">
+    <span class="client-name active">The Storage Station</span>
+    <span class="client-name active">Blue Spot Cleaning</span>
+    <span class="client-name active">Harmony Apartments</span>
+    <span class="client-name" style="color:#ddd;font-style:italic;font-weight:400;font-size:0.8rem;">Your business here?</span>
+  </div>
+</div>
+
+<!-- PAIN -->
+<section class="sec-light" id="pain">
+  <div class="inner">
+    <p class="sec-label">Sound familiar?</p>
+    <h2 class="sec-title">You're Running a Business.<br><em>Not a Marketing Agency.</em></h2>
+    <p class="body-copy">Most local business owners already know their marketing isn't where it should be. The problem isn't knowledge — it's time, consistency, and having the right support around you.</p>
+    <div class="pain-grid">
+      <div class="pain-card"><div class="px">✕</div><p>Social media that hasn't been posted on in weeks</p></div>
+      <div class="pain-card"><div class="px">✕</div><p>Photos and content that don't do your business justice</p></div>
+      <div class="pain-card"><div class="px">✕</div><p>Branding that looks different everywhere customers find you</p></div>
+      <div class="pain-card"><div class="px">✕</div><p>A website that's out of date and doing nothing for you</p></div>
+      <div class="pain-card"><div class="px">✕</div><p>Platforms you haven't set up yet — missing enquiries every day</p></div>
+      <div class="pain-card"><div class="px">✕</div><p>Agencies that kept your accounts when you walked away</p></div>
+      <div class="pain-card"><div class="px">✕</div><p>No clear idea what your marketing is actually doing</p></div>
+      <div class="pain-card"><div class="px">✕</div><p>Spending money on things that don't reach local people</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION -->
+<section class="sec-dark" id="solution">
+  <div class="inner">
+    <p class="sec-label">The WBA difference</p>
+    <h2 class="sec-title">A Real Local Team.<br><span>Not Another Distant Agency.</span></h2>
+    <p class="body-copy" style="margin-bottom:2rem;">WBA is based in Weston-Super-Mare. We visit your business, take the photos, build the content, run the socials, manage the ads, and keep your brand looking sharp — all in plain English, with no fluff and no nonsense. You get on with running your business. We handle the rest.</p>
+    <div class="sol-grid">
+      <div class="sol-card"><h3>📍 We Come to You</h3><p>We visit your premises and create content in person — real photos, real videos, real business.</p></div>
+      <div class="sol-card"><h3>📱 Active Socials</h3><p>Consistent, on-brand posts that keep your business visible and trusted — without you having to think about it.</p></div>
+      <div class="sol-card"><h3>🌐 Digital Presence</h3><p>Website updates, Google Business management, platform setup — all handled so your online presence actually works.</p></div>
+      <div class="sol-card"><h3>🎯 Targeted Ads</h3><p>Local paid advertising that reaches the right people in the right area — clearly tracked, no wasted spend.</p></div>
+      <div class="sol-card"><h3>💬 Team on Hand</h3><p>Message the team on WhatsApp and we'll sort it. No bots, no tickets, no waiting on hold.</p></div>
+      <div class="sol-card"><h3>🔐 You Own Everything</h3><p>Every page, account, and asset we create belongs to you. No hostage-taking — ever.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTENT DAY -->
+<div class="callout-strip">
+  <div class="callout-inner">
+    <div class="callout-text">
+      <h3>📸 The Content Day</h3>
+      <p>One focused session at your business. We plan it, shoot it, and edit it. Walk away with a full bank of professional photos and videos — ready for social, ads, your website, and Google.</p>
+      <div class="callout-deliverables">
+        <span class="cd-pill">20+ Edited Photos</span>
+        <span class="cd-pill">3–5 Short Videos</span>
+        <span class="cd-pill">Pre-Shoot Planning</span>
+        <span class="cd-pill">Ready for Ads &amp; Social</span>
+      </div>
+    </div>
+    <a href="https://wa.me/447902376369" class="btn-dark" target="_blank">Ask Us About This</a>
+  </div>
+</div>
+
+<!-- CASE STUDIES -->
+<section class="sec-light" id="case-studies">
+  <div class="inner">
+    <p class="sec-label">Proof, not promises</p>
+    <h2 class="sec-title">What We've Done for<br><em>Weston Businesses</em></h2>
+    <p class="body-copy">Real results from real local businesses. These are individual client outcomes — not averages, not estimates.</p>
+    <div class="cases-grid">
+      <div class="case-card">
+        <div class="case-img" style="background:#1a2a40;">
+          <div class="case-img-bg" style="background-image:url('');background-color:#2a3a50;"></div>
+          <span class="case-result">11,700% Reach Increase</span>
+        </div>
+        <div class="case-body">
+          <div class="case-type">Storage &amp; Self-Storage</div>
+          <h3>The Storage Station</h3>
+          <p>A 28-day paid campaign delivered an 11,700% increase in reach and tripled enquiries — on a total ad spend of just £19.32.</p>
+          <div class="case-tags">
+            <span class="case-tag">Paid Ads</span>
+            <span class="case-tag">Social Media</span>
+            <span class="case-tag">£19.32 Ad Spend</span>
+          </div>
+        </div>
+      </div>
+      <div class="case-card">
+        <div class="case-img" style="background:#1a2a40;">
+          <div class="case-img-bg" style="background-color:#2a3a50;"></div>
+          <span class="case-result">Brand Built from Scratch</span>
+        </div>
+        <div class="case-body">
+          <div class="case-type">Cleaning Services</div>
+          <h3>Blue Spot Cleaning</h3>
+          <p>Full brand setup — social presence, photography, Google profile and consistent content output to establish a trusted local cleaning business.</p>
+          <div class="case-tags">
+            <span class="case-tag">Branding</span>
+            <span class="case-tag">Photography</span>
+            <span class="case-tag">Social Media</span>
+          </div>
+        </div>
+      </div>
+      <div class="case-card">
+        <div class="case-img" style="background:#1a2a40;">
+          <div class="case-img-bg" style="background-color:#2a3a50;"></div>
+          <span class="case-result">Direct Bookings Increased</span>
+        </div>
+        <div class="case-body">
+          <div class="case-type">Holiday &amp; Serviced Apartments</div>
+          <h3>Harmony Apartments</h3>
+          <p>Multi-platform setup across direct booking, social channels, and listing platforms to drive more bookings and reduce reliance on third-party fees.</p>
+          <div class="case-tags">
+            <span class="case-tag">Platform Setup</span>
+            <span class="case-tag">Social Media</span>
+            <span class="case-tag">Direct Bookings</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats-section" id="stats">
+  <div class="inner">
+    <p class="sec-label" style="color:#f5c416;">The Storage Station — 28 day campaign</p>
+    <p style="font-size:clamp(1.1rem,2.5vw,1.6rem);font-weight:900;text-transform:uppercase;color:#fff;margin-bottom:1.25rem;">One Client. One Month.<br>Here's What Happened.</p>
+    <div class="client-grid">
+      <div class="client-stat"><div class="num">11,700%</div><div class="lbl">Reach increase</div></div>
+      <div class="client-stat"><div class="num">3×</div><div class="lbl">More enquiries</div></div>
+      <div class="client-stat"><div class="num">£19.32</div><div class="lbl">Total ad spend</div></div>
+    </div>
+
+    <hr class="stats-divider"/>
+
+    <p class="sec-label" style="color:#f5c416;">Baseline commitment — every client, every time</p>
+    <p style="font-size:clamp(1.1rem,2.5vw,1.6rem);font-weight:900;text-transform:uppercase;color:#fff;margin-bottom:1.25rem;">What You Get as Standard</p>
+    <div class="general-grid">
+      <div class="gen-stat"><div class="num">£0</div><div class="lbl">Setup fees</div></div>
+      <div class="gen-stat"><div class="num">No</div><div class="lbl">Minimum contract</div><div class="sub">3 months recommended</div></div>
+      <div class="gen-stat"><div class="num">100%</div><div class="lbl">You own your assets</div></div>
+      <div class="gen-stat"><div class="num">Local</div><div class="lbl">Weston-based team</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section class="sec-light" id="how">
+  <div class="inner" style="text-align:center;">
+    <p class="sec-label">No complicated onboarding</p>
+    <h2 class="sec-title">How It <em>Works</em></h2>
+    <p class="body-copy" style="margin:0 auto;color:#4a5568;">Three simple steps from first message to full support.</p>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><h3>We Visit You</h3><p>We come to your business, get to know what you do, meet your team, and start capturing real content.</p><span class="step-arrow">→</span></div>
+      <div class="step"><div class="step-num">2</div><h3>We Handle It</h3><p>Socials, content, ads, website, platforms — all taken off your plate and done properly.</p><span class="step-arrow">→</span></div>
+      <div class="step"><div class="step-num">3</div><h3>You Grow</h3><p>More visibility, more enquiries, more trust — and more time to focus on what you're good at.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="sec-dark" id="services">
+  <div class="inner">
+    <p class="sec-label">Full service breakdown</p>
+    <h2 class="sec-title">Everything Under <span>One Roof</span></h2>
+    <p class="body-copy" style="margin-bottom:0;">You don't need a different agency for each thing. WBA handles the full picture — from the first photo taken to the enquiry that lands in your inbox.</p>
+    <div class="svc-grid">
+      <div class="svc"><div class="svc-icon">📱</div><h3>Social Media Management</h3><p>Regular, on-brand posts across Facebook, Instagram, TikTok and more — planned, written, designed, and scheduled for you.</p></div>
+      <div class="svc"><div class="svc-icon">📸</div><h3>Photography &amp; Video</h3><p>We visit your premises and capture real content in person — product shots, team content, location work, behind-the-scenes.</p></div>
+      <div class="svc"><div class="svc-icon">📣</div><h3>Paid Advertising</h3><p>Facebook and Instagram ads targeting your local area — clear creative, clear spend, clear results. No mystery, no wasted budget.</p></div>
+      <div class="svc"><div class="svc-icon">🎨</div><h3>Graphic Design</h3><p>Social graphics, posters, menus, flyers, leaflets, business cards — designed to reflect your brand.</p></div>
+      <div class="svc"><div class="svc-icon">🌍</div><h3>Google &amp; Local Visibility</h3><p>Google Business profile management, local search presence, review support, and map visibility — so people find you first.</p></div>
+      <div class="svc"><div class="svc-icon">⭐</div><h3>Reviews &amp; Trust Building</h3><p>Helping you collect reviews properly, showcase feedback, and build the visible trust that turns interest into enquiries.</p></div>
+      <div class="svc"><div class="svc-icon">🌐</div><h3>Website &amp; Digital Updates</h3><p>Content updates, image refreshes, clearer calls to action — keeping your digital presence working as hard as you do.</p></div>
+      <div class="svc"><div class="svc-icon">🛠️</div><h3>Platform Setup &amp; Tech</h3><p>Booking systems, social accounts, business listings, and digital tools — set up properly, always in your name.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- AVENUES -->
+<section class="sec-light" id="avenues">
+  <div class="inner">
+    <p class="sec-label">Stack your enquiries</p>
+    <h2 class="sec-title">More Channels.<br><em>More Customers.</em></h2>
+    <p class="body-copy">Most businesses are only visible in one or two places. We identify every channel that makes sense for your type of business and open them up properly — so enquiries come in from multiple directions at once. Whether you're a café, a tradesperson, a holiday let, or a local retailer, there are platforms built for you that you might not be using yet.</p>
+    <div class="av-platforms">
+      <span class="av-pill">Facebook</span>
+      <span class="av-pill">Instagram</span>
+      <span class="av-pill">TikTok</span>
+      <span class="av-pill">Google Business</span>
+      <span class="av-pill">Booking.com</span>
+      <span class="av-pill">Checkatrade &amp; Trades Platforms</span>
+      <span class="av-pill">Direct Website</span>
+      <span class="av-pill">Email Marketing</span>
+      <span class="av-pill">LinkedIn</span>
+      <span class="av-pill">Leaflets &amp; Print</span>
+      <span class="av-pill">+ More Where Relevant</span>
+    </div>
+    <div class="av-note">
+      <strong>Every account belongs to your business — always.</strong><br>
+      A common problem with agencies is that they hold your social pages, ad accounts, and logins when you leave. WBA doesn't do that. Every platform we set up is registered to you, controlled by you, and yours to keep — full stop.
+    </div>
+  </div>
+</section>
+
+<!-- PACKAGES -->
+<section class="sec-mid" id="packages">
+  <div class="inner">
+    <p class="sec-label">Simple, flexible pricing</p>
+    <h2 class="sec-title">Pick the Level of <span>Support You Need</span></h2>
+    <p class="body-copy" style="margin-bottom:0;">No lock-in, no hidden fees, no small print. Straightforward support that fits your business. Not sure which is right for you? Message us and we'll tell you honestly.</p>
+    <div class="pkg-grid">
+      <div class="pkg">
+        <h3>Entry</h3>
+        <p class="pkg-name">Visibility &amp; Consistency</p>
+        <p>For businesses that need to show up consistently online without having to think about it.</p>
+        <ul class="pkg-features">
+          <li>Social media posting (Facebook &amp; Instagram)</li>
+          <li>Basic branded graphics</li>
+          <li>Post planning &amp; scheduling</li>
+          <li>Google Business updates</li>
+        </ul>
+        <a href="https://wa.me/447902376369" class="btn-dark" target="_blank">Get Started →</a>
+      </div>
+      <div class="pkg featured">
+        <div class="pkg-badge">Most Popular</div>
+        <h3>Growth</h3>
+        <p class="pkg-name">Content &amp; Promotion</p>
+        <p>For businesses that want real content, active campaigns, and more enquiries coming in consistently.</p>
+        <ul class="pkg-features">
+          <li>Everything in Visibility</li>
+          <li>In-person content creation visits</li>
+          <li>Photography &amp; short-form video</li>
+          <li>Paid ad management (Facebook/Instagram)</li>
+          <li>Stronger social output &amp; engagement</li>
+          <li>Review support</li>
+        </ul>
+        <a href="https://wa.me/447902376369" class="btn-dark" target="_blank">Get Started →</a>
+      </div>
+      <div class="pkg">
+        <h3>Full Support</h3>
+        <p class="pkg-name">Outsourced Marketing Arm</p>
+        <p>For businesses that want their marketing fully managed — all channels, all content, all handled.</p>
+        <ul class="pkg-features">
+          <li>Everything in Growth</li>
+          <li>Regular content days</li>
+          <li>Multi-platform ad campaigns</li>
+          <li>Website &amp; digital updates</li>
+          <li>Design work (print &amp; digital)</li>
+          <li>Platform setup &amp; management</li>
+          <li>Strategic direction &amp; reporting</li>
+        </ul>
+        <a href="https://wa.me/447902376369" class="btn-dark" target="_blank">Get Started →</a>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:0.78rem;color:rgba(255,255,255,0.3);margin-top:1.25rem;">All packages are flexible and month-to-month. We recommend at least 3 months to see meaningful results — but we'll never force you.</p>
+  </div>
+</section>
+
+<!-- AREAS -->
+<section class="sec-dark" id="areas">
+  <div class="inner">
+    <p class="sec-label">Where we work</p>
+    <h2 class="sec-title">Proudly Local to<br><span>Weston &amp; Beyond</span></h2>
+    <p class="body-copy">WBA is based in Weston-super-Mare and built specifically to serve businesses in the local area. We know Weston, we work in Weston, and we care about businesses here doing well.</p>
+    <div class="areas-grid">
+      <span class="area-pill primary">Weston-Super-Mare</span>
+      <span class="area-pill">Worle</span>
+      <span class="area-pill">Uphill</span>
+      <span class="area-pill">Milton</span>
+      <span class="area-pill">Bleadon</span>
+      <span class="area-pill">Hewish</span>
+      <span class="area-pill">Winscombe</span>
+      <span class="area-pill">Clevedon</span>
+      <span class="area-pill">Nailsea</span>
+      <span class="area-pill">+ Surrounding North Somerset</span>
+    </div>
+  </div>
+</section>
+
+<!-- BOOKING -->
+<section class="sec-light" id="booking">
+  <div style="max-width:660px;margin:0 auto;text-align:center;">
+    <p class="sec-label">Let's talk</p>
+    <h2 class="sec-title">Need More <em>Hours in a Day?</em></h2>
+    <p class="body-copy" style="margin:0 auto 0;color:#4a5568;">Book a free, no-obligation visit to your business and let's talk honestly about what would actually help you grow. Prefer to message? WhatsApp works best for us.</p>
+    <div style="display:flex;gap:0.75rem;justify-content:center;margin-top:1.25rem;flex-wrap:wrap;">
+      <a href="https://wa.me/447902376369" class="btn-wa" target="_blank">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Message on WhatsApp
+      </a>
+    </div>
+    <div class="booking-card">
+      <div class="form-row">
+        <input type="text" id="fname" placeholder="Your name"/>
+        <input type="text" id="fbiz" placeholder="Business name"/>
+      </div>
+      <div class="form-row">
+        <input type="tel" id="fphone" placeholder="Phone number (optional)"/>
+        <select id="fmethod">
+          <option value="" disabled selected>Preferred contact</option>
+          <option>WhatsApp</option>
+          <option>In-person visit to my business</option>
+          <option>Phone call</option>
+          <option>Email</option>
+        </select>
+      </div>
+      <div class="form-row full">
+        <input type="email" id="femail" placeholder="Email address"/>
+      </div>
+      <div class="form-row full">
+        <textarea id="fmsg" placeholder="Tell us a bit about your business and what you're looking for help with..."></textarea>
+      </div>
+      <div style="margin-top:1rem;">
+        <button class="btn-gold" style="width:100%;justify-content:center;" onclick="submitForm()">📅 Book a Free Visit to My Business</button>
+      </div>
+      <div class="send-status" id="sendStatus"></div>
+      <p class="form-note">Prefer to message directly? <a href="https://wa.me/447902376369" target="_blank">WhatsApp us on 07902 376369</a> — the team will get back to you.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo">
+        <svg width="34" height="34" viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="22" fill="#0d1e35"/><path d="M6 30 Q10 24 14 28 Q18 32 22 24 Q26 16 30 20 Q34 24 38 18" stroke="#f5c416" stroke-width="2.5" fill="none" stroke-linecap="round"/><text x="22" y="20" text-anchor="middle" fill="#fff" font-size="9" font-weight="900" font-family="Arial">WBA</text></svg>
+        <div class="logo-text">WESTON <span>BUSINESS</span><br>AUTHORITY</div>
+      </div>
+      <p style="margin-top:0.75rem;">Local marketing for local businesses. Hands-on, practical support for businesses in Weston-Super-Mare and North Somerset.</p>
+    </div>
+    <div class="footer-info">
+      <div>📍 Weston-Super-Mare, North Somerset</div>
+      <div>💬 <a href="https://wa.me/447902376369" target="_blank">WhatsApp: 07902 376369</a></div>
+      <div>📞 <a href="tel:01934268087">01934 268087</a></div>
+      <div>✉️ <a href="mailto:contact@westonbusinessauthority.co.uk">contact@westonbusinessauthority.co.uk</a></div>
+      <div>🔵 <a href="https://www.facebook.com/WestonMarketing/" target="_blank">Facebook — WestonMarketing</a></div>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2025 Weston Business Authority. All rights reserved. Weston-Super-Mare, North Somerset, UK.</div>
+</footer>
+
+<script>
+async function submitForm() {
+  const name = document.getElementById('fname').value.trim();
+  const biz = document.getElementById('fbiz').value.trim();
+  const phone = document.getElementById('fphone').value.trim();
+  const method = document.getElementById('fmethod').value;
+  const email = document.getElementById('femail').value.trim();
+  const msg = document.getElementById('fmsg').value.trim();
+  const status = document.getElementById('sendStatus');
+  if (!name || !biz || !email) {
+    status.className = 'send-status err';
+    status.textContent = 'Please fill in your name, business name and email address.';
+    return;
+  }
+  status.className = 'send-status';
+  status.textContent = 'Sending...';
+  try {
+    const res = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body: JSON.stringify({name,business:biz,phone:phone||'Not provided',preferred_contact:method||'Not specified',email,message:msg||'No message provided',_subject:`New Visit Request — ${biz}`})
+    });
+    if (res.ok) {
+      ['fname','fbiz','fphone','femail','fmsg'].forEach(id=>document.getElementById(id).value='');
+      document.getElementById('fmethod').selectedIndex=0;
+      status.textContent='';
+      document.getElementById('modal').classList.add('show');
+    } else { throw new Error(); }
+  } catch {
+    status.className='send-status err';
+    status.textContent='Something went wrong. Please WhatsApp us directly on 07902 376369.';
+  }
+}
+(function(){
+  const url='YOUR_WESTON_PHOTO_URL_HERE';
+  if(url!=='YOUR_WESTON_PHOTO_URL_HERE') document.getElementById('heroBg').style.backgroundImage=`url('${url}')`;
+})();
+</script>
+</body>
+</html>
