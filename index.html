@@ -591,7 +591,7 @@ async function submitForm() {
   status.className = 'send-status';
   status.textContent = 'Sending...';
   try {
-    const res = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
+    const res = await fetch('https://formspree.io/f/mvzdgzka', {
       method:'POST',
       headers:{'Content-Type':'application/json','Accept':'application/json'},
       body: JSON.stringify({name,business:biz,phone:phone||'Not provided',preferred_contact:method||'Not specified',email,message:msg||'No message provided',_subject:`New Visit Request — ${biz}`})
