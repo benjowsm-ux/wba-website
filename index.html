@@ -3,610 +3,768 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Weston Business Authority — Local Marketing for Local Businesses</title>
+<title>Weston Business Authority | Marketing Agency Weston-Super-Mare</title>
+<meta name="description" content="WBA — Weston-Super-Mare's local marketing agency. Social media management, photography, paid ads, SEO, print design and tech support for local businesses. Call or WhatsApp 07902 376369."/>
+<meta name="keywords" content="marketing agency Weston-Super-Mare, social media management Weston, local marketing Weston, WBA, Weston Business Authority, 07902376369, Facebook ads Weston, photography Weston, print design Weston, SEO Weston, small business marketing Somerset"/>
+<meta name="author" content="Weston Business Authority"/>
+<meta name="geo.region" content="GB-SOM"/>
+<meta name="geo.placename" content="Weston-Super-Mare"/>
+<meta property="og:title" content="Weston Business Authority | Local Marketing, Weston-Super-Mare"/>
+<meta property="og:description" content="Our town. Our businesses. WBA handles social media, photography, ads, SEO, design and tech for Weston businesses. No lock-in. You own everything."/>
+<meta property="og:image" content="https://res.cloudinary.com/du3psvz2u/image/upload/v1780318572/20260525_113222_r4wxwu.jpg"/>
+<meta property="og:url" content="https://westonbusinessauthority.co.uk"/>
+<meta property="og:type" content="website"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<link rel="icon" type="image/png" sizes="512x512" href="https://res.cloudinary.com/du3psvz2u/image/upload/v1780318702/android-chrome-512x512_nzg5wu.png"/>
+<link rel="apple-touch-icon" href="https://res.cloudinary.com/du3psvz2u/image/upload/v1780318702/android-chrome-512x512_nzg5wu.png"/>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"Weston Business Authority","alternateName":"WBA","description":"Local marketing agency in Weston-Super-Mare. Social media management, photography, paid advertising, SEO, print design and tech support for local businesses.","url":"https://westonbusinessauthority.co.uk","telephone":"+447902376369","email":"ben@westonbusinessauthority.co.uk","address":{"@type":"PostalAddress","addressLocality":"Weston-Super-Mare","addressRegion":"Somerset","postalCode":"BS22","addressCountry":"GB"},"geo":{"@type":"GeoCoordinates","latitude":51.346,"longitude":-2.977},"openingHours":"Mo-Su 09:00-20:00","sameAs":["https://www.facebook.com/WestonMarketing/"],"areaServed":[{"@type":"City","name":"Weston-Super-Mare"},{"@type":"Place","name":"Worle"},{"@type":"Place","name":"Clevedon"},{"@type":"Place","name":"Nailsea"}],"foundingDate":"2023","priceRange":"££","aggregateRating":{"@type":"AggregateRating","ratingValue":"5","reviewCount":"5"}}</script>
 <style>
+:root{--navy:#00224d;--navy2:#003474;--blue:#044bad;--light:#b3d4ff;--gold:#f5c416;--ink:#0a1424;--cream:#f6f3ec;--paper:#fbfaf7;}
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
-body{font-family:'Segoe UI',Arial,sans-serif;background:#060e1a;color:#fff;overflow-x:hidden;}
+body{font-family:'Segoe UI',system-ui,Arial,sans-serif;background:#fff;color:#1a1f2e;overflow-x:hidden;}
 a{color:inherit;text-decoration:none;}
+img{display:block;}
 
 /* NAV */
-nav{background:rgba(6,14,26,0.96);backdrop-filter:blur(12px);padding:0.9rem 2.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(245,196,22,0.1);position:sticky;top:0;z-index:100;}
-.nav-links{display:flex;gap:2rem;font-size:0.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
-.nav-links a{color:rgba(255,255,255,0.55);transition:color 0.2s;position:relative;padding-bottom:2px;}
-.nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1.5px;background:#f5c416;transition:width 0.2s;}
+nav{background:var(--navy);padding:0 2.5rem;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 24px rgba(0,15,45,0.35);}
+.nav-links{display:flex;gap:1.8rem;}
+.nav-links a{font-size:0.74rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.6);transition:color 0.2s;position:relative;padding-bottom:3px;}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1.5px;background:var(--gold);transition:width 0.25s;}
 .nav-links a:hover{color:#fff;}
 .nav-links a:hover::after{width:100%;}
-.btn-wa-sm{background:#25D366;color:#fff;padding:0.5rem 1.1rem;border-radius:4px;font-weight:800;font-size:0.78rem;letter-spacing:0.5px;text-transform:uppercase;display:flex;align-items:center;gap:6px;transition:opacity 0.2s;}
-.btn-wa-sm:hover{opacity:0.88;}
+.nav-wa{background:var(--gold);color:var(--ink)!important;padding:0.5rem 1.2rem;border-radius:3px;font-weight:900;font-size:0.74rem;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;gap:6px;transition:background 0.2s;}
+.nav-wa:hover{background:#ffd83d;}
+
+/* TESTIMONIAL TOPBAR */
+.trust-bar{background:var(--ink);border-bottom:1px solid rgba(245,196,22,0.12);overflow:hidden;}
+.trust-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:1.5rem;padding:0.85rem 2.5rem;}
+.trust-label{display:flex;align-items:center;gap:8px;flex-shrink:0;border-right:1px solid rgba(255,255,255,0.1);padding-right:1.5rem;}
+.trust-stars{color:var(--gold);font-size:0.8rem;letter-spacing:1px;}
+.trust-label span{font-size:0.62rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.45);}
+.trust-track-wrap{flex:1;overflow:hidden;position:relative;height:20px;}
+.trust-track{display:flex;gap:3rem;position:absolute;white-space:nowrap;animation:scroll-left 38s linear infinite;}
+.trust-quote{font-size:0.78rem;color:rgba(255,255,255,0.55);font-style:italic;}
+.trust-quote b{color:var(--light);font-style:normal;font-weight:700;}
+@keyframes scroll-left{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
 
 /* HERO */
-.hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;}
-.hero-bg{position:absolute;inset:0;background-image:url('https://res.cloudinary.com/du3psvz2u/image/upload/v1776172045/20251120_092235_rgcbxz.jpg');background-size:cover;background-position:center;}
-.hero-overlay{position:absolute;inset:0;background:linear-gradient(160deg,rgba(6,14,26,0.82) 0%,rgba(6,14,26,0.55) 50%,rgba(6,14,26,0.88) 100%);}
-.hero-content{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:2rem;}
-.hero-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(245,196,22,0.12);color:#f5c416;font-size:0.68rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;padding:0.45rem 1.1rem;border-radius:2px;margin-bottom:2rem;border:1px solid rgba(245,196,22,0.2);}
-.hero h1{font-size:clamp(2.8rem,7vw,5.2rem);font-weight:900;line-height:1.0;text-transform:uppercase;margin-bottom:1.5rem;letter-spacing:-1px;}
-.hero h1 .line2{color:#f5c416;display:block;}
-.hero h1 .line3{display:block;-webkit-text-stroke:1.5px rgba(255,255,255,0.4);color:transparent;}
-.hero-sub{font-size:1.1rem;color:rgba(255,255,255,0.72);max-width:520px;margin:0 auto 2.5rem;line-height:1.8;}
-.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
-.btn-gold{background:#f5c416;color:#060e1a;padding:1rem 2.2rem;font-weight:900;font-size:0.85rem;letter-spacing:1.5px;text-transform:uppercase;border-radius:3px;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;cursor:pointer;border:none;font-family:inherit;}
-.btn-gold:hover{background:#ffd83d;transform:translateY(-1px);}
-.btn-wa{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.25);padding:1rem 2.2rem;font-weight:700;font-size:0.85rem;letter-spacing:1.5px;text-transform:uppercase;border-radius:3px;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;}
-.btn-wa:hover{border-color:#25D366;color:#25D366;transform:translateY(-1px);}
-.hero-scroll{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0.4;}
-.hero-scroll span{font-size:0.62rem;letter-spacing:3px;text-transform:uppercase;}
-.scroll-line{width:1px;height:40px;background:linear-gradient(to bottom,#f5c416,transparent);animation:scrollpulse 2s ease-in-out infinite;}
-@keyframes scrollpulse{0%,100%{opacity:0.3;transform:scaleY(0.8);}50%{opacity:1;transform:scaleY(1);}}
+.hero{position:relative;min-height:88vh;display:flex;flex-direction:column;justify-content:center;padding:4rem 8vw;overflow:hidden;background:var(--navy);}
+.hero-bg{position:absolute;inset:0;background:url('https://res.cloudinary.com/du3psvz2u/image/upload/v1776172045/20251120_092235_rgcbxz.jpg') center/cover;opacity:0.32;}
+.hero-grad{position:absolute;inset:0;background:linear-gradient(105deg,rgba(0,20,55,0.95) 30%,rgba(0,34,77,0.55) 70%,rgba(4,75,173,0.25) 100%);}
+.hero-glow{position:absolute;top:-30%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(245,196,22,0.08) 0%,transparent 60%);pointer-events:none;}
+.hero-content{position:relative;z-index:1;max-width:680px;}
+.hero-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(179,212,255,0.12);border:1px solid rgba(179,212,255,0.25);color:var(--light);font-size:0.64rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;padding:0.4rem 1rem;border-radius:2px;margin-bottom:1.75rem;}
+.hero h1{font-size:clamp(2.6rem,6vw,4.6rem);font-weight:900;line-height:1.02;color:#fff;text-transform:uppercase;letter-spacing:-1px;margin-bottom:1.5rem;}
+.hero h1 .gold{color:var(--gold);}
+.hero h1 .lblue{color:var(--light);}
+.hero-sub{font-size:1.05rem;color:rgba(255,255,255,0.7);line-height:1.8;max-width:480px;margin-bottom:2.25rem;}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:3rem;}
+.btn-primary{background:var(--gold);color:var(--ink);padding:0.95rem 2rem;font-weight:900;font-size:0.82rem;letter-spacing:1.5px;text-transform:uppercase;border-radius:3px;display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:inherit;transition:all 0.2s;}
+.btn-primary:hover{background:#ffd83d;transform:translateY(-2px);box-shadow:0 10px 28px rgba(245,196,22,0.35);}
+.btn-ghost{background:rgba(255,255,255,0.04);color:#fff;border:1.5px solid rgba(179,212,255,0.3);padding:0.95rem 2rem;font-weight:700;font-size:0.82rem;letter-spacing:1.5px;text-transform:uppercase;border-radius:3px;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;}
+.btn-ghost:hover{border-color:var(--light);background:rgba(179,212,255,0.1);}
+.hero-stats{display:flex;gap:2.5rem;flex-wrap:wrap;}
+.hstat-num{font-size:1.55rem;font-weight:900;color:var(--gold);line-height:1;}
+.hstat-lbl{font-size:0.62rem;font-weight:600;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+
+/* QUICK CONTACT BAR */
+.quickbar{background:var(--gold);padding:1.25rem 2.5rem;}
+.quickbar-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1.5rem;flex-wrap:wrap;}
+.quickbar-text{font-size:1rem;font-weight:900;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink);}
+.quickbar-text span{display:block;font-size:0.72rem;font-weight:600;letter-spacing:0.3px;text-transform:none;color:rgba(0,20,55,0.65);margin-top:2px;}
+.quickform{display:flex;gap:0.6rem;flex-wrap:wrap;flex:1;max-width:560px;min-width:280px;}
+.quickform input{flex:1;min-width:120px;background:rgba(255,255,255,0.85);border:1px solid rgba(0,20,55,0.15);border-radius:3px;padding:0.7rem 0.9rem;font-size:0.82rem;color:var(--ink);font-family:inherit;outline:none;}
+.quickform input:focus{background:#fff;border-color:var(--navy);}
+.quickform button{background:var(--ink);color:#fff;border:none;padding:0.7rem 1.4rem;font-weight:900;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;border-radius:3px;cursor:pointer;font-family:inherit;transition:background 0.2s;white-space:nowrap;}
+.quickform button:hover{background:#001530;}
 
 /* CLIENTS */
-.clients-bar{background:#0a1628;padding:1.75rem 2.5rem;border-bottom:1px solid rgba(255,255,255,0.05);}
-.clients-label{text-align:center;font-size:0.62rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:1.1rem;}
-.clients-row{display:flex;justify-content:center;flex-wrap:wrap;gap:1.5rem 3rem;align-items:center;}
-.client-chip{font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.08);padding:0.4rem 1rem;border-radius:2px;transition:all 0.2s;}
-.client-chip.lit{color:rgba(255,255,255,0.75);border-color:rgba(245,196,22,0.2);}
+.clients{background:var(--paper);padding:2.75rem 2.5rem;border-bottom:1px solid rgba(0,0,0,0.05);}
+.clients-lbl{text-align:center;font-size:0.6rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(0,0,0,0.3);margin-bottom:1.5rem;}
+.clients-row{max-width:1000px;margin:0 auto;display:flex;justify-content:center;flex-wrap:wrap;gap:0.65rem;}
+.c-chip{background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:4px;padding:0.6rem 1.1rem;display:flex;flex-direction:column;align-items:center;gap:1px;transition:all 0.2s;cursor:default;}
+.c-chip:hover{border-color:rgba(4,75,173,0.3);box-shadow:0 4px 14px rgba(4,75,173,0.1);transform:translateY(-2px);}
+.c-name{font-size:0.76rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;color:var(--navy);}
+.c-type{font-size:0.6rem;color:rgba(0,0,0,0.4);}
+.c-more{background:var(--navy);color:#fff!important;border-color:var(--navy);cursor:pointer;}
+.c-more .c-name{color:#fff;}
+.c-hidden{display:none;}
 
-/* PAIN — dark with angled top */
-.pain{background:#0a1628;padding:6rem 2.5rem 5rem;position:relative;}
-.pain::before{content:'';position:absolute;top:-1px;left:0;right:0;height:60px;background:#060e1a;clip-path:polygon(0 0,100% 0,100% 100%);}
-.inner{max-width:1040px;margin:0 auto;}
-.eyebrow{font-size:0.65rem;font-weight:700;letter-spacing:3.5px;text-transform:uppercase;color:#f5c416;margin-bottom:0.7rem;display:flex;align-items:center;gap:8px;}
-.eyebrow::before{content:'';display:inline-block;width:20px;height:1.5px;background:#f5c416;}
-.big-title{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:900;text-transform:uppercase;line-height:1.1;margin-bottom:1rem;}
-.big-title em{color:#f5c416;font-style:normal;}
-.body-muted{font-size:0.92rem;line-height:1.8;color:rgba(255,255,255,0.5);max-width:540px;margin-bottom:2.5rem;}
-.pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.06);}
-.pain-item{background:#0a1628;padding:1.5rem 1.25rem;display:flex;gap:12px;align-items:flex-start;transition:background 0.2s;}
-.pain-item:hover{background:#0d1e35;}
-.pain-x{width:22px;height:22px;min-width:22px;border:1.5px solid rgba(245,196,22,0.4);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:900;color:#f5c416;margin-top:2px;}
-.pain-item p{font-size:0.82rem;font-weight:600;color:rgba(255,255,255,0.7);line-height:1.5;text-transform:uppercase;letter-spacing:0.3px;}
+/* SECTIONS */
+.s-navy{background:var(--navy);padding:5rem 2.5rem;}
+.s-navy2{background:var(--navy2);padding:5rem 2.5rem;}
+.s-white{background:#fff;padding:5rem 2.5rem;}
+.s-paper{background:var(--paper);padding:5rem 2.5rem;}
+.s-cream{background:var(--cream);padding:5rem 2.5rem;}
+.s-gold{background:var(--gold);padding:5rem 2.5rem;}
+.inner{max-width:1100px;margin:0 auto;}
+.eyebrow{font-size:0.62rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:0.7rem;display:flex;align-items:center;gap:10px;}
+.eyebrow::before{content:'';width:24px;height:1.5px;flex-shrink:0;}
+.on-dark .eyebrow{color:var(--gold);}
+.on-dark .eyebrow::before{background:var(--gold);}
+.on-light .eyebrow{color:var(--blue);}
+.on-light .eyebrow::before{background:var(--blue);}
+.on-gold .eyebrow{color:rgba(0,20,55,0.55);}
+.on-gold .eyebrow::before{background:rgba(0,20,55,0.35);}
+.h2{font-size:clamp(1.7rem,3.2vw,2.5rem);font-weight:900;text-transform:uppercase;line-height:1.1;margin-bottom:1rem;}
+.on-dark .h2{color:#fff;}
+.on-light .h2{color:var(--navy);}
+.on-gold .h2{color:var(--ink);}
+.h2 em{font-style:normal;}
+.on-dark .h2 em{color:var(--gold);}
+.on-light .h2 em{color:var(--blue);}
+.body-copy{font-size:0.9rem;line-height:1.8;max-width:540px;margin-bottom:2rem;}
+.on-dark .body-copy{color:rgba(255,255,255,0.55);}
+.on-light .body-copy{color:#4a5568;}
 
-/* SOLUTION — white */
-.solution{background:#f5f6f8;padding:6rem 2.5rem;position:relative;}
-.solution .eyebrow{color:#c9970f;}
-.solution .eyebrow::before{background:#c9970f;}
-.solution .big-title{color:#060e1a;}
-.solution .big-title em{color:#c9970f;}
-.solution .body-muted{color:#5a6070;}
-.sol-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:2.5rem;}
-.sol-card{background:#fff;border-radius:4px;padding:2rem;border-bottom:3px solid #f5c416;position:relative;overflow:hidden;transition:transform 0.2s,box-shadow 0.2s;}
-.sol-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#f5c416,#ffd83d);}
-.sol-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,0.1);}
-.sol-card-num{font-size:2.5rem;font-weight:900;color:rgba(6,14,26,0.06);line-height:1;margin-bottom:0.5rem;}
-.sol-card h3{font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#c9970f;margin-bottom:0.5rem;}
-.sol-card p{font-size:0.85rem;color:#4a5568;line-height:1.7;}
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:4rem;align-items:center;}
+.about-right{display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;}
+.astat{background:rgba(255,255,255,0.05);border:1px solid rgba(179,212,255,0.12);border-radius:5px;padding:1.4rem;text-align:center;}
+.astat-num{font-size:1.7rem;font-weight:900;color:var(--gold);line-height:1;}
+.astat-lbl{font-size:0.63rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4);margin-top:0.3rem;}
+.since-tag{grid-column:span 2;background:rgba(245,196,22,0.08);border:1px solid rgba(245,196,22,0.18);border-radius:4px;padding:0.7rem;text-align:center;font-size:0.78rem;color:rgba(255,255,255,0.5);}
+.since-tag strong{color:var(--gold);}
 
-/* CONTENT DAY — full bleed dark */
-.content-day{background:#060e1a;padding:5rem 2.5rem;position:relative;overflow:hidden;}
-.content-day::before{content:'';position:absolute;top:-120px;right:-120px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(245,196,22,0.06) 0%,transparent 70%);}
-.cd-inner{max-width:1040px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;}
-.cd-left .eyebrow{color:#f5c416;}
-.cd-left .eyebrow::before{background:#f5c416;}
-.cd-left .big-title{color:#fff;}
-.cd-left .big-title em{color:#f5c416;}
-.cd-left p{font-size:0.9rem;color:rgba(255,255,255,0.55);line-height:1.8;margin-bottom:2rem;}
-.cd-right{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;}
-.cd-item{background:#0a1628;border:1px solid rgba(245,196,22,0.12);border-radius:4px;padding:1.25rem 1rem;transition:border-color 0.2s;}
-.cd-item:hover{border-color:rgba(245,196,22,0.4);}
-.cd-item-icon{font-size:1.2rem;margin-bottom:0.5rem;}
-.cd-item h4{font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#f5c416;margin-bottom:0.25rem;}
-.cd-item p{font-size:0.78rem;color:rgba(255,255,255,0.45);line-height:1.5;}
+/* WHO */
+.who-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:2rem;}
+.who-card{background:#fff;border:1px solid rgba(0,0,0,0.07);border-radius:6px;padding:1.6rem 1.25rem;text-align:center;transition:all 0.2s;cursor:default;}
+.who-card:hover{border-color:rgba(4,75,173,0.3);box-shadow:0 10px 28px rgba(4,75,173,0.1);transform:translateY(-3px);}
+.who-ico{font-size:1.9rem;margin-bottom:0.7rem;}
+.who-card h3{font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:var(--navy);margin-bottom:0.3rem;}
+.who-card p{font-size:0.74rem;color:#6b7280;line-height:1.5;}
 
-/* CASE STUDIES */
-.cases{background:#fff;padding:6rem 2.5rem;}
-.cases .eyebrow{color:#c9970f;}
-.cases .eyebrow::before{background:#c9970f;}
-.cases .big-title{color:#060e1a;}
-.cases .body-muted{color:#5a6070;}
-.cases-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-top:2.5rem;}
-.case-card{background:#060e1a;border-radius:6px;overflow:hidden;position:relative;transition:transform 0.25s;}
-.case-card:hover{transform:translateY(-4px);}
-.case-img{height:200px;background:#0a1628;position:relative;overflow:hidden;}
-.case-img img{width:100%;height:100%;object-fit:cover;opacity:0.55;transition:opacity 0.3s;}
-.case-card:hover .case-img img{opacity:0.7;}
-.case-img-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(6,14,26,0.95) 0%,transparent 60%);}
-.case-result{position:absolute;bottom:1rem;left:1rem;background:#f5c416;color:#060e1a;font-size:0.68rem;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;padding:0.35rem 0.85rem;border-radius:2px;}
-.case-body{padding:1.5rem;}
-.case-type{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#f5c416;margin-bottom:0.35rem;}
-.case-body h3{font-size:1.05rem;font-weight:800;color:#fff;margin-bottom:0.6rem;}
-.case-body p{font-size:0.82rem;color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:1rem;}
+/* SERVICES GRID (squared) */
+.svc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:2.5rem;}
+.svc-card{background:rgba(255,255,255,0.04);border:1px solid rgba(179,212,255,0.1);border-radius:8px;padding:1.75rem 1.4rem;position:relative;overflow:hidden;transition:all 0.2s;aspect-ratio:1/1;display:flex;flex-direction:column;}
+.svc-card::after{content:'';position:absolute;bottom:0;left:0;width:0;height:3px;background:var(--gold);transition:width 0.3s;}
+.svc-card:hover{border-color:rgba(245,196,22,0.35);background:rgba(255,255,255,0.08);transform:translateY(-3px);}
+.svc-card:hover::after{width:100%;}
+.svc-ico{font-size:1.7rem;margin-bottom:0.9rem;}
+.svc-card h3{font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--gold);margin-bottom:0.5rem;}
+.svc-card p{font-size:0.78rem;color:rgba(255,255,255,0.55);line-height:1.65;}
+
+/* WEEKLY */
+.weekly{background:var(--ink);}
+.weekly-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:200px 1fr;gap:0;align-items:stretch;}
+.weekly-img{position:relative;cursor:pointer;overflow:hidden;min-height:100%;}
+.weekly-img img{width:100%;height:100%;object-fit:cover;opacity:0.85;transition:opacity 0.2s;}
+.weekly-img:hover img{opacity:1;}
+.weekly-badge{position:absolute;top:0.75rem;left:0.75rem;background:var(--gold);color:var(--ink);font-size:0.55rem;font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:0.25rem 0.6rem;}
+.weekly-expand{position:absolute;bottom:0.75rem;right:0.75rem;background:rgba(0,0,0,0.6);color:#fff;font-size:0.6rem;padding:0.2rem 0.5rem;border-radius:2px;}
+.weekly-body{padding:2.5rem 3rem;display:flex;flex-direction:column;justify-content:center;}
+.weekly-eyebrow{font-size:0.6rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:0.5rem;}
+.weekly-title{font-size:clamp(1.1rem,2.2vw,1.55rem);font-weight:900;text-transform:uppercase;color:#fff;line-height:1.15;margin-bottom:0.75rem;}
+.weekly-text{font-size:0.84rem;color:rgba(255,255,255,0.5);line-height:1.75;margin-bottom:1.1rem;max-width:560px;}
+.weekly-cta{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--ink);padding:0.6rem 1.3rem;font-size:0.72rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;border-radius:3px;align-self:flex-start;transition:background 0.2s;}
+.weekly-cta:hover{background:#ffd83d;}
+
+/* PAIN */
+.pain-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.06);margin-top:2rem;}
+.pain-item{background:var(--navy2);padding:1.3rem 1.1rem;display:flex;flex-direction:column;gap:0.6rem;transition:background 0.2s;}
+.pain-item:hover{background:#0a4490;}
+.pain-x{width:20px;height:20px;border:1.5px solid rgba(245,196,22,0.4);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:900;color:var(--gold);}
+.pain-item p{font-size:0.76rem;font-weight:600;color:rgba(255,255,255,0.65);line-height:1.45;text-transform:uppercase;letter-spacing:0.2px;}
+
+/* CASES */
+.cases-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:2.5rem;}
+.case-card{border-radius:8px;overflow:hidden;transition:all 0.25s;background:#fff;border:1px solid rgba(0,0,0,0.07);}
+.case-card:hover{transform:translateY(-4px);box-shadow:0 18px 44px rgba(0,34,77,0.14);}
+.case-img{height:180px;position:relative;overflow:hidden;}
+.case-img img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s;}
+.case-card:hover .case-img img{transform:scale(1.05);}
+.case-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,20,55,0.92) 0%,transparent 55%);}
+.case-badge{position:absolute;bottom:0.9rem;left:0.9rem;background:var(--gold);color:var(--ink);font-size:0.6rem;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;padding:0.26rem 0.7rem;border-radius:2px;}
+.case-body{padding:1.4rem;}
+.case-type{font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--blue);margin-bottom:0.3rem;}
+.case-body h3{font-size:1rem;font-weight:800;color:var(--navy);margin-bottom:0.5rem;}
+.case-body p{font-size:0.79rem;color:#6b7280;line-height:1.65;margin-bottom:0.85rem;}
 .case-tags{display:flex;flex-wrap:wrap;gap:0.4rem;}
-.case-tag{background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.45);font-size:0.65rem;font-weight:700;padding:0.25rem 0.65rem;border-radius:2px;text-transform:uppercase;letter-spacing:0.5px;}
+.case-tag{background:#eef3fc;color:var(--blue);font-size:0.6rem;font-weight:700;padding:0.22rem 0.6rem;border-radius:2px;text-transform:uppercase;letter-spacing:0.3px;}
 
-/* STATS — gold bg */
-.stats{background:#f5c416;padding:5rem 2.5rem;position:relative;overflow:hidden;}
-.stats::before{content:'ONE CLIENT. ONE MONTH.';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(3rem,8vw,7rem);font-weight:900;color:rgba(0,0,0,0.04);white-space:nowrap;letter-spacing:-2px;pointer-events:none;}
-.stats-inner{max-width:1040px;margin:0 auto;}
-.stats .eyebrow{color:rgba(6,14,26,0.5);}
-.stats .eyebrow::before{background:rgba(6,14,26,0.3);}
-.stats .big-title{color:#060e1a;}
-.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:2rem;}
-.stat-card{background:#060e1a;border-radius:4px;padding:2rem 1.5rem;text-align:center;}
-.stat-num{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;color:#f5c416;line-height:1;}
-.stat-lbl{font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.45);margin-top:0.4rem;}
-.stats-divider{border:none;border-top:1px solid rgba(6,14,26,0.15);margin:3rem 0;}
-.baseline-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
-.base-item{text-align:center;}
-.base-num{font-size:1.6rem;font-weight:900;color:#060e1a;line-height:1;}
-.base-lbl{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(6,14,26,0.5);margin-top:0.3rem;}
-.base-sub{font-size:0.62rem;color:rgba(6,14,26,0.35);margin-top:0.1rem;}
+/* TESTIMONIALS BIG */
+.testi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem;margin-top:2.5rem;}
+.testi-card{background:#fff;border:1px solid rgba(4,75,173,0.12);border-radius:8px;padding:1.75rem;position:relative;}
+.testi-card .quote{font-size:2.5rem;color:rgba(4,75,173,0.1);font-family:Georgia,serif;line-height:0.5;height:18px;}
+.stars{color:var(--gold);font-size:0.85rem;margin-bottom:0.6rem;letter-spacing:2px;}
+.testi-text{font-size:0.84rem;color:#374151;line-height:1.75;margin-bottom:1rem;}
+.testi-author{font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--navy);}
 
-/* HOW — dark */
-.how{background:#0a1628;padding:6rem 2.5rem;}
-.how-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:3rem;position:relative;}
-.how-steps::before{content:'';position:absolute;top:28px;left:16.6%;right:16.6%;height:1px;background:linear-gradient(90deg,transparent,rgba(245,196,22,0.3),rgba(245,196,22,0.3),transparent);}
-.how-step{text-align:center;padding:0 2rem;}
-.how-num{width:56px;height:56px;border-radius:50%;background:#f5c416;color:#060e1a;font-size:1.3rem;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;}
-.how-step h3{font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#f5c416;margin-bottom:0.5rem;}
-.how-step p{font-size:0.85rem;color:rgba(255,255,255,0.5);line-height:1.7;}
+/* PRICING */
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:2.5rem;}
+.price-card{background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:8px;padding:2rem 1.75rem;position:relative;transition:transform 0.2s,box-shadow 0.2s;}
+.price-card:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,34,77,0.1);}
+.price-card.feat{background:var(--navy);border-color:var(--blue);box-shadow:0 20px 50px rgba(0,34,77,0.2);}
+.price-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--ink);font-size:0.6rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:0.3rem 1rem;border-radius:2px;white-space:nowrap;}
+.price-tier{font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;color:var(--blue);margin-bottom:0.3rem;}
+.price-card.feat .price-tier{color:var(--gold);}
+.price-name{font-size:1.05rem;font-weight:900;color:var(--navy);margin-bottom:0.85rem;}
+.price-card.feat .price-name{color:#fff;}
+.price-amount{display:flex;align-items:baseline;gap:6px;margin-bottom:0.3rem;}
+.price-from{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;}
+.price-num{font-size:2.2rem;font-weight:900;color:var(--navy);line-height:1;}
+.price-card.feat .price-num{color:#fff;}
+.price-mo{font-size:0.8rem;color:#9ca3af;font-weight:600;}
+.price-intro{font-size:0.74rem;color:var(--blue);font-weight:700;margin-bottom:1.1rem;background:#eef3fc;border-radius:3px;padding:0.4rem 0.7rem;display:inline-block;}
+.price-card.feat .price-intro{background:rgba(245,196,22,0.12);color:var(--gold);}
+.price-features{list-style:none;margin-bottom:1.5rem;}
+.price-features li{font-size:0.79rem;color:#374151;padding:0.4rem 0;border-bottom:1px solid rgba(0,0,0,0.05);display:flex;gap:9px;align-items:flex-start;line-height:1.4;}
+.price-card.feat .price-features li{color:rgba(255,255,255,0.7);border-color:rgba(255,255,255,0.08);}
+.price-features li::before{content:'✓';color:var(--blue);font-weight:900;font-size:0.72rem;margin-top:1px;flex-shrink:0;}
+.price-card.feat .price-features li::before{color:var(--gold);}
+.price-btn{width:100%;justify-content:center;background:var(--blue);color:#fff;padding:0.8rem;font-weight:900;font-size:0.78rem;letter-spacing:1px;text-transform:uppercase;border-radius:3px;display:flex;align-items:center;gap:8px;cursor:pointer;border:none;font-family:inherit;transition:all 0.2s;}
+.price-btn:hover{background:#0357c9;transform:translateY(-1px);}
+.price-card.feat .price-btn{background:var(--gold);color:var(--ink);}
+.price-card.feat .price-btn:hover{background:#ffd83d;}
+.price-note{text-align:center;font-size:0.8rem;color:#6b7280;margin-top:1.75rem;line-height:1.7;max-width:560px;margin-left:auto;margin-right:auto;}
+.price-note strong{color:var(--navy);}
 
-/* SERVICES */
-.services{background:#060e1a;padding:6rem 2.5rem;}
-.svc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1px;background:rgba(255,255,255,0.05);margin-top:2.5rem;border:1px solid rgba(255,255,255,0.05);}
-.svc{background:#060e1a;padding:2rem 1.5rem;transition:background 0.2s;position:relative;overflow:hidden;}
-.svc::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:#f5c416;transition:width 0.3s;}
-.svc:hover{background:#0a1628;}
-.svc:hover::after{width:100%;}
-.svc-icon{font-size:1.5rem;margin-bottom:1rem;display:block;}
-.svc h3{font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#f5c416;margin-bottom:0.5rem;}
-.svc p{font-size:0.82rem;color:rgba(255,255,255,0.45);line-height:1.7;}
+/* EXTRAS ROW (print, tech, +1) */
+.extras-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:2.5rem;}
+.extra-card{background:rgba(255,255,255,0.04);border:1px solid rgba(179,212,255,0.12);border-radius:8px;padding:1.75rem;transition:all 0.2s;}
+.extra-card:hover{border-color:rgba(245,196,22,0.3);background:rgba(255,255,255,0.07);}
+.extra-ico{width:46px;height:46px;background:rgba(245,196,22,0.1);border:1px solid rgba(245,196,22,0.2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:1rem;}
+.extra-card h3{font-size:0.82rem;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--gold);margin-bottom:0.4rem;}
+.extra-card p{font-size:0.78rem;color:rgba(255,255,255,0.5);line-height:1.65;margin-bottom:0.85rem;}
+.extra-price{font-size:0.78rem;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:0.5px;}
+.extra-price span{color:var(--gold);}
+
+/* HOW */
+.how-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-top:2.5rem;position:relative;}
+.how-steps::before{content:'';position:absolute;top:24px;left:calc(16.6% + 24px);right:calc(16.6% + 24px);height:1px;background:linear-gradient(90deg,transparent,rgba(245,196,22,0.3),rgba(245,196,22,0.3),transparent);}
+.how-step{text-align:center;}
+.how-num{width:48px;height:48px;border-radius:50%;background:var(--gold);color:var(--ink);font-size:1.1rem;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;}
+.how-step h3{font-size:0.74rem;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:0.4rem;}
+.how-step p{font-size:0.82rem;color:rgba(255,255,255,0.5);line-height:1.7;}
 
 /* AVENUES */
-.avenues{background:#0a1628;padding:5rem 2.5rem;border-top:1px solid rgba(255,255,255,0.05);}
-.av-wrap{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;margin-top:2.5rem;}
-.av-platforms{display:flex;flex-wrap:wrap;gap:0.5rem;}
-.av-pill{background:rgba(245,196,22,0.08);border:1px solid rgba(245,196,22,0.18);border-radius:2px;padding:0.45rem 1rem;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:rgba(255,255,255,0.65);transition:all 0.2s;}
-.av-pill:hover{background:rgba(245,196,22,0.15);color:#fff;}
-.av-note{background:#060e1a;border-left:2px solid #f5c416;padding:1.5rem;font-size:0.88rem;color:rgba(255,255,255,0.6);line-height:1.8;}
-.av-note strong{color:#fff;display:block;margin-bottom:0.4rem;font-size:0.95rem;}
-
-/* PACKAGES */
-.packages{background:#f5f6f8;padding:6rem 2.5rem;}
-.packages .eyebrow{color:#c9970f;}
-.packages .eyebrow::before{background:#c9970f;}
-.packages .big-title{color:#060e1a;}
-.packages .body-muted{color:#5a6070;}
-.pkg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:2.5rem;}
-.pkg{background:#fff;border-radius:4px;padding:2rem;border:1px solid rgba(6,14,26,0.08);position:relative;}
-.pkg.featured{background:#060e1a;border-color:transparent;box-shadow:0 20px 50px rgba(6,14,26,0.2);}
-.pkg-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:#f5c416;color:#060e1a;font-size:0.65rem;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;padding:0.3rem 1rem;border-radius:2px;white-space:nowrap;}
-.pkg-tier{font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;color:#c9970f;margin-bottom:0.35rem;}
-.pkg.featured .pkg-tier{color:#f5c416;}
-.pkg-name{font-size:1.15rem;font-weight:900;color:#060e1a;margin-bottom:0.75rem;}
-.pkg.featured .pkg-name{color:#fff;}
-.pkg-desc{font-size:0.82rem;color:#5a6070;line-height:1.65;margin-bottom:1.25rem;padding-bottom:1.25rem;border-bottom:1px solid rgba(6,14,26,0.08);}
-.pkg.featured .pkg-desc{color:rgba(255,255,255,0.5);border-color:rgba(255,255,255,0.08);}
-.pkg-features{list-style:none;margin-bottom:1.5rem;}
-.pkg-features li{font-size:0.8rem;color:#2d3748;padding:0.4rem 0;border-bottom:1px solid rgba(6,14,26,0.05);display:flex;gap:10px;align-items:flex-start;line-height:1.4;}
-.pkg.featured .pkg-features li{color:rgba(255,255,255,0.65);border-color:rgba(255,255,255,0.05);}
-.pkg-features li::before{content:'✓';color:#c9970f;font-weight:900;font-size:0.72rem;margin-top:2px;flex-shrink:0;}
-.pkg.featured .pkg-features li::before{color:#f5c416;}
-.pkg .btn-wa-full{width:100%;justify-content:center;background:#f5c416;color:#060e1a;padding:0.85rem;font-weight:900;font-size:0.8rem;letter-spacing:1.5px;text-transform:uppercase;border-radius:3px;display:flex;align-items:center;gap:8px;transition:all 0.2s;cursor:pointer;border:none;font-family:inherit;}
-.pkg .btn-wa-full:hover{background:#ffd83d;transform:translateY(-1px);}
-.pkg.featured .btn-wa-full{background:#f5c416;}
-.pkg-note{text-align:center;font-size:0.75rem;color:rgba(6,14,26,0.35);margin-top:1.5rem;}
+.av-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start;margin-top:2rem;}
+.av-pills{display:flex;flex-wrap:wrap;gap:0.45rem;}
+.av-pill{background:rgba(179,212,255,0.07);border:1px solid rgba(179,212,255,0.16);border-radius:2px;padding:0.4rem 0.9rem;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;color:rgba(255,255,255,0.62);transition:all 0.2s;}
+.av-pill:hover{background:rgba(179,212,255,0.14);color:#fff;}
+.av-note-box{background:rgba(0,15,40,0.5);border-left:2px solid var(--gold);padding:1.5rem;font-size:0.85rem;color:rgba(255,255,255,0.55);line-height:1.8;}
+.av-note-box strong{color:#fff;display:block;margin-bottom:0.4rem;}
 
 /* AREAS */
-.areas{background:#060e1a;padding:5rem 2.5rem;position:relative;overflow:hidden;}
-.areas::after{content:'WESTON';position:absolute;bottom:-20px;right:-20px;font-size:clamp(5rem,12vw,10rem);font-weight:900;color:rgba(245,196,22,0.03);line-height:1;pointer-events:none;letter-spacing:-3px;}
-.areas-flex{display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:1.5rem;}
-.area-pill{border-radius:2px;padding:0.5rem 1.1rem;font-size:0.78rem;font-weight:700;letter-spacing:0.5px;border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);transition:all 0.2s;}
-.area-pill:hover{border-color:rgba(245,196,22,0.3);color:rgba(255,255,255,0.8);}
-.area-pill.primary{border-color:rgba(245,196,22,0.4);color:#f5c416;background:rgba(245,196,22,0.06);}
-.areas-note{font-size:0.8rem;color:rgba(255,255,255,0.25);margin-top:1.25rem;}
+.areas-pills{display:flex;flex-wrap:wrap;gap:0.55rem;margin-top:1.5rem;}
+.area-pill{border-radius:2px;padding:0.45rem 1rem;font-size:0.75rem;font-weight:700;letter-spacing:0.5px;border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.45);transition:all 0.2s;}
+.area-pill:hover{border-color:rgba(245,196,22,0.3);color:rgba(255,255,255,0.78);}
+.area-pill.pri{border-color:rgba(245,196,22,0.4);color:var(--gold);background:rgba(245,196,22,0.06);}
+.areas-note{font-size:0.75rem;color:rgba(255,255,255,0.25);margin-top:1.25rem;}
 
-/* BOOKING */
-.booking{background:#f5f6f8;padding:6rem 2.5rem;}
-.booking .eyebrow{color:#c9970f;}
-.booking .eyebrow::before{background:#c9970f;}
-.booking .big-title{color:#060e1a;}
+/* CONTACT */
 .booking-wrap{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;margin-top:2.5rem;}
-.booking-left p{font-size:0.9rem;color:#5a6070;line-height:1.8;margin-bottom:1.75rem;}
-.booking-promise{display:flex;flex-direction:column;gap:0.75rem;}
-.promise-item{display:flex;align-items:flex-start;gap:12px;font-size:0.85rem;color:#4a5568;}
-.promise-item::before{content:'→';color:#c9970f;font-weight:900;flex-shrink:0;margin-top:1px;}
-.booking-form{background:#fff;border-radius:4px;padding:2rem;border:1px solid rgba(6,14,26,0.08);}
+.booking-left p{font-size:0.88rem;color:#4a5568;line-height:1.85;margin-bottom:1.5rem;}
+.booking-promises{display:flex;flex-direction:column;gap:0.6rem;}
+.bpromise{display:flex;gap:10px;align-items:flex-start;font-size:0.83rem;color:#4a5568;}
+.bpromise::before{content:'✓';color:var(--blue);font-weight:900;flex-shrink:0;}
+.booking-form-box{background:#fff;border-radius:8px;padding:2rem;border:1px solid rgba(0,0,0,0.08);box-shadow:0 6px 30px rgba(0,34,77,0.08);}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;}
 .form-row.full{grid-template-columns:1fr;}
-input,textarea,select{width:100%;background:#f5f6f8;border:1px solid rgba(6,14,26,0.12);border-radius:3px;padding:0.75rem 0.9rem;color:#060e1a;font-size:0.85rem;font-family:inherit;outline:none;transition:border-color 0.2s;}
-input:focus,textarea:focus,select:focus{border-color:#c9970f;background:#fff;}
-input::placeholder,textarea::placeholder{color:rgba(6,14,26,0.28);}
-select option{background:#fff;color:#060e1a;}
-textarea{resize:vertical;min-height:90px;}
-.form-submit{margin-top:1rem;}
-.form-submit .btn-gold{width:100%;justify-content:center;}
-.send-status{font-size:0.8rem;margin-top:0.65rem;text-align:center;min-height:1.1em;}
-.send-status.err{color:#c0392b;}
-.form-wa-note{font-size:0.72rem;color:rgba(6,14,26,0.35);margin-top:0.65rem;text-align:center;line-height:1.6;}
-.form-wa-note a{color:#c9970f;}
+input,textarea,select{width:100%;background:var(--paper);border:1px solid rgba(0,0,0,0.1);border-radius:3px;padding:0.72rem 0.9rem;color:#1a1f2e;font-size:0.85rem;font-family:inherit;outline:none;transition:all 0.2s;}
+input:focus,textarea:focus,select:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 3px rgba(4,75,173,0.08);}
+input::placeholder,textarea::placeholder{color:rgba(0,0,0,0.28);}
+select option{background:#fff;}
+textarea{resize:vertical;min-height:85px;}
+.send-status{font-size:0.78rem;margin-top:0.6rem;text-align:center;}
+.send-status.err{color:#dc2626;}
+.send-status.ok{color:#16a34a;}
+.form-wa{font-size:0.7rem;color:rgba(0,0,0,0.35);margin-top:0.6rem;text-align:center;}
+.form-wa a{color:var(--blue);}
 
 /* MODAL */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(4,10,20,0.85);backdrop-filter:blur(4px);z-index:500;align-items:center;justify-content:center;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,10,30,0.8);backdrop-filter:blur(5px);z-index:600;align-items:center;justify-content:center;padding:1rem;}
 .modal-bg.show{display:flex;}
-.modal{background:#fff;border-radius:6px;padding:3rem 2.5rem;max-width:400px;width:90%;text-align:center;}
-.modal-icon{font-size:3rem;margin-bottom:1rem;}
-.modal h3{font-size:1.15rem;font-weight:900;text-transform:uppercase;color:#060e1a;margin-bottom:0.6rem;letter-spacing:0.5px;}
-.modal p{font-size:0.88rem;color:#5a6070;line-height:1.75;margin-bottom:1.75rem;}
-.modal .btn-gold{display:inline-flex;margin:0 auto;}
+.modal{background:#fff;border-radius:8px;padding:3rem 2.5rem;max-width:380px;width:100%;text-align:center;}
+.modal-ico{font-size:3rem;margin-bottom:1rem;}
+.modal h3{font-size:1rem;font-weight:900;text-transform:uppercase;color:var(--navy);margin-bottom:0.5rem;}
+.modal p{font-size:0.85rem;color:#6b7280;line-height:1.75;margin-bottom:1.5rem;}
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,5,20,0.92);z-index:700;align-items:center;justify-content:center;padding:2rem;cursor:zoom-out;}
+.lightbox.show{display:flex;}
+.lightbox img{max-width:90%;max-height:90%;border-radius:6px;}
 
 /* FOOTER */
-footer{background:#040a14;padding:3rem 2.5rem 2rem;border-top:1px solid rgba(245,196,22,0.08);}
-.footer-inner{max-width:1040px;margin:0 auto;display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:3rem;padding-bottom:2rem;border-bottom:1px solid rgba(255,255,255,0.05);}
-.footer-brand p{font-size:0.8rem;color:rgba(255,255,255,0.3);margin-top:0.85rem;line-height:1.8;max-width:240px;}
-.footer-col h4{font-size:0.65rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.25);margin-bottom:1rem;}
-.footer-col a{display:block;font-size:0.82rem;color:rgba(255,255,255,0.45);margin-bottom:0.6rem;transition:color 0.2s;}
-.footer-col a:hover{color:#f5c416;}
-.footer-bottom{max-width:1040px;margin:1.5rem auto 0;display:flex;justify-content:space-between;align-items:center;font-size:0.68rem;color:rgba(255,255,255,0.15);flex-wrap:wrap;gap:0.5rem;}
+footer{background:var(--ink);padding:3rem 2.5rem 2rem;border-top:1px solid rgba(179,212,255,0.07);}
+.footer-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:3rem;padding-bottom:2rem;border-bottom:1px solid rgba(255,255,255,0.05);}
+.footer-brand p{font-size:0.78rem;color:rgba(255,255,255,0.3);margin-top:0.85rem;line-height:1.8;max-width:260px;}
+.footer-col h4{font-size:0.6rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.22);margin-bottom:1rem;}
+.footer-col a{display:block;font-size:0.8rem;color:rgba(255,255,255,0.38);margin-bottom:0.55rem;transition:color 0.2s;}
+.footer-col a:hover{color:var(--gold);}
+.footer-bottom{max-width:1100px;margin:1.5rem auto 0;display:flex;justify-content:space-between;font-size:0.65rem;color:rgba(255,255,255,0.14);flex-wrap:wrap;gap:0.5rem;}
 
-@media(max-width:900px){
-  .cd-inner,.av-wrap,.booking-wrap{grid-template-columns:1fr;}
-  .pkg-grid,.how-steps{grid-template-columns:1fr;}
-  .stats-grid{grid-template-columns:repeat(3,1fr);}
-  .baseline-grid{grid-template-columns:repeat(2,1fr);}
-  .footer-inner{grid-template-columns:1fr;}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity 0.6s ease,transform 0.6s ease;}
+.reveal.in{opacity:1;transform:none;}
+
+@media(max-width:960px){
+  .about-grid,.booking-wrap,.av-grid,.weekly-inner{grid-template-columns:1fr;}
+  .how-steps{grid-template-columns:1fr;gap:1.5rem;}
   .how-steps::before{display:none;}
+  .footer-grid{grid-template-columns:1fr;}
+  .svc-grid{grid-template-columns:repeat(2,1fr);}
+  .pain-grid{grid-template-columns:repeat(2,1fr);}
+  .who-grid,.cases-grid,.price-grid,.extras-grid,.testi-grid{grid-template-columns:1fr;}
+  .weekly-img{min-height:180px;}
 }
 @media(max-width:640px){
   .nav-links{display:none;}
+  .trust-label{display:none;}
   .form-row{grid-template-columns:1fr;}
-  .stats-grid{grid-template-columns:1fr;}
+  .svc-grid{grid-template-columns:1fr;}
+  .pain-grid{grid-template-columns:1fr;}
+  .s-navy,.s-navy2,.s-white,.s-paper,.s-cream,.s-gold{padding:3.5rem 1.25rem;}
+  nav{padding:0 1.25rem;}
+  .hero{padding:3rem 1.5rem;}
+  .quickbar-inner{flex-direction:column;align-items:stretch;}
 }
 </style>
 </head>
 <body>
 
-<div class="modal-bg" id="modal">
-  <div class="modal">
-    <div class="modal-icon">✅</div>
-    <h3>Message Sent</h3>
-    <p>Thanks for getting in touch. The WBA team will be back to you shortly to arrange a visit to your business.</p>
-    <button class="btn-gold" onclick="document.getElementById('modal').classList.remove('show')">Close</button>
-  </div>
-</div>
+<div class="modal-bg" id="modal"><div class="modal"><div class="modal-ico">✅</div><h3>Message Sent!</h3><p>The WBA team will be back to you shortly to arrange your free visit.</p><button class="btn-primary" onclick="document.getElementById('modal').classList.remove('show')">Close</button></div></div>
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('show')"><img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1780318572/20260525_113222_r4wxwu.jpg" alt="WBA"/></div>
 
+<!-- NAV -->
 <nav>
-  <img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776177977/Logo_4_zfjgwh.png" alt="WBA" style="height:38px;width:auto;"/>
+  <img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776177977/Logo_4_zfjgwh.png" alt="Weston Business Authority" style="height:34px;width:auto;"/>
   <div class="nav-links">
-    <a href="#solution">About</a>
-    <a href="#cases">Results</a>
+    <a href="#about">About</a>
     <a href="#services">Services</a>
-    <a href="#packages">Packages</a>
-    <a href="#booking">Contact</a>
+    <a href="#results">Results</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#contact">Contact</a>
   </div>
-  <a href="https://wa.me/447902376369" class="btn-wa-sm" target="_blank">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-    WhatsApp Us
-  </a>
+  <a href="https://wa.me/447902376369" class="nav-wa" target="_blank">WhatsApp</a>
 </nav>
 
-<section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-overlay"></div>
-  <div class="hero-content">
-    <div class="hero-tag">📍 Weston-Super-Mare, Somerset</div>
-    <h1>We Are<span class="line2">Local,</span><span class="line3">Hands On.</span></h1>
-    <p class="hero-sub">Your local marketing team — we show up, create the content, run the socials, manage the ads, and handle everything busy business owners don't have time for.</p>
-    <div class="hero-btns">
-      <a href="#booking" class="btn-gold">📅 Book a Free Visit</a>
-      <a href="https://wa.me/447902376369" class="btn-wa" target="_blank">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        Message on WhatsApp
-      </a>
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-inner">
+    <div class="trust-label"><span class="trust-stars">★★★★★</span><span>5-Star Rated</span></div>
+    <div class="trust-track-wrap">
+      <div class="trust-track">
+        <span class="trust-quote">"Already seeing real leads come in — highly recommend." <b>— Sarah</b></span>
+        <span class="trust-quote">"Very proactive and responsive. 10/10." <b>— Tim</b></span>
+        <span class="trust-quote">"Far exceeds anything we could've done ourselves or with AI." <b>— Mark</b></span>
+        <span class="trust-quote">"Business is now flourishing. 100% recommended." <b>— Kelly</b></span>
+        <span class="trust-quote">"The templates are fantastic. 100% recommend." <b>— Kym</b></span>
+        <span class="trust-quote">"Already seeing real leads come in — highly recommend." <b>— Sarah</b></span>
+        <span class="trust-quote">"Very proactive and responsive. 10/10." <b>— Tim</b></span>
+        <span class="trust-quote">"Far exceeds anything we could've done ourselves or with AI." <b>— Mark</b></span>
+        <span class="trust-quote">"Business is now flourishing. 100% recommended." <b>— Kelly</b></span>
+        <span class="trust-quote">"The templates are fantastic. 100% recommend." <b>— Kym</b></span>
+      </div>
     </div>
-  </div>
-  <div class="hero-scroll"><span>Scroll</span><div class="scroll-line"></div></div>
-</section>
-
-<div class="clients-bar">
-  <p class="clients-label">Businesses we've worked with in Weston</p>
-  <div class="clients-row">
-    <span class="client-chip lit">The Storage Station</span>
-    <span class="client-chip lit">Blue Spot Cleaning</span>
-    <span class="client-chip lit">Harmony Apartments</span>
-    <span class="client-chip lit">Kym's Cakes &amp; Bakes</span>
   </div>
 </div>
 
-<section class="pain">
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grad"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <div class="hero-pill">📍 Our Town · Weston-Super-Mare · Since 2023</div>
+    <h1>Our Town.<br><span class="gold">Our Businesses.</span><br><span class="lblue">Our Marketing.</span></h1>
+    <p class="hero-sub">Social media, photography, ads, SEO, print &amp; tech — all handled by one local team. Affordable, consistent, sorted.</p>
+    <div class="hero-btns">
+      <a href="#contact" class="btn-primary">Get a Free Visit</a>
+      <a href="#pricing" class="btn-ghost">See Pricing →</a>
+    </div>
+    <div class="hero-stats">
+      <div><div class="hstat-num">11,700%</div><div class="hstat-lbl">Reach increase, 28 days</div></div>
+      <div><div class="hstat-num">£0</div><div class="hstat-lbl">Setup fees, always</div></div>
+      <div><div class="hstat-num">100%</div><div class="hstat-lbl">You own everything</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- QUICK CONTACT -->
+<div class="quickbar">
+  <div class="quickbar-inner">
+    <div class="quickbar-text">Ready to grow?<span>Drop your number — we'll be in touch today.</span></div>
+    <div class="quickform">
+      <input type="text" id="qname" placeholder="Your name"/>
+      <input type="tel" id="qphone" placeholder="Phone or email"/>
+      <button onclick="quickSubmit()">Send →</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLIENTS -->
+<div class="clients">
+  <p class="clients-lbl">Weston businesses we've assisted</p>
+  <div class="clients-row" id="clientsRow">
+    <div class="c-chip"><span class="c-name">The Storage Station</span><span class="c-type">Self-Storage</span></div>
+    <div class="c-chip"><span class="c-name">Blue Spot Cleaning</span><span class="c-type">Cleaning</span></div>
+    <div class="c-chip"><span class="c-name">Harmony Apartments</span><span class="c-type">Holiday Lets</span></div>
+    <div class="c-chip"><span class="c-name">Kym's Cakes & Bakes</span><span class="c-type">Bakery</span></div>
+    <div class="c-chip"><span class="c-name">Pivaz Cafe</span><span class="c-type">Café</span></div>
+    <div class="c-chip c-hidden"><span class="c-name">King Kebab</span><span class="c-type">Takeaway</span></div>
+    <div class="c-chip c-hidden"><span class="c-name">Fresh Bites</span><span class="c-type">Food</span></div>
+    <div class="c-chip c-hidden"><span class="c-name">The York Hotel</span><span class="c-type">Hospitality</span></div>
+    <div class="c-chip c-hidden"><span class="c-name">Brickstone Drives & Patios</span><span class="c-type">Trades</span></div>
+    <div class="c-chip c-hidden"><span class="c-name">Sinclairs Cars</span><span class="c-type">Automotive</span></div>
+    <div class="c-chip c-hidden"><span class="c-name">Ryan's Removals</span><span class="c-type">Removals</span></div>
+    <div class="c-chip c-more" id="moreChip" onclick="toggleClients()"><span class="c-name">+ 6 More</span></div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section class="s-navy on-dark reveal" id="about">
+  <div class="inner">
+    <div class="about-grid">
+      <div>
+        <p class="eyebrow">Who we are</p>
+        <h2 class="h2">Weston's Own<br><em>Marketing Team.</em></h2>
+        <p class="body-copy">One local team. We handle your photos, socials, ads, SEO, print and tech — digital and physical — so you don't have to juggle five different people.</p>
+        <a href="#contact" class="btn-primary">Book a Free Visit</a>
+      </div>
+      <div class="about-right">
+        <div class="astat"><div class="astat-num">11,700%</div><div class="astat-lbl">Reach increase (1 client)</div></div>
+        <div class="astat"><div class="astat-num">£19.32</div><div class="astat-lbl">Ad spend to get there</div></div>
+        <div class="astat"><div class="astat-num">£0</div><div class="astat-lbl">Setup fees ever</div></div>
+        <div class="astat"><div class="astat-num">100%</div><div class="astat-lbl">You own everything</div></div>
+        <div class="since-tag">Proudly serving Weston since <strong>2023</strong></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHO -->
+<section class="s-white on-light reveal">
+  <div class="inner">
+    <p class="eyebrow">Is this you?</p>
+    <h2 class="h2">Built for Weston<br><em>Business Owners.</em></h2>
+    <div class="who-grid">
+      <div class="who-card"><div class="who-ico">🍕</div><h3>Cafés & Takeaways</h3><p>Menus, specials, social posts, delivery platforms</p></div>
+      <div class="who-card"><div class="who-ico">🔧</div><h3>Tradespeople</h3><p>Checkatrade, reviews, before/after content, leads</p></div>
+      <div class="who-card"><div class="who-ico">🏠</div><h3>Holiday Lets</h3><p>Booking platforms, photography, direct bookings</p></div>
+      <div class="who-card"><div class="who-ico">✂️</div><h3>Salons & Beauty</h3><p>Instagram content, booking links, loyalty posts</p></div>
+      <div class="who-card"><div class="who-ico">🛍️</div><h3>Retail & Shops</h3><p>Product photos, promotions, local visibility</p></div>
+      <div class="who-card"><div class="who-ico">🏢</div><h3>Service Businesses</h3><p>Google, ads, website updates, steady leads</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES (squared grid) -->
+<section class="s-navy2 on-dark reveal" id="services">
+  <div class="inner">
+    <p class="eyebrow">What we do</p>
+    <h2 class="h2">Everything You Need<br><em>to Get Found.</em></h2>
+    <div class="svc-grid">
+      <div class="svc-card"><div class="svc-ico">📱</div><h3>Social Media</h3><p>On-brand posts across Facebook, Instagram & TikTok — planned, written and scheduled for you.</p></div>
+      <div class="svc-card"><div class="svc-ico">📸</div><h3>Photo & Video</h3><p>We visit and capture real content — your products, team and premises, plus short-form video.</p></div>
+      <div class="svc-card"><div class="svc-ico">📣</div><h3>Paid Ads</h3><p>Local Facebook & Instagram campaigns targeting your area. Clear spend, clear results.</p></div>
+      <div class="svc-card"><div class="svc-ico">🎨</div><h3>Design</h3><p>Posts, posters, menus, flyers and business cards — all on-brand and ready to use.</p></div>
+      <div class="svc-card"><div class="svc-ico">🌍</div><h3>Local SEO</h3><p>Google Business, reviews and local search — so customers find you before competitors.</p></div>
+      <div class="svc-card"><div class="svc-ico">🌐</div><h3>Website</h3><p>Updates, refreshes and improvements that keep your site current and converting.</p></div>
+      <div class="svc-card"><div class="svc-ico">🖨️</div><h3>Print</h3><p>Cards, menus, leaflets, banners — designed properly with 10% off delivery for clients.</p></div>
+      <div class="svc-card"><div class="svc-ico">🛠️</div><h3>Tech Support</h3><p>Website fixes, device setup, email and software help — ad hoc, no job too small.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- WEEKLY -->
+<div class="weekly">
+  <div class="weekly-inner">
+    <div class="weekly-img" onclick="document.getElementById('lightbox').classList.add('show')">
+      <img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1780318572/20260525_113222_r4wxwu.jpg" alt="WBA This Week"/>
+      <span class="weekly-badge">This Week</span>
+      <span class="weekly-expand">⤢ Tap to enlarge</span>
+    </div>
+    <div class="weekly-body">
+      <p class="weekly-eyebrow">From the WBA team</p>
+      <h2 class="weekly-title">The sun's coming back — is your business ready for summer footfall?</h2>
+      <p class="weekly-text">Weston had a taste of the heat and the seafront was packed. Holiday makers and day trippers are coming back — and they'll be on their phones looking for places to eat, stay and spend. Make sure your business is the one they find.</p>
+      <a href="https://wa.me/447902376369" class="weekly-cta" target="_blank">Get Summer-Ready →</a>
+    </div>
+  </div>
+</div>
+
+<!-- PAIN -->
+<section class="s-navy2 on-dark reveal" style="padding-top:4rem;">
   <div class="inner">
     <p class="eyebrow">Sound familiar?</p>
-    <h2 class="big-title">You're Running a Business.<br><em>Not a Marketing Agency.</em></h2>
-    <p class="body-muted">Most local business owners know their marketing isn't where it should be. The problem isn't knowledge — it's time, consistency, and having the right people around you.</p>
+    <h2 class="h2">The Headaches<br><em>We Take Away.</em></h2>
     <div class="pain-grid">
-      <div class="pain-item"><div class="pain-x">✕</div><p>Social media that hasn't been posted on in weeks</p></div>
-      <div class="pain-item"><div class="pain-x">✕</div><p>Photos that don't do your business justice</p></div>
-      <div class="pain-item"><div class="pain-x">✕</div><p>Branding that looks different everywhere</p></div>
-      <div class="pain-item"><div class="pain-x">✕</div><p>A website that's out of date and doing nothing</p></div>
-      <div class="pain-item"><div class="pain-x">✕</div><p>Platforms you haven't set up — missing enquiries daily</p></div>
-      <div class="pain-item"><div class="pain-x">✕</div><p>Agencies that kept your accounts when you left</p></div>
-      <div class="pain-item"><div class="pain-x">✕</div><p>No idea what your marketing is actually doing</p></div>
-      <div class="pain-item"><div class="pain-x">✕</div><p>Spending money that doesn't reach local people</p></div>
+      <div class="pain-item"><div class="pain-x">✕</div><p>Socials not posted on in weeks</p></div>
+      <div class="pain-item"><div class="pain-x">✕</div><p>Photos that don't reflect how good you are</p></div>
+      <div class="pain-item"><div class="pain-x">✕</div><p>Branding inconsistent everywhere</p></div>
+      <div class="pain-item"><div class="pain-x">✕</div><p>A website that's out of date</p></div>
+      <div class="pain-item"><div class="pain-x">✕</div><p>Missing enquiries on platforms you haven't set up</p></div>
+      <div class="pain-item"><div class="pain-x">✕</div><p>Five freelancers, nothing joined up</p></div>
+      <div class="pain-item"><div class="pain-x">✕</div><p>Agencies that kept your accounts</p></div>
+      <div class="pain-item"><div class="pain-x">✕</div><p>No idea if your spend is working</p></div>
+      <div class="pain-item"><div class="pain-x">✕</div><p>Getting quality images at peak times</p></div>
+      <div class="pain-item"><div class="pain-x">✕</div><p>Keeping momentum all year round</p></div>
     </div>
   </div>
 </section>
 
-<section class="solution" id="solution">
+<!-- CASES -->
+<section class="s-cream on-light reveal" id="results">
   <div class="inner">
-    <p class="eyebrow">The WBA difference</p>
-    <h2 class="big-title">A Real Local Team.<br><em>Not Another Distant Agency.</em></h2>
-    <p class="body-muted">We're based in Weston-Super-Mare. We visit your business, take the photos, build the content, run the socials, and manage the ads — all in plain English, with no fluff and no nonsense.</p>
-    <div class="sol-grid">
-      <div class="sol-card"><div class="sol-card-num">01</div><h3>📍 We Come to You</h3><p>We visit your premises and create content in person — real photos, real videos, real business. No stock imagery, no guesswork.</p></div>
-      <div class="sol-card"><div class="sol-card-num">02</div><h3>📱 Active Socials</h3><p>Consistent, on-brand posts across every channel — kept fresh and relevant so customers know you're open, active, and worth visiting.</p></div>
-      <div class="sol-card"><div class="sol-card-num">03</div><h3>🎯 Paid Ads That Work</h3><p>Local campaigns that reach the right people in the right area — tracked clearly, with no mystery and no wasted budget.</p></div>
-      <div class="sol-card"><div class="sol-card-num">04</div><h3>💬 Team on Hand</h3><p>Message us on WhatsApp and we'll sort it. No bots, no tickets, no waiting on hold. Just the team getting it done.</p></div>
-      <div class="sol-card"><div class="sol-card-num">05</div><h3>🌐 Full Digital Presence</h3><p>Website updates, Google Business, platform setup — your whole online presence working together, not in isolation.</p></div>
-      <div class="sol-card"><div class="sol-card-num">06</div><h3>🔐 You Own Everything</h3><p>Every page, account, and asset belongs to you — always. No hostage-taking. If you ever leave, you keep it all.</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="content-day">
-  <div class="cd-inner">
-    <div class="cd-left">
-      <p class="eyebrow">Standalone offer</p>
-      <h2 class="big-title">The Content<br><em>Day.</em></h2>
-      <p>One focused session at your business. We plan it, shoot it, and edit it. Walk away with a full bank of professional photos and videos — ready for social, ads, your website, and Google.</p>
-      <a href="https://wa.me/447902376369" class="btn-gold" target="_blank">Ask Us About This</a>
-    </div>
-    <div class="cd-right">
-      <div class="cd-item"><div class="cd-item-icon">📸</div><h4>20+ Photos</h4><p>Professionally edited, ready to use across all platforms.</p></div>
-      <div class="cd-item"><div class="cd-item-icon">🎬</div><h4>3–5 Videos</h4><p>Short-form content edited for social and ads.</p></div>
-      <div class="cd-item"><div class="cd-item-icon">📋</div><h4>Pre-Shoot Plan</h4><p>We map out the session in advance to make every minute count.</p></div>
-      <div class="cd-item"><div class="cd-item-icon">🚀</div><h4>Campaign Ready</h4><p>Content mapped to your goals — social, ads, Google, web.</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="cases" id="cases">
-  <div class="inner">
-    <p class="eyebrow">Proof, not promises</p>
-    <h2 class="big-title">Real Results for<br><em>Real Weston Businesses.</em></h2>
-    <p class="body-muted">Individual client outcomes — not averages, not estimates. This is what actually happened.</p>
+    <p class="eyebrow">Client results</p>
+    <h2 class="h2">Real Weston Businesses.<br><em>Real Numbers.</em></h2>
     <div class="cases-grid">
       <div class="case-card">
-        <div class="case-img"><img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776172703/image_2026-04-14_141821646_kb0ric.png" alt="The Storage Station"/><div class="case-img-overlay"></div><span class="case-result">11,700% Reach Increase</span></div>
-        <div class="case-body"><div class="case-type">Storage &amp; Self-Storage</div><h3>The Storage Station</h3><p>A 28-day paid campaign delivered an 11,700% increase in reach and tripled enquiries — on a total ad spend of just £19.32.</p><div class="case-tags"><span class="case-tag">Paid Ads</span><span class="case-tag">Social Media</span><span class="case-tag">£19.32 Spend</span></div></div>
+        <div class="case-img"><img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776172703/image_2026-04-14_141821646_kb0ric.png" alt="The Storage Station Weston"/><div class="case-overlay"></div><span class="case-badge">11,700% Reach</span></div>
+        <div class="case-body"><div class="case-type">Self-Storage</div><h3>The Storage Station</h3><p>28-day campaign: 11,700% reach increase, enquiries tripled, total spend £19.32.</p><div class="case-tags"><span class="case-tag">Paid Ads</span><span class="case-tag">Social Media</span><span class="case-tag">£19.32 Spend</span></div></div>
       </div>
       <div class="case-card">
-        <div class="case-img"><img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776172805/515214509_1194857179328763_2488873071372256431_n_skjlka.png" alt="Blue Spot Cleaning"/><div class="case-img-overlay"></div><span class="case-result">Brand Built from Scratch</span></div>
-        <div class="case-body"><div class="case-type">Cleaning Services</div><h3>Blue Spot Cleaning</h3><p>Full brand setup from zero — social presence, photography, Google profile and consistent content to establish a trusted local cleaning business.</p><div class="case-tags"><span class="case-tag">Branding</span><span class="case-tag">Photography</span><span class="case-tag">Social Media</span></div></div>
+        <div class="case-img"><img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776172805/515214509_1194857179328763_2488873071372256431_n_skjlka.png" alt="Blue Spot Cleaning Weston"/><div class="case-overlay"></div><span class="case-badge">Brand Awareness</span></div>
+        <div class="case-body"><div class="case-type">Cleaning Services</div><h3>Blue Spot Cleaning</h3><p>Built consistent brand awareness through ongoing social media management and fresh content.</p><div class="case-tags"><span class="case-tag">Social Media</span><span class="case-tag">Brand Awareness</span><span class="case-tag">Content</span></div></div>
       </div>
       <div class="case-card">
-        <div class="case-img"><img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776172988/20251117_100846_rrqltu.jpg" alt="Harmony Apartments"/><div class="case-img-overlay"></div><span class="case-result">10,000 Organic Views</span></div>
-        <div class="case-body"><div class="case-type">Holiday &amp; Serviced Apartments</div><h3>Harmony Apartments</h3><p>Full brand identity refresh — photography, socials, website, SEO, and 3 new revenue streams opened. 10,000 organic views in 28 days. £0 ad spend.</p><div class="case-tags"><span class="case-tag">Brand Refresh</span><span class="case-tag">SEO</span><span class="case-tag">£0 Ad Spend</span></div></div>
+        <div class="case-img"><img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776172988/20251117_100846_rrqltu.jpg" alt="Harmony Apartments Weston"/><div class="case-overlay"></div><span class="case-badge">Full Refresh</span></div>
+        <div class="case-body"><div class="case-type">Holiday Apartments</div><h3>Harmony Apartments</h3><p>Complete brand refresh with design, print and ongoing support to modernise the whole presence.</p><div class="case-tags"><span class="case-tag">Brand Refresh</span><span class="case-tag">Design & Print</span><span class="case-tag">Ongoing Support</span></div></div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="stats">
-  <div class="stats-inner">
-    <p class="eyebrow">Harmony Apartments — 28 days, £0 budget</p>
-    <h2 class="big-title">One Client.<br>One Month.<br>Zero Ad Spend.</h2>
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-num">10,000</div><div class="stat-lbl">Organic views</div></div>
-      <div class="stat-card"><div class="stat-num">3</div><div class="stat-lbl">New revenue streams</div></div>
-      <div class="stat-card"><div class="stat-num">£0</div><div class="stat-lbl">Dedicated ad spend</div></div>
-    </div>
-    <hr class="stats-divider"/>
-    <p class="eyebrow" style="color:rgba(6,14,26,0.4);">Our baseline commitment — every client</p>
-    <div class="baseline-grid">
-      <div class="base-item"><div class="base-num">£0</div><div class="base-lbl">Setup fees</div></div>
-      <div class="base-item"><div class="base-num">No</div><div class="base-lbl">Minimum contract</div><div class="base-sub">3 months recommended</div></div>
-      <div class="base-item"><div class="base-num">100%</div><div class="base-lbl">You own your assets</div></div>
-      <div class="base-item"><div class="base-num">Local</div><div class="base-lbl">Weston-based team</div></div>
-    </div>
-  </div>
-</section>
-
-<section class="how">
-  <div class="inner" style="text-align:center;">
-    <p class="eyebrow" style="justify-content:center;">No complicated onboarding</p>
-    <h2 class="big-title">How It <em>Works</em></h2>
-    <div class="how-steps">
-      <div class="how-step"><div class="how-num">1</div><h3>We Visit You</h3><p>We come to your business, get to know what you do, and start capturing real content from day one.</p></div>
-      <div class="how-step"><div class="how-num">2</div><h3>We Handle It</h3><p>Socials, content, ads, website, platforms — all taken off your plate and done properly.</p></div>
-      <div class="how-step"><div class="how-num">3</div><h3>You Grow</h3><p>More visibility, more enquiries, more trust — and more time to focus on what you're actually good at.</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="services" id="services">
+<!-- TESTIMONIALS -->
+<section class="s-white on-light reveal">
   <div class="inner">
-    <p class="eyebrow">Full service breakdown</p>
-    <h2 class="big-title">Everything Under <em>One Roof</em></h2>
-    <p class="body-muted">You don't need a different agency for each thing. WBA handles the full picture — from the first photo to the enquiry in your inbox.</p>
-    <div class="svc-grid">
-      <div class="svc"><span class="svc-icon">📱</span><h3>Social Media Management</h3><p>Regular, on-brand posts across Facebook, Instagram, TikTok and more — planned, written, designed, and scheduled.</p></div>
-      <div class="svc"><span class="svc-icon">📸</span><h3>Photography &amp; Video</h3><p>We visit your premises and capture real content in person — product shots, team content, behind-the-scenes.</p></div>
-      <div class="svc"><span class="svc-icon">📣</span><h3>Paid Advertising</h3><p>Facebook and Instagram ads targeting your local area — clear creative, clear spend, clear results.</p></div>
-      <div class="svc"><span class="svc-icon">🎨</span><h3>Graphic Design</h3><p>Social graphics, posters, menus, flyers, leaflets, business cards — designed to reflect your brand.</p></div>
-      <div class="svc"><span class="svc-icon">🌍</span><h3>Google &amp; Local Visibility</h3><p>Google Business profile, local search, review support, and map visibility — so people find you first.</p></div>
-      <div class="svc"><span class="svc-icon">⭐</span><h3>Reviews &amp; Trust</h3><p>Helping you collect reviews properly and build the visible trust that turns interest into enquiries.</p></div>
-      <div class="svc"><span class="svc-icon">🌐</span><h3>Website Updates</h3><p>Content updates, image refreshes, clearer calls to action — keeping your site working as hard as you do.</p></div>
-      <div class="svc"><span class="svc-icon">🛠️</span><h3>Platform Setup</h3><p>Booking systems, social accounts, listings — set up properly, always in your name, always yours.</p></div>
+    <p class="eyebrow">In their words</p>
+    <h2 class="h2">Don't Take<br><em>Our Word for It.</em></h2>
+    <div class="testi-grid">
+      <div class="testi-card"><div class="quote">"</div><div class="stars">★★★★★</div><p class="testi-text">Setup was super quick — just a few minutes and I was already seeing real leads come in. A proper local marketing team, great at Facebook ads and social media management for small businesses. Highly recommend if you want results.</p><span class="testi-author">Sarah</span></div>
+      <div class="testi-card"><div class="quote">"</div><div class="stars">★★★★★</div><p class="testi-text">Ben turned an old, outdated web page and socials into something up to date and stylish. His attention to detail is outstanding. We didn't realise we could have such quality at a fraction of the price. Business is now flourishing. 100% recommended.</p><span class="testi-author">Kelly</span></div>
+      <div class="testi-card"><div class="quote">"</div><div class="stars">★★★★★</div><p class="testi-text">I spoke with Ben about new templates and within a few hours a link was sent to me. Really helpful and efficient — he stuck with our branding but made everything more eye-catching than I ever could. 100% recommend.</p><span class="testi-author">Kym — Kym's Cakes & Bakes</span></div>
+      <div class="testi-card"><div class="quote">"</div><div class="stars">★★★★★</div><p class="testi-text">Ben made us a full set of custom social media templates and they're outstanding. He took time to understand our branding and built something truly professional. His help far exceeds anything we'd manage ourselves or with AI. Highly recommend.</p><span class="testi-author">Mark</span></div>
     </div>
   </div>
 </section>
 
-<section class="avenues">
+<!-- PRICING -->
+<section class="s-paper on-light reveal" id="pricing">
   <div class="inner">
-    <p class="eyebrow">Stack your enquiries</p>
-    <h2 class="big-title">More Channels.<br><em>More Customers.</em></h2>
-    <div class="av-wrap">
-      <div>
-        <p style="font-size:0.9rem;color:rgba(255,255,255,0.5);line-height:1.8;margin-bottom:1.5rem;">Most businesses are only visible in one or two places. We open up every channel that makes sense for your type of business — so enquiries come from multiple directions at once.</p>
-        <div class="av-platforms">
-          <span class="av-pill">Facebook</span><span class="av-pill">Instagram</span><span class="av-pill">TikTok</span><span class="av-pill">Google Business</span><span class="av-pill">Booking.com</span><span class="av-pill">Checkatrade</span><span class="av-pill">Direct Website</span><span class="av-pill">Email Marketing</span><span class="av-pill">LinkedIn</span><span class="av-pill">Leaflets &amp; Print</span><span class="av-pill">+ More</span>
-        </div>
-      </div>
-      <div class="av-note">
-        <strong>Your pages. Your accounts. Your business.</strong>
-        Every platform we set up is registered to you and controlled by you. If you ever move on, you keep everything — no hostage-taking, no "we own your Instagram" nonsense. That's how it should be.
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="packages" id="packages">
-  <div class="inner">
-    <p class="eyebrow">Simple, flexible pricing</p>
-    <h2 class="big-title">Pick the Level of<br><em>Support You Need</em></h2>
-    <p class="body-muted">No lock-in, no hidden fees, no small print. Straightforward support that fits your business. Not sure? Message us and we'll tell you honestly which one makes sense.</p>
-    <div class="pkg-grid">
-      <div class="pkg">
-        <p class="pkg-tier">Entry</p>
-        <p class="pkg-name">Visibility &amp; Consistency</p>
-        <p class="pkg-desc">For businesses that need to show up consistently online without having to think about it.</p>
-        <ul class="pkg-features">
-          <li>Social media posting (Facebook &amp; Instagram)</li>
-          <li>Basic branded graphics</li>
-          <li>Post planning &amp; scheduling</li>
+    <p class="eyebrow">Simple, honest pricing</p>
+    <h2 class="h2">What Should You<br><em>Expect to Pay?</em></h2>
+    <div class="price-grid">
+      <div class="price-card">
+        <p class="price-tier">Visibility</p>
+        <p class="price-name">Social Media Management</p>
+        <div class="price-amount"><span class="price-from">From</span><span class="price-num">£250</span><span class="price-mo">/mo</span></div>
+        <div class="price-intro">£180/mo for first 3 months</div>
+        <ul class="price-features">
+          <li>Social media management (FB & Instagram)</li>
+          <li>On-brand graphics & post design</li>
+          <li>Content planning & scheduling</li>
           <li>Google Business updates</li>
         </ul>
-        <button class="btn-wa-full" onclick="window.open('https://wa.me/447902376369','_blank')">Get Started →</button>
+        <button class="price-btn" onclick="document.getElementById('contact').scrollIntoView()">Enquire →</button>
       </div>
-      <div class="pkg featured">
-        <div class="pkg-badge">Most Popular</div>
-        <p class="pkg-tier">Growth</p>
-        <p class="pkg-name">Content &amp; Promotion</p>
-        <p class="pkg-desc">For businesses that want real content, active campaigns, and more enquiries coming in consistently.</p>
-        <ul class="pkg-features">
+      <div class="price-card feat">
+        <div class="price-badge">Most Popular</div>
+        <p class="price-tier">Growth</p>
+        <p class="price-name">Management + SEO & Ads</p>
+        <div class="price-amount"><span class="price-from" style="color:rgba(255,255,255,0.5);">From</span><span class="price-num">£500</span><span class="price-mo" style="color:rgba(255,255,255,0.5);">/mo</span></div>
+        <div class="price-intro">£380/mo for first 3 months</div>
+        <ul class="price-features">
           <li>Everything in Visibility</li>
-          <li>In-person content creation visits</li>
-          <li>Photography &amp; short-form video</li>
+          <li>SEO & local optimisation</li>
           <li>Paid ad management</li>
-          <li>Stronger social output</li>
-          <li>Review support</li>
+          <li>New revenue streams opened</li>
+          <li>In-person content & photography</li>
+          <li>Ongoing rate £450/mo after 3 months</li>
         </ul>
-        <button class="btn-wa-full" onclick="window.open('https://wa.me/447902376369','_blank')">Get Started →</button>
+        <button class="price-btn" onclick="document.getElementById('contact').scrollIntoView()">Enquire →</button>
       </div>
-      <div class="pkg">
-        <p class="pkg-tier">Full Support</p>
-        <p class="pkg-name">Outsourced Marketing</p>
-        <p class="pkg-desc">For businesses that want their marketing fully managed — all channels, all content, all handled.</p>
-        <ul class="pkg-features">
+      <div class="price-card">
+        <p class="price-tier">Takeover</p>
+        <p class="price-name">Your Full Marketing Team</p>
+        <div class="price-amount"><span class="price-from">From</span><span class="price-num">£750</span><span class="price-mo">/mo</span></div>
+        <div class="price-intro">£550/mo for first 3 months</div>
+        <ul class="price-features">
           <li>Everything in Growth</li>
-          <li>Regular content days</li>
-          <li>Multi-platform ad campaigns</li>
-          <li>Website &amp; digital updates</li>
-          <li>Design work (print &amp; digital)</li>
-          <li>Platform setup &amp; management</li>
-          <li>Strategic direction &amp; reporting</li>
+          <li>Full content days</li>
+          <li>Website & print design included</li>
+          <li>Platform setup & management</li>
+          <li>Priority tech support</li>
+          <li>Ongoing rate £650/mo after 3 months</li>
         </ul>
-        <button class="btn-wa-full" onclick="window.open('https://wa.me/447902376369','_blank')">Get Started →</button>
+        <button class="price-btn" onclick="document.getElementById('contact').scrollIntoView()">Enquire →</button>
       </div>
     </div>
-    <p class="pkg-note">All packages are month-to-month. We recommend at least 3 months to see meaningful results — but we'll never lock you in.</p>
+    <p class="price-note">Every business is different, so we don't lock prices in stone — but we <strong>strive to be the most affordable and adaptable solution in Weston</strong>. Message us for a quote tailored to you. No setup fees, no lock-in.</p>
   </div>
 </section>
 
-<section class="areas">
+<!-- EXTRAS (print / tech / content day — power of 3) -->
+<section class="s-navy on-dark reveal">
   <div class="inner">
-    <p class="eyebrow">Where we work</p>
-    <h2 class="big-title">Proudly Based in<br><em>Weston &amp; Surrounding Areas</em></h2>
-    <div class="areas-flex">
-      <span class="area-pill primary">Weston-Super-Mare</span>
-      <span class="area-pill">Worle</span>
-      <span class="area-pill">Uphill</span>
-      <span class="area-pill">Milton</span>
-      <span class="area-pill">Bleadon</span>
-      <span class="area-pill">Hewish</span>
-      <span class="area-pill">Winscombe</span>
-      <span class="area-pill">Clevedon</span>
-      <span class="area-pill">Nailsea</span>
+    <p class="eyebrow">Need something one-off?</p>
+    <h2 class="h2">Pay-As-You-Go<br><em>Extras.</em></h2>
+    <div class="extras-grid">
+      <div class="extra-card">
+        <div class="extra-ico">🖨️</div>
+        <h3>Print & Design</h3>
+        <p>Business cards, menus, leaflets, posters and banners — designed to your brand, ready for print.</p>
+        <div class="extra-price">Design from <span>£15</span> · 10% off delivery</div>
+      </div>
+      <div class="extra-card">
+        <div class="extra-ico">🛠️</div>
+        <h3>Tech Support</h3>
+        <p>On-demand marketing & tech help — website fixes, device setup, email and software issues.</p>
+        <div class="extra-price">From <span>£15/hr</span> · No job too small</div>
+      </div>
+      <div class="extra-card">
+        <div class="extra-ico">📸</div>
+        <h3>Content Day</h3>
+        <p>One focused on-site shoot — 20+ edited photos and 3–5 short videos, ready across all platforms.</p>
+        <div class="extra-price">Per session · <span>Ask for a quote</span></div>
+      </div>
     </div>
-    <p class="areas-note">We know Weston. We work in Weston. We care about businesses here doing well.</p>
   </div>
 </section>
 
-<section class="booking" id="booking">
+<!-- HOW -->
+<section class="s-navy2 on-dark reveal">
+  <div class="inner" style="text-align:center;">
+    <p class="eyebrow" style="justify-content:center;">No complicated onboarding</p>
+    <h2 class="h2">Three Steps.<br><em>Everything Changes.</em></h2>
+    <div class="how-steps">
+      <div class="how-step"><div class="how-num">1</div><h3>We Visit You</h3><p>We come to your business, learn what you do, and capture real content from day one.</p></div>
+      <div class="how-step"><div class="how-num">2</div><h3>We Handle It</h3><p>Socials, content, ads, print, website — all off your plate, all done properly.</p></div>
+      <div class="how-step"><div class="how-num">3</div><h3>You Grow</h3><p>More visibility, more enquiries, more time. Done.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- AVENUES -->
+<section class="s-navy on-dark reveal">
   <div class="inner">
-    <p class="eyebrow">Let's talk</p>
-    <h2 class="big-title">Need More<br><em>Hours in a Day?</em></h2>
-    <div class="booking-wrap">
-      <div class="booking-left">
-        <p>Book a free, no-obligation visit to your business and let's talk honestly about what would actually help you grow. We'll come to you, have a look at what you've got, and tell you straight what we'd do.</p>
-        <div class="booking-promise">
-          <span class="promise-item">No obligation — if it's not a good fit, we'll say so</span>
-          <span class="promise-item">We come to your business, not the other way round</span>
-          <span class="promise-item">Plain English, no pitch decks, no nonsense</span>
-          <span class="promise-item">WhatsApp works best if you'd rather just message</span>
+    <p class="eyebrow">More places = more enquiries</p>
+    <h2 class="h2">Stack Your Channels.<br><em>Stack Your Revenue.</em></h2>
+    <div class="av-grid">
+      <div>
+        <p style="font-size:0.86rem;color:rgba(255,255,255,0.5);line-height:1.85;margin-bottom:1.5rem;">We open up every channel that fits your business — all set up in your name, all yours to keep.</p>
+        <div class="av-pills">
+          <span class="av-pill">Facebook</span><span class="av-pill">Instagram</span><span class="av-pill">TikTok</span><span class="av-pill">Google</span><span class="av-pill">Booking.com</span><span class="av-pill">Checkatrade</span><span class="av-pill">Website</span><span class="av-pill">Email</span><span class="av-pill">LinkedIn</span><span class="av-pill">Print</span><span class="av-pill">+ More</span>
         </div>
       </div>
-      <div class="booking-form">
+      <div class="av-note-box">
+        <strong>Your accounts. Always.</strong>
+        Every page and ad account we set up is yours. We manage it — but you own it. If you ever move on, you take everything.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AREAS -->
+<section class="s-navy2 on-dark reveal">
+  <div class="inner">
+    <p class="eyebrow">Where we work</p>
+    <h2 class="h2">Weston is<br><em>Our Home.</em></h2>
+    <div class="areas-pills">
+      <span class="area-pill pri">Weston-Super-Mare</span>
+      <span class="area-pill">Worle</span><span class="area-pill">Uphill</span><span class="area-pill">Milton</span>
+      <span class="area-pill">Bleadon</span><span class="area-pill">Hewish</span><span class="area-pill">Winscombe</span>
+      <span class="area-pill">Clevedon</span><span class="area-pill">Nailsea</span>
+    </div>
+    <p class="areas-note">We know our town. We work in our town. Serving Weston since 2023.</p>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="s-cream on-light reveal" id="contact">
+  <div class="inner">
+    <p class="eyebrow">Get started</p>
+    <h2 class="h2">Free Visit.<br><em>No Obligation.</em></h2>
+    <div class="booking-wrap">
+      <div class="booking-left">
+        <p>We visit, look at what you've got, and tell you honestly what we'd do. No hard sell, no pressure.</p>
+        <div class="booking-promises">
+          <span class="bpromise">We come to your business — not the other way round</span>
+          <span class="bpromise">Honest advice, even if we're not a fit</span>
+          <span class="bpromise">WhatsApp is fastest — 07902 376369</span>
+          <span class="bpromise">No setup fees, no minimum contract</span>
+        </div>
+      </div>
+      <div class="booking-form-box">
         <div class="form-row">
           <input type="text" id="fname" placeholder="Your name"/>
           <input type="text" id="fbiz" placeholder="Business name"/>
         </div>
-        <div class="form-row full">
-          <input type="email" id="femail" placeholder="Email address"/>
-        </div>
+        <div class="form-row full"><input type="email" id="femail" placeholder="Email address"/></div>
         <div class="form-row full">
           <select id="fmethod">
-            <option value="" disabled selected>How would you like us to get back to you?</option>
-            <option>WhatsApp</option>
-            <option>In-person visit to my business</option>
-            <option>Email</option>
+            <option value="" disabled selected>Best way to reach you?</option>
+            <option>WhatsApp</option><option>Visit my business</option><option>Email</option>
           </select>
         </div>
-        <div class="form-row full">
-          <textarea id="fmsg" placeholder="Tell us about your business and what you need help with..."></textarea>
-        </div>
-        <div class="form-submit">
-          <button class="btn-gold" onclick="submitForm()">📅 Book a Free Visit</button>
-        </div>
+        <div class="form-row full"><textarea id="fmsg" placeholder="Tell us about your business..."></textarea></div>
+        <div style="margin-top:1rem;"><button class="btn-primary" style="width:100%;justify-content:center;" onclick="submitForm()">Book a Free Visit</button></div>
         <div class="send-status" id="sendStatus"></div>
-        <p class="form-wa-note">Prefer to message directly? <a href="https://wa.me/447902376369" target="_blank">WhatsApp 07902 376369</a></p>
+        <p class="form-wa">Or message directly: <a href="https://wa.me/447902376369" target="_blank">WhatsApp 07902 376369</a></p>
       </div>
     </div>
   </div>
 </section>
 
 <footer>
-  <div class="footer-inner">
+  <div class="footer-grid">
     <div class="footer-brand">
-      <img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776177977/Logo_4_zfjgwh.png" alt="WBA" style="height:36px;width:auto;"/>
-      <p>Local marketing for local businesses. Hands-on, practical support for businesses in Weston-Super-Mare and surrounding areas.</p>
+      <img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776177977/Logo_4_zfjgwh.png" alt="WBA" style="height:32px;"/>
+      <p>Self-contained marketing for Weston-Super-Mare businesses. Social media, photography, ads, SEO, print and tech — all handled. Serving our town since 2023.</p>
     </div>
     <div class="footer-col">
       <h4>Navigate</h4>
-      <a href="#solution">About WBA</a>
-      <a href="#cases">Results</a>
-      <a href="#services">Services</a>
-      <a href="#packages">Packages</a>
-      <a href="#booking">Contact</a>
+      <a href="#about">About WBA</a><a href="#services">Services</a><a href="#results">Results</a><a href="#pricing">Pricing</a><a href="#contact">Contact</a>
     </div>
     <div class="footer-col">
       <h4>Get in Touch</h4>
       <a href="https://wa.me/447902376369" target="_blank">💬 WhatsApp: 07902 376369</a>
-      <a href="mailto:contact@westonbusinessauthority.co.uk">✉️ contact@westonbusiness authority.co.uk</a>
+      <a href="mailto:ben@westonbusinessauthority.co.uk">✉️ ben@westonbusinessauthority.co.uk</a>
       <a href="https://www.facebook.com/WestonMarketing/" target="_blank">🔵 Facebook</a>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 Weston Business Authority. All rights reserved.</span>
-    <span>Weston-Super-Mare, Somerset, UK</span>
+    <span>© 2025 Weston Business Authority. Weston-Super-Mare, Somerset.</span>
+    <span>07902 376369 · westonbusinessauthority.co.uk</span>
   </div>
 </footer>
 
 <script>
+const ro=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('in');});},{threshold:0.08});
+document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+
+function toggleClients(){
+  document.querySelectorAll('.c-hidden').forEach(c=>c.style.display='flex');
+  document.getElementById('moreChip').style.display='none';
+}
+
+async function postForm(payload){
+  return fetch('https://formspree.io/f/mvzdgzka',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(payload)});
+}
+
+async function quickSubmit(){
+  const n=document.getElementById('qname').value.trim();
+  const p=document.getElementById('qphone').value.trim();
+  if(!n||!p){alert('Please add your name and a contact.');return;}
+  try{const r=await postForm({name:n,contact:p,_subject:'Quick Enquiry — WBA Website'});
+    if(r.ok){document.getElementById('qname').value='';document.getElementById('qphone').value='';document.getElementById('modal').classList.add('show');}
+    else throw new Error();
+  }catch{window.open('https://wa.me/447902376369','_blank');}
+}
+
 async function submitForm(){
   const name=document.getElementById('fname').value.trim();
   const biz=document.getElementById('fbiz').value.trim();
-  const method=document.getElementById('fmethod').value;
   const email=document.getElementById('femail').value.trim();
+  const method=document.getElementById('fmethod').value;
   const msg=document.getElementById('fmsg').value.trim();
-  const status=document.getElementById('sendStatus');
-  if(!name||!biz||!email){status.className='send-status err';status.textContent='Please fill in your name, business name and email.';return;}
-  status.className='send-status';status.textContent='Sending...';
+  const s=document.getElementById('sendStatus');
+  if(!name||!biz||!email){s.className='send-status err';s.textContent='Please fill in your name, business and email.';return;}
+  s.className='send-status';s.textContent='Sending...';
   try{
-    const res=await fetch('https://formspree.io/f/mvzdgzka',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({name,business:biz,preferred_contact:method||'Not specified',email,message:msg||'No message',_subject:`New Visit Request — ${biz}`})});
-    if(res.ok){['fname','fbiz','femail','fmsg'].forEach(id=>document.getElementById(id).value='');document.getElementById('fmethod').selectedIndex=0;status.textContent='';document.getElementById('modal').classList.add('show');}
+    const r=await postForm({name,business:biz,contact:method||'Not specified',email,message:msg||'No message',_subject:`Visit Request — ${biz}`});
+    if(r.ok){['fname','fbiz','femail','fmsg'].forEach(id=>document.getElementById(id).value='');document.getElementById('fmethod').selectedIndex=0;s.textContent='';document.getElementById('modal').classList.add('show');}
     else throw new Error();
-  }catch{status.className='send-status err';status.textContent='Something went wrong. Please WhatsApp us on 07902 376369.';}
+  }catch{s.className='send-status err';s.textContent='Something went wrong — please WhatsApp us on 07902 376369.';}
 }
 </script>
 </body>
