@@ -88,6 +88,23 @@ async function submitForm(){
 function showModal(){ var m=document.getElementById('modal'); if(m) m.classList.add('show'); }
 function closeModal(){ var m=document.getElementById('modal'); if(m) m.classList.remove('show'); }
 
+/* Weston Guide — "suggest a spot/event" box */
+async function suggestSubmit(){
+  var msg = document.getElementById('sgmsg').value.trim();
+  var name = document.getElementById('sgname').value.trim();
+  var s = document.getElementById('sgStatus');
+  if(!msg){ s.className='send-status err'; s.textContent='Add a suggestion first.'; return; }
+  s.className='send-status'; s.textContent='Sending...';
+  try{
+    var r = await postForm({name:name||'Anonymous', suggestion:msg, _subject:'Weston Guide suggestion'});
+    if(r.ok){
+      document.getElementById('sgmsg').value='';
+      document.getElementById('sgname').value='';
+      s.className='send-status ok'; s.textContent='Thanks! Suggestion received.';
+    } else throw new Error();
+  }catch(e){ s.className='send-status err'; s.textContent='Something went wrong — WhatsApp us on 07902 376369.'; }
+}
+
 /* ---- Weekly news: 52 features, auto-rotates by calendar week (free, no backend) ---- */
 var WBA_FEATURES = [
   {tag:"New Year", title:"New year, new customers — start where they're looking.", text:"January is when locals reset and search for someone better. Make sure your Google profile, socials and website actually show up when Weston searches.", cta:"Get found →"},
@@ -150,9 +167,12 @@ function wbaWeekOfYear(d){
   return Math.floor((days + start.getDay()) / 7);
 }
 
+/* Hourly index — the feed auto-advances every hour so it feels alive. */
+function wbaHourIndex(){ return Math.floor(Date.now() / 3600000); }
+
 /* Fills the "This Week" feature block if present on the page. */
 (function(){
-  var f = WBA_FEATURES[wbaWeekOfYear(new Date()) % WBA_FEATURES.length];
+  var f = WBA_FEATURES[wbaHourIndex() % WBA_FEATURES.length];
   var t = document.getElementById('weeklyTitle');
   var x = document.getElementById('weeklyText');
   var c = document.getElementById('weeklyCta');
@@ -170,7 +190,7 @@ function wbaWeekOfYear(d){
   if(!grid) return;
   var count = parseInt(grid.getAttribute('data-count') || '9', 10);
   var start = parseInt(grid.getAttribute('data-start') || '1', 10);
-  var base = wbaWeekOfYear(new Date());
+  var base = wbaHourIndex();
   var html = '';
   for(var i=0; i<count; i++){
     var f = WBA_FEATURES[(base + start + i) % WBA_FEATURES.length];
@@ -190,6 +210,56 @@ function wbaWeekOfYear(d){
     el.style.transitionDelay = (i * 0.08) + 's';
     ro.observe(el);
   });
+})();
+
+/* Live news feed — free, no API key. Real business + tourism headlines pulled
+   through a public relay, with a graceful fallback if the relay is unavailable. */
+(function(){
+  var B = document.getElementById('feedBusiness');
+  var T = document.getElementById('feedTourism');
+  if(!B && !T) return;
+
+  function render(el, items){
+    el.innerHTML = '';
+    if(!items || !items.length){
+      var p = document.createElement('p');
+      p.className = 'feed-empty';
+      p.textContent = "Couldn't load headlines right now — please check back shortly.";
+      el.appendChild(p);
+      return;
+    }
+    items.slice(0, 5).forEach(function(it){
+      var a = document.createElement('a');
+      a.className = 'feed-item'; a.href = it.link || '#'; a.target = '_blank'; a.rel = 'noopener';
+      var t = document.createElement('span'); t.className = 'feed-title'; t.textContent = it.title || 'Untitled';
+      var m = document.createElement('span'); m.className = 'feed-meta';
+      m.textContent = it.pubDate ? new Date(it.pubDate).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) : '';
+      a.appendChild(t); a.appendChild(m); el.appendChild(a);
+    });
+  }
+
+  function load(feedUrl, el){
+    if(!el) return;
+    fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(feedUrl))
+      .then(function(r){ if(!r.ok) throw new Error('relay'); return r.text(); })
+      .then(function(xml){
+        var doc = new DOMParser().parseFromString(xml, 'text/xml');
+        var nodes = doc.querySelectorAll('item, entry');
+        var items = Array.prototype.slice.call(nodes).map(function(it){
+          var link = it.querySelector('link');
+          return {
+            title: (it.querySelector('title') || {}).textContent,
+            link: link ? (link.getAttribute('href') || link.textContent) : '#',
+            pubDate: (it.querySelector('pubDate, published, updated') || {}).textContent
+          };
+        });
+        render(el, items);
+      })
+      .catch(function(){ render(el, null); });
+  }
+
+  load('https://feeds.bbci.co.uk/news/business/rss.xml', B);
+  load('https://www.theguardian.com/travel/rss', T);
 })();
 
 /* ---- AAA polish: accessibility, performance, mobile CTA (every page) ---- */
