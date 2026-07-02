@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Submit to WBA | Street Art, Events & Ideas — Weston</title>
+<meta name="description" content="Spotted some Weston street art? Know about an event? Want a guide on something? Send it in — if we feature it, it goes live with your name on it."/>
+<meta property="og:title" content="Submit to WBA | Weston"/>
+<meta property="og:description" content="Send in Weston street art, events and ideas — we'll acknowledge every one."/>
+<meta property="og:type" content="website"/>
+<link rel="icon" type="image/png" sizes="512x512" href="https://res.cloudinary.com/du3psvz2u/image/upload/v1780318702/android-chrome-512x512_nzg5wu.png"/>
+<link rel="preconnect" href="https://res.cloudinary.com"/>
+<meta name="theme-color" content="#00224d"/>
+<link rel="canonical" href="https://westonbusinessauthority.co.uk/submit.html"/>
+<link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo"><img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776177977/Logo_4_zfjgwh.png" alt="Weston Business Authority"/></a>
+  <button class="nav-toggle" aria-label="Open menu" onclick="toggleNav()"><span></span><span></span><span></span></button>
+  <div class="nav-links" id="navLinks">
+    <a href="services.html">Services</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="work.html">Work</a>
+    <a href="weston.html">Weston Guide</a>
+    <a href="blog.html">Guides</a>
+    <a href="contact.html">Contact</a>
+    <a href="https://wa.me/447902376369" class="nav-wa" target="_blank">WhatsApp</a>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="inner">
+    <p class="crumb"><a href="index.html">Home</a> · Submit</p>
+    <h1>Spotted Something?<br><em>Tell the Town.</em></h1>
+    <p>Weston street art, a local event, or a guide you wish existed — send it our way. We read every single one, and if we feature it, it goes live <strong>with your name on it</strong>.</p>
+  </div>
+</header>
+
+<section class="s-cream on-light reveal">
+  <div class="inner">
+    <div class="booking-form-box" id="formBox" style="max-width:640px;margin:0 auto;">
+      <div class="form-row full">
+        <select id="sType">
+          <option value="street_art">🎨 Street art I spotted</option>
+          <option value="event">📅 A local event</option>
+          <option value="guide_request">💡 A guide I'd love to see</option>
+          <option value="other">✨ Something else</option>
+        </select>
+      </div>
+      <div class="form-row"><input type="text" id="sTitle" placeholder="Give it a title"/><input type="text" id="sLocation" placeholder="Where in Weston? (optional)"/></div>
+      <div class="form-row full"><textarea id="sDesc" placeholder="Tell us about it…"></textarea></div>
+      <div class="form-row full"><input type="url" id="sImage" placeholder="Photo link (optional — paste an image URL)"/></div>
+      <div class="form-row"><input type="text" id="sName" placeholder="Your name (for the credit)"/><input type="email" id="sEmail" placeholder="Email (optional, so we can say thanks)"/></div>
+      <button class="btn-primary" style="width:100%;justify-content:center;" onclick="wbaSend()">Send it in →</button>
+      <div class="send-status" id="sStatus"></div>
+    </div>
+    <div class="submit-ack" id="ack" style="display:none;max-width:640px;margin:1rem auto 0;"></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776177977/Logo_4_zfjgwh.png" alt="WBA"/>
+      <p>Your local creative &amp; tech team in Weston-Super-Mare. We build websites, apps &amp; systems, create photography, design, print &amp; media, and grow your business online. Serving our town since 2023.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigate</h4>
+      <a href="services.html">Services</a><a href="pricing.html">Pricing</a><a href="work.html">Work</a><a href="weston.html">Weston Guide</a><a href="blog.html">Guides</a><a href="about.html">About</a><a href="news.html">News</a><a href="contact.html">Contact</a>
+    </div>
+    <div class="footer-col">
+      <h4>Get in Touch</h4>
+      <a href="https://wa.me/447902376369" target="_blank">💬 WhatsApp: 07902 376369</a>
+      <a href="mailto:support@westonbusinessauthority.co.uk">✉️ support@westonbusinessauthority.co.uk</a>
+      <a href="https://www.facebook.com/WestonMarketing/" target="_blank">🔵 Facebook</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Weston Business Authority. Weston-Super-Mare, Somerset.</span>
+    <span><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · 07902 376369 · westonbusinessauthority.co.uk</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/db.js"></script>
+<script src="js/main.js" defer></script>
+<script>
+function wbaSend(){
+  var s=document.getElementById('sStatus');
+  if(!window.WBAdb){ s.className='send-status err'; s.textContent='Still loading — please refresh and try again.'; return; }
+  var title=document.getElementById('sTitle').value.trim();
+  var desc=document.getElementById('sDesc').value.trim();
+  if(!title && !desc){ s.className='send-status err'; s.textContent='Add a title or a description first.'; return; }
+  var payload={
+    type:document.getElementById('sType').value,
+    title:title,
+    description:desc,
+    location:document.getElementById('sLocation').value.trim(),
+    image_url:document.getElementById('sImage').value.trim()||null,
+    submitter_name:document.getElementById('sName').value.trim(),
+    submitter_email:document.getElementById('sEmail').value.trim()
+  };
+  s.className='send-status'; s.textContent='Sending…';
+  WBAdb.submit(payload).then(function(r){
+    if(r.error){ s.className='send-status err'; s.textContent='Something went wrong — try again or WhatsApp us.'; return; }
+    var name=payload.submitter_name?(' '+payload.submitter_name):'';
+    document.getElementById('formBox').style.display='none';
+    var ack=document.getElementById('ack');
+    ack.style.display='block';
+    ack.innerHTML='🙌 Nice one'+name+'! That\'s landed with the WBA team — a real person will look at it. If we feature it, it\'ll go live with your name on it. Cheers for helping build this.<br><br><a href="weston.html" class="blog-read">Back to the Weston Guide →</a>';
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WBA Admin</title>
+<meta name="robots" content="noindex, nofollow"/>
+<link rel="icon" type="image/png" sizes="512x512" href="https://res.cloudinary.com/du3psvz2u/image/upload/v1780318702/android-chrome-512x512_nzg5wu.png"/>
+<meta name="theme-color" content="#00224d"/>
+<link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo"><img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776177977/Logo_4_zfjgwh.png" alt="Weston Business Authority"/></a>
+  <div class="nav-links" id="navLinks" style="max-height:none;">
+    <a href="blog.html">View Guides</a>
+    <a href="#" onclick="wbaSignOut();return false;" id="signOutLink" style="display:none;">Sign out</a>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="inner">
+    <p class="crumb">WBA · Admin</p>
+    <h1>Control<br><em>Room.</em></h1>
+    <p>Write guides, and review what people have submitted. Everything here is private.</p>
+  </div>
+</header>
+
+<section class="s-paper on-light reveal">
+  <div class="inner admin-wrap">
+
+    <!-- LOGIN -->
+    <div class="booking-form-box admin-login" id="loginBox">
+      <div class="field"><label>Email</label><input type="email" id="email" placeholder="you@westonbusinessauthority.co.uk"/></div>
+      <div class="field"><label>Password</label><input type="password" id="password" placeholder="••••••••"/></div>
+      <button class="btn-primary" style="width:100%;justify-content:center;" onclick="wbaSignIn()">Sign in</button>
+      <div class="send-status" id="loginStatus"></div>
+    </div>
+
+    <!-- NOT ADMIN -->
+    <div id="notAdmin" style="display:none;">
+      <div class="admin-note">
+        You're signed in, but not yet an <strong>admin</strong>. Copy your user id below, then in Supabase → <strong>SQL Editor</strong> run:<br>
+        <code>insert into public.admins(user_id) values ('<span id="uid"></span>');</code><br>
+        Then refresh this page.
+      </div>
+      <button class="admin-btn del" onclick="wbaSignOut()">Sign out</button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dash" style="display:none;">
+      <div class="admin-tabs">
+        <button class="admin-tab on" id="tabPosts" onclick="wbaTab('posts')">✍️ Guides</button>
+        <button class="admin-tab" id="tabSubs" onclick="wbaTab('subs')">📥 Submissions <span id="subCount"></span></button>
+      </div>
+
+      <!-- POSTS -->
+      <div id="panelPosts">
+        <div class="booking-form-box">
+          <input type="hidden" id="postId"/>
+          <div class="form-row"><input type="text" id="pTitle" placeholder="Title" oninput="wbaAutoslug()"/><input type="text" id="pSlug" placeholder="url-slug"/></div>
+          <div class="form-row full"><input type="text" id="pExcerpt" placeholder="Short summary (shown on cards)"/></div>
+          <div class="form-row"><input type="text" id="pCategory" placeholder="Category (e.g. guide)"/><input type="text" id="pCover" placeholder="Cover image URL (optional)"/></div>
+          <div class="form-row full"><input type="text" id="pTags" placeholder="Tags, comma separated (optional)"/></div>
+          <div class="form-row full"><textarea id="pBody" placeholder="Write in Markdown — # Heading, **bold**, - lists, [links](url), images, even &lt;iframe&gt; videos…" style="min-height:220px;font-family:monospace;"></textarea></div>
+          <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;">
+            <select id="pStatus" style="max-width:160px;"><option value="draft">Draft</option><option value="published">Published</option></select>
+            <button class="btn-primary" onclick="wbaSave()">Save guide</button>
+            <button class="admin-btn edit" onclick="wbaNewPost()">+ New / clear</button>
+            <span class="send-status" id="postStatus"></span>
+          </div>
+        </div>
+        <div class="admin-list" id="postList"></div>
+      </div>
+
+      <!-- SUBMISSIONS -->
+      <div id="panelSubs" style="display:none;">
+        <div class="admin-note">Approve a submission to make it public; reject to hide it. Nothing is public until you approve it.</div>
+        <div class="admin-list" id="subList"></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/db.js"></script>
+<script>
+function esc(s){ var d=document.createElement('div'); d.textContent=s==null?'':s; return d.innerHTML; }
+function setStatus(id,msg,ok){ var s=document.getElementById(id); s.className='send-status '+(ok?'ok':'err'); s.textContent=msg; }
+
+function wbaSignIn(){
+  if(!window.WBAdb){ setStatus('loginStatus','Still loading — refresh and try again.'); return; }
+  var e=document.getElementById('email').value.trim(), p=document.getElementById('password').value;
+  setStatus('loginStatus','Signing in…',true);
+  WBAdb.signIn(e,p).then(function(r){
+    if(r.error){ setStatus('loginStatus',r.error.message); return; }
+    boot();
+  });
+}
+function wbaSignOut(){ WBAdb.signOut().then(function(){ location.reload(); }); }
+
+function wbaTab(which){
+  document.getElementById('tabPosts').classList.toggle('on', which==='posts');
+  document.getElementById('tabSubs').classList.toggle('on', which==='subs');
+  document.getElementById('panelPosts').style.display = which==='posts'?'block':'none';
+  document.getElementById('panelSubs').style.display = which==='subs'?'block':'none';
+}
+
+function wbaAutoslug(){
+  var slugEl=document.getElementById('pSlug');
+  if(!slugEl.dataset.touched){ slugEl.value = wbaSlugify(document.getElementById('pTitle').value); }
+}
+document.addEventListener('input', function(e){ if(e.target && e.target.id==='pSlug') e.target.dataset.touched='1'; });
+
+function wbaNewPost(){
+  ['postId','pTitle','pSlug','pExcerpt','pCategory','pCover','pTags','pBody'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('pStatus').value='draft';
+  var s=document.getElementById('pSlug'); delete s.dataset.touched;
+  document.getElementById('pCategory').value='guide';
+  setStatus('postStatus','',true);
+}
+
+function wbaSave(){
+  var title=document.getElementById('pTitle').value.trim();
+  var slug=document.getElementById('pSlug').value.trim()||wbaSlugify(title);
+  if(!title||!slug){ setStatus('postStatus','Title and slug are required.'); return; }
+  var tags=document.getElementById('pTags').value.split(',').map(function(t){return t.trim();}).filter(Boolean);
+  var post={
+    id: document.getElementById('postId').value||undefined,
+    title:title, slug:slug,
+    excerpt:document.getElementById('pExcerpt').value.trim(),
+    category:document.getElementById('pCategory').value.trim()||'guide',
+    cover_image:document.getElementById('pCover').value.trim()||null,
+    tags:tags,
+    body:document.getElementById('pBody').value,
+    status:document.getElementById('pStatus').value
+  };
+  setStatus('postStatus','Saving…',true);
+  WBAdb.savePost(post).then(function(r){
+    if(r.error){ setStatus('postStatus',r.error.message); return; }
+    setStatus('postStatus','Saved ✓',true); wbaNewPost(); loadPosts();
+  });
+}
+
+function editPost(p){
+  document.getElementById('postId').value=p.id;
+  document.getElementById('pTitle').value=p.title||'';
+  document.getElementById('pSlug').value=p.slug||''; document.getElementById('pSlug').dataset.touched='1';
+  document.getElementById('pExcerpt').value=p.excerpt||'';
+  document.getElementById('pCategory').value=p.category||'guide';
+  document.getElementById('pCover').value=p.cover_image||'';
+  document.getElementById('pTags').value=(p.tags||[]).join(', ');
+  document.getElementById('pBody').value=p.body||'';
+  document.getElementById('pStatus').value=p.status||'draft';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function delPost(id){
+  if(!confirm('Delete this guide? This cannot be undone.')) return;
+  WBAdb.deletePost(id).then(function(){ loadPosts(); });
+}
+
+function loadPosts(){
+  WBAdb.allPosts().then(function(r){
+    var list=document.getElementById('postList');
+    var posts=r.data||[];
+    if(!posts.length){ list.innerHTML='<p class="admin-note">No guides yet — write your first one above.</p>'; return; }
+    list.innerHTML=posts.map(function(p){
+      var badge=p.status==='published'?'<span class="muted">● live</span>':'<span class="muted">draft</span>';
+      return '<div class="admin-row"><div><strong>'+esc(p.title)+'</strong> '+badge+'<br><span class="muted">/'+esc(p.slug)+'</span></div>'
+        +'<div class="admin-actions"><button class="admin-btn edit" onclick=\'editPost('+JSON.stringify(p).replace(/'/g,"&#39;")+')\'>Edit</button>'
+        +'<button class="admin-btn del" onclick="delPost(\''+p.id+'\')">Delete</button></div></div>';
+    }).join('');
+  });
+}
+
+function loadSubs(){
+  WBAdb.allSubs().then(function(r){
+    var list=document.getElementById('subList');
+    var subs=r.data||[];
+    var pending=subs.filter(function(s){return s.status==='pending';}).length;
+    document.getElementById('subCount').textContent = pending?('('+pending+')'):'';
+    if(!subs.length){ list.innerHTML='<p class="admin-note">No submissions yet.</p>'; return; }
+    list.innerHTML=subs.map(function(s){
+      var img=s.image_url?' · <a href="'+esc(s.image_url)+'" target="_blank">photo</a>':'';
+      return '<div class="admin-row"><div><strong>'+esc(s.title||'(untitled)')+'</strong> <span class="muted">'+esc(s.type)+' · '+esc(s.status)+'</span><br>'
+        +'<span class="muted">'+esc(s.description||'')+' '+(s.location?('· '+esc(s.location)):'')+img+'</span><br>'
+        +'<span class="muted">'+esc(s.submitter_name||'anon')+' '+(s.submitter_email?('· '+esc(s.submitter_email)):'')+'</span></div>'
+        +'<div class="admin-actions"><button class="admin-btn ok" onclick="setSub(\''+s.id+'\',\'approved\')">Approve</button>'
+        +'<button class="admin-btn del" onclick="setSub(\''+s.id+'\',\'rejected\')">Reject</button></div></div>';
+    }).join('');
+  });
+}
+function setSub(id,status){ WBAdb.setSub(id,status).then(function(){ loadSubs(); }); }
+
+function boot(){
+  WBAdb.currentUser().then(function(u){
+    if(!u.data || !u.data.user){ return; } // stay on login
+    document.getElementById('loginBox').style.display='none';
+    document.getElementById('signOutLink').style.display='inline';
+    WBAdb.isAdmin().then(function(r){
+      if(r.data===true){
+        document.getElementById('dash').style.display='block';
+        document.getElementById('pCategory').value='guide';
+        loadPosts(); loadSubs();
+      } else {
+        document.getElementById('notAdmin').style.display='block';
+        document.getElementById('uid').textContent=u.data.user.id;
+      }
+    });
+  });
+}
+if(window.WBAdb){ boot(); }
+</script>
+</body>
+</html>

@@ -212,12 +212,24 @@ function wbaHourIndex(){ return Math.floor(Date.now() / 3600000); }
   });
 })();
 
-/* Live news feed — free, no API key. Real business + tourism headlines pulled
-   through a public relay, with a graceful fallback if the relay is unavailable. */
+/* Live news feed — free, no API key. Weston headlines via Google News RSS through
+   public relays (with fallback), showing the original source + date. */
 (function(){
   var B = document.getElementById('feedBusiness');
   var T = document.getElementById('feedTourism');
   if(!B && !T) return;
+
+  var RELAYS = [
+    function(u){ return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u); },
+    function(u){ return 'https://corsproxy.io/?url=' + encodeURIComponent(u); }
+  ];
+  function fetchFeed(url, i){
+    i = i || 0;
+    if(i >= RELAYS.length) return Promise.reject();
+    return fetch(RELAYS[i](url))
+      .then(function(r){ if(!r.ok) throw new Error('relay'); return r.text(); })
+      .catch(function(){ return fetchFeed(url, i + 1); });
+  }
 
   function render(el, items){
     el.innerHTML = '';
@@ -228,38 +240,43 @@ function wbaHourIndex(){ return Math.floor(Date.now() / 3600000); }
       el.appendChild(p);
       return;
     }
-    items.slice(0, 5).forEach(function(it){
+    items.slice(0, 6).forEach(function(it){
       var a = document.createElement('a');
       a.className = 'feed-item'; a.href = it.link || '#'; a.target = '_blank'; a.rel = 'noopener';
       var t = document.createElement('span'); t.className = 'feed-title'; t.textContent = it.title || 'Untitled';
       var m = document.createElement('span'); m.className = 'feed-meta';
-      m.textContent = it.pubDate ? new Date(it.pubDate).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) : '';
+      var date = it.pubDate ? new Date(it.pubDate).toLocaleDateString('en-GB', {day:'numeric', month:'short'}) : '';
+      m.textContent = [it.source, date].filter(Boolean).join(' · ');
       a.appendChild(t); a.appendChild(m); el.appendChild(a);
     });
   }
 
   function load(feedUrl, el){
     if(!el) return;
-    fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(feedUrl))
-      .then(function(r){ if(!r.ok) throw new Error('relay'); return r.text(); })
-      .then(function(xml){
-        var doc = new DOMParser().parseFromString(xml, 'text/xml');
-        var nodes = doc.querySelectorAll('item, entry');
-        var items = Array.prototype.slice.call(nodes).map(function(it){
-          var link = it.querySelector('link');
-          return {
-            title: (it.querySelector('title') || {}).textContent,
-            link: link ? (link.getAttribute('href') || link.textContent) : '#',
-            pubDate: (it.querySelector('pubDate, published, updated') || {}).textContent
-          };
-        });
-        render(el, items);
-      })
-      .catch(function(){ render(el, null); });
+    fetchFeed(feedUrl).then(function(xml){
+      var doc = new DOMParser().parseFromString(xml, 'text/xml');
+      var nodes = doc.querySelectorAll('item');
+      var items = Array.prototype.slice.call(nodes).map(function(it){
+        var link = it.querySelector('link');
+        var srcEl = it.querySelector('source');
+        var title = (it.querySelector('title') || {}).textContent || '';
+        var src = srcEl ? srcEl.textContent : '';
+        if(src && title.slice(-(src.length + 3)) === ' - ' + src) title = title.slice(0, -(src.length + 3));
+        return {
+          title: title,
+          link: link ? (link.getAttribute('href') || link.textContent) : '#',
+          pubDate: (it.querySelector('pubDate') || {}).textContent,
+          source: src
+        };
+      });
+      render(el, items);
+    }).catch(function(){ render(el, null); });
   }
 
-  load('https://feeds.bbci.co.uk/news/business/rss.xml', B);
-  load('https://www.theguardian.com/travel/rss', T);
+  var G = 'https://news.google.com/rss/search?q=';
+  var TAIL = '&hl=en-GB&gl=GB&ceid=GB:en';
+  load(G + encodeURIComponent('"Weston-super-Mare" business') + TAIL, B);
+  load(G + encodeURIComponent('"Weston-super-Mare" (tourism OR visit OR events OR attraction)') + TAIL, T);
 })();
 
 /* ---- AAA polish: accessibility, performance, mobile CTA (every page) ---- */

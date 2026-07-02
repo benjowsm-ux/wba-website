@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Guide | Weston Business Authority</title>
+<meta name="description" content="A practical guide from Weston Business Authority."/>
+<meta property="og:type" content="article"/>
+<link rel="icon" type="image/png" sizes="512x512" href="https://res.cloudinary.com/du3psvz2u/image/upload/v1780318702/android-chrome-512x512_nzg5wu.png"/>
+<link rel="apple-touch-icon" href="https://res.cloudinary.com/du3psvz2u/image/upload/v1780318702/android-chrome-512x512_nzg5wu.png"/>
+<link rel="preconnect" href="https://res.cloudinary.com"/>
+<meta name="theme-color" content="#00224d"/>
+<link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo"><img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776177977/Logo_4_zfjgwh.png" alt="Weston Business Authority"/></a>
+  <button class="nav-toggle" aria-label="Open menu" onclick="toggleNav()"><span></span><span></span><span></span></button>
+  <div class="nav-links" id="navLinks">
+    <a href="services.html">Services</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="work.html">Work</a>
+    <a href="weston.html">Weston Guide</a>
+    <a href="blog.html">Guides</a>
+    <a href="contact.html">Contact</a>
+    <a href="https://wa.me/447902376369" class="nav-wa" target="_blank">WhatsApp</a>
+  </div>
+</nav>
+
+<!-- ARTICLE -->
+<header class="page-hero">
+  <div class="inner">
+    <p class="crumb"><a href="index.html">Home</a> · <a href="blog.html">Guides</a> · <span id="crumbTitle">Guide</span></p>
+    <h1 id="postTitle">Loading…</h1>
+  </div>
+</header>
+
+<section class="s-white on-light reveal">
+  <div class="inner">
+    <article class="article">
+      <img class="article-cover" id="postCover" alt="" style="display:none;"/>
+      <p class="article-meta" id="postMeta"></p>
+      <div class="article-body" id="postBody"></div>
+    </article>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-band reveal">
+  <div class="inner">
+    <h2>Rather we did it for you?</h2>
+    <p>We're the local team behind these guides — happy to just take it off your plate.</p>
+    <a href="contact.html" class="btn-primary">Book a Free Visit →</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776177977/Logo_4_zfjgwh.png" alt="WBA"/>
+      <p>Your local creative &amp; tech team in Weston-Super-Mare. We build websites, apps &amp; systems, create photography, design, print &amp; media, and grow your business online. Serving our town since 2023.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigate</h4>
+      <a href="services.html">Services</a><a href="pricing.html">Pricing</a><a href="work.html">Work</a><a href="weston.html">Weston Guide</a><a href="blog.html">Guides</a><a href="about.html">About</a><a href="news.html">News</a><a href="contact.html">Contact</a>
+    </div>
+    <div class="footer-col">
+      <h4>Get in Touch</h4>
+      <a href="https://wa.me/447902376369" target="_blank">💬 WhatsApp: 07902 376369</a>
+      <a href="mailto:support@westonbusinessauthority.co.uk">✉️ support@westonbusinessauthority.co.uk</a>
+      <a href="https://www.facebook.com/WestonMarketing/" target="_blank">🔵 Facebook</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Weston Business Authority. Weston-Super-Mare, Somerset.</span>
+    <span><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · 07902 376369 · westonbusinessauthority.co.uk</span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="js/db.js"></script>
+<script src="js/main.js" defer></script>
+<script>
+(function(){
+  var slug = new URLSearchParams(location.search).get('slug');
+  var elTitle = document.getElementById('postTitle');
+  var elBody = document.getElementById('postBody');
+  var elMeta = document.getElementById('postMeta');
+  var elCover = document.getElementById('postCover');
+  var elCrumb = document.getElementById('crumbTitle');
+
+  function fail(msg){ elTitle.textContent = 'Guide not found'; elBody.innerHTML = '<p>'+msg+' <a href="blog.html">Back to all guides →</a></p>'; }
+
+  if(!slug){ fail('No guide specified.'); return; }
+  if(!window.WBAdb){ elTitle.textContent='Loading…'; elBody.innerHTML='<p>Still loading — please refresh if this persists.</p>'; return; }
+
+  WBAdb.getPost(slug).then(function(res){
+    if(res.error || !res.data){ fail("We couldn't find that guide."); return; }
+    var p = res.data;
+    document.title = p.title + ' | Weston Business Authority';
+    var md = document.querySelector('meta[name=description]'); if(md && p.excerpt) md.setAttribute('content', p.excerpt);
+    elTitle.textContent = p.title;
+    elCrumb.textContent = p.category ? p.category.charAt(0).toUpperCase()+p.category.slice(1) : 'Guide';
+    var date = p.published_at ? new Date(p.published_at).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}) : '';
+    elMeta.textContent = [p.author||'WBA', date].filter(Boolean).join(' · ');
+    if(p.cover_image){ elCover.src = p.cover_image; elCover.style.display='block'; }
+    elBody.innerHTML = window.marked ? marked.parse(p.body || '') : (p.body || '');
+  }).catch(function(){ fail('Something went wrong loading this guide.'); });
+})();
+</script>
+</body>
+</html>
