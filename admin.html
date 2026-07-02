@@ -31,6 +31,8 @@
 <section class="s-paper on-light">
   <div class="inner admin-wrap">
 
+    <div class="send-status" id="bootStatus" style="text-align:center;margin-bottom:1rem;"></div>
+
     <!-- LOGIN -->
     <div class="booking-form-box admin-login" id="loginBox">
       <div class="field"><label>Email</label><input type="email" id="email" placeholder="you@westonbusinessauthority.co.uk"/></div>
@@ -195,23 +197,32 @@ function loadSubs(){
 }
 function setSub(id,status){ WBAdb.setSub(id,status).then(function(){ loadSubs(); }); }
 
+function showOnly(id){
+  ['loginBox','notAdmin','dash'].forEach(function(x){ var el=document.getElementById(x); if(el) el.style.display=(x===id)?'block':'none'; });
+}
+function bstat(msg){ var s=document.getElementById('bootStatus'); if(s){ s.className='send-status'; s.textContent=msg||''; } }
+
 function boot(){
+  if(!window.WBAdb){ bstat('Still loading — please refresh.'); return; }
+  bstat('Checking your access…');
   WBAdb.currentUser().then(function(u){
-    if(!u.data || !u.data.user){ return; } // stay on login
-    document.getElementById('loginBox').style.display='none';
+    if(!u.data || !u.data.user){ showOnly('loginBox'); document.getElementById('signOutLink').style.display='none'; bstat(''); return; }
     document.getElementById('signOutLink').style.display='inline';
+    var uid=u.data.user.id;
     WBAdb.isAdmin().then(function(r){
+      if(r.error){ showOnly('loginBox'); bstat('Access check failed: '+r.error.message); return; }
       if(r.data===true){
-        document.getElementById('dash').style.display='block';
+        showOnly('dash'); bstat('');
         document.getElementById('pCategory').value='guide';
         loadPosts(); loadSubs();
       } else {
-        document.getElementById('notAdmin').style.display='block';
-        document.getElementById('uid').textContent=u.data.user.id;
+        showOnly('notAdmin'); bstat('');
+        document.getElementById('uid').textContent=uid;
       }
     });
-  });
+  }).catch(function(e){ bstat('Something went wrong: '+((e&&e.message)||e)); });
 }
+if(window.sbc){ sbc.auth.onAuthStateChange(function(){ boot(); }); }
 if(window.WBAdb){ boot(); }
 </script>
 </body>
