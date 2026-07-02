@@ -83,33 +83,38 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="js/db.js"></script>
+<script src="js/blocks.js"></script>
 <script src="js/main.js" defer></script>
 <script>
 (function(){
-  var slug = new URLSearchParams(location.search).get('slug');
-  var elTitle = document.getElementById('postTitle');
-  var elBody = document.getElementById('postBody');
-  var elMeta = document.getElementById('postMeta');
-  var elCover = document.getElementById('postCover');
-  var elCrumb = document.getElementById('crumbTitle');
+  var params=new URLSearchParams(location.search);
+  var elTitle=document.getElementById('postTitle'), elBody=document.getElementById('postBody'),
+      elMeta=document.getElementById('postMeta'), elCover=document.getElementById('postCover'), elCrumb=document.getElementById('crumbTitle');
 
-  function fail(msg){ elTitle.textContent = 'Guide not found'; elBody.innerHTML = '<p>'+msg+' <a href="blog.html">Back to all guides →</a></p>'; }
+  function renderBody(body){ var b=wbaParseBlocks(body); if(b.length) return wbaRenderBlocks(b); return window.marked?marked.parse(body||''):(body||''); }
+  function paint(p,isPreview){
+    document.title=(p.title||'Untitled')+' | Weston Business Authority';
+    var md=document.querySelector('meta[name=description]'); if(md&&p.excerpt) md.setAttribute('content',p.excerpt);
+    elTitle.textContent=p.title||'Untitled';
+    if(elCrumb) elCrumb.textContent=p.category?(p.category.charAt(0).toUpperCase()+p.category.slice(1)):'Blog';
+    var date=p.published_at?new Date(p.published_at).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}):'';
+    elMeta.textContent=isPreview?'Preview':[p.author||'WBA',date].filter(Boolean).join(' · ');
+    var cover=p.cover_image||p.cover; if(cover){ elCover.src=cover; elCover.style.display='block'; }
+    elBody.innerHTML=renderBody(p.body!=null?p.body:p.blocks);
+    if(isPreview){ var bn=document.createElement('div'); bn.className='preview-banner'; bn.textContent='Preview — not published yet'; document.body.insertBefore(bn,document.body.firstChild); }
+  }
+  function fail(msg){ elTitle.textContent='Blog not found'; elBody.innerHTML='<p>'+msg+' <a href="blog.html">Back to all Blogs →</a></p>'; }
 
-  if(!slug){ fail('No guide specified.'); return; }
-  if(!window.WBAdb){ elTitle.textContent='Loading…'; elBody.innerHTML='<p>Still loading — please refresh if this persists.</p>'; return; }
-
-  WBAdb.getPost(slug).then(function(res){
-    if(res.error || !res.data){ fail("We couldn't find that guide."); return; }
-    var p = res.data;
-    document.title = p.title + ' | Weston Business Authority';
-    var md = document.querySelector('meta[name=description]'); if(md && p.excerpt) md.setAttribute('content', p.excerpt);
-    elTitle.textContent = p.title;
-    elCrumb.textContent = p.category ? p.category.charAt(0).toUpperCase()+p.category.slice(1) : 'Guide';
-    var date = p.published_at ? new Date(p.published_at).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}) : '';
-    elMeta.textContent = [p.author||'WBA', date].filter(Boolean).join(' · ');
-    if(p.cover_image){ elCover.src = p.cover_image; elCover.style.display='block'; }
-    elBody.innerHTML = window.marked ? marked.parse(p.body || '') : (p.body || '');
-  }).catch(function(){ fail('Something went wrong loading this guide.'); });
+  if(params.get('preview')==='1'){
+    var pv=null; try{ pv=JSON.parse(localStorage.getItem('wba_preview')||'null'); }catch(e){}
+    if(!pv){ fail('Nothing to preview — build a Blog in the admin, then hit Preview.'); return; }
+    paint({title:pv.title,cover:pv.cover,category:pv.category,blocks:pv.blocks},true); return;
+  }
+  var slug=params.get('slug');
+  if(!slug){ fail('No Blog specified.'); return; }
+  if(!window.WBAdb){ elTitle.textContent='Loading…'; elBody.innerHTML='<p>Still loading — refresh if this persists.</p>'; return; }
+  WBAdb.getPost(slug).then(function(res){ if(res.error||!res.data){ fail("We couldn't find that Blog."); return; } paint(res.data,false); })
+    .catch(function(){ fail('Something went wrong loading this Blog.'); });
 })();
 </script>
 </body>
