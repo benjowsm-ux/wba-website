@@ -11,7 +11,6 @@
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
   <a href="index.html" class="nav-logo"><img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776177977/Logo_4_zfjgwh.png" alt="Weston Business Authority"/></a>
   <div class="nav-links" id="navLinks" style="max-height:none;">
@@ -63,17 +62,66 @@
         <div class="booking-form-box">
           <input type="hidden" id="postId"/>
           <div class="form-row"><input type="text" id="pTitle" placeholder="Title" oninput="wbaAutoslug()"/><input type="text" id="pSlug" placeholder="url-slug"/></div>
-          <div class="form-row full"><input type="text" id="pExcerpt" placeholder="Short summary (shown on cards)"/></div>
-          <div class="form-row"><input type="text" id="pCategory" placeholder="Category (e.g. guide)"/><input type="text" id="pCover" placeholder="Cover image URL (optional)"/></div>
-          <div class="form-row full"><input type="text" id="pTags" placeholder="Tags, comma separated (optional)"/></div>
-          <div class="form-row full"><textarea id="pBody" placeholder="Write in Markdown — # Heading, **bold**, - lists, [links](url), images, even &lt;iframe&gt; videos…" style="min-height:220px;font-family:monospace;"></textarea></div>
-          <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;">
-            <select id="pStatus" style="max-width:160px;"><option value="draft">Draft</option><option value="published">Published</option></select>
-            <button class="btn-primary" onclick="wbaSave()">Save guide</button>
-            <button class="admin-btn edit" onclick="wbaNewPost()">+ New / clear</button>
+          <div class="form-row full"><input type="text" id="pExcerpt" placeholder="Short summary (shown on cards & in search results)"/></div>
+          <div class="form-row">
+            <input type="text" id="pCategory" placeholder="Category (e.g. guide)"/>
+            <div class="cover-field"><input type="text" id="pCover" placeholder="Cover image URL"/><button type="button" class="admin-btn edit" onclick="wbaPickCover()">📁 Upload</button></div>
+          </div>
+
+          <div class="field">
+            <label>Tags</label>
+            <div class="tag-box" id="tagBox"></div>
+            <div class="tag-input-row">
+              <input type="text" id="tagInput" placeholder="Type a tag, press Enter" onkeydown="wbaTagKey(event)"/>
+              <button type="button" class="admin-btn edit" onclick="wbaToggleTagSug()">＋ Suggest tags</button>
+            </div>
+            <div class="tag-suggest" id="tagSuggest" style="display:none;"></div>
+          </div>
+
+          <div class="field">
+            <label>Content</label>
+            <div class="md-toolbar">
+              <button type="button" title="Heading" onclick="md('h2')">H2</button>
+              <button type="button" title="Sub-heading" onclick="md('h3')">H3</button>
+              <span class="sep"></span>
+              <button type="button" title="Bold" onclick="md('bold')"><b>B</b></button>
+              <button type="button" title="Italic" onclick="md('italic')"><i>I</i></button>
+              <span class="sep"></span>
+              <button type="button" title="Bullet list" onclick="md('ul')">• List</button>
+              <button type="button" title="Numbered list" onclick="md('ol')">1. List</button>
+              <button type="button" title="Quote" onclick="md('quote')">❝ Quote</button>
+              <button type="button" title="Divider" onclick="md('hr')">― Line</button>
+              <span class="sep"></span>
+              <button type="button" title="Insert link" onclick="md('link')">🔗 Link</button>
+              <button type="button" title="Upload &amp; insert image" onclick="wbaPickInline()">🖼 Image</button>
+              <button type="button" title="Embed a video" onclick="md('video')">▶ Video</button>
+              <span class="sep"></span>
+              <select onchange="if(this.value){insertTemplate(this.value);this.value='';}" title="Insert a ready-made block">
+                <option value="">+ Block…</option>
+                <option value="steps">How-to steps</option>
+                <option value="tip">Tip callout</option>
+                <option value="proscons">Pros &amp; Cons</option>
+                <option value="faq">FAQ block</option>
+                <option value="cta">Call to action</option>
+              </select>
+            </div>
+            <div class="md-split">
+              <textarea id="pBody" placeholder="Write here — use the toolbar, or Markdown. Live preview is on the right →" oninput="wbaRenderPreview()"></textarea>
+              <div class="md-preview article-body" id="livePreview"></div>
+            </div>
+          </div>
+
+          <div class="editor-actions">
+            <select id="pStatus"><option value="draft">Draft</option><option value="published">Published</option></select>
+            <button type="button" class="btn-primary" onclick="wbaSave()">Save guide</button>
+            <button type="button" class="admin-btn edit" onclick="wbaFullPreview()">👁 Preview</button>
+            <button type="button" class="admin-btn edit" onclick="wbaNewPost()">+ New / clear</button>
             <span class="send-status" id="postStatus"></span>
           </div>
         </div>
+
+        <input type="file" id="fileCover" accept="image/*" style="display:none;"/>
+        <input type="file" id="fileInline" accept="image/*" style="display:none;"/>
         <div class="admin-list" id="postList"></div>
       </div>
 
@@ -87,17 +135,31 @@
   </div>
 </section>
 
+<!-- FULL PREVIEW MODAL -->
+<div class="pv-modal" id="pvModal">
+  <div class="pv-sheet">
+    <div class="pv-head"><span>Preview — how this guide will look</span><button class="pv-close" onclick="wbaClosePreview()">Close ✕</button></div>
+    <div class="pv-body" id="pvBody"></div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="js/db.js"></script>
 <script>
-function esc(s){ var d=document.createElement('div'); d.textContent=s==null?'':s; return d.innerHTML; }
-function setStatus(id,msg,ok){ var s=document.getElementById(id); s.className='send-status '+(ok?'ok':'err'); s.textContent=msg; }
+var STOP='the and for are you your our with that this have has from will can they them then than what when who how why into out over more most yours their its about within just also been being here there they will your you'.split(' ');
+var wbaTags = [];
 
+function esc(s){ var d=document.createElement('div'); d.textContent=(s==null?'':s); return d.innerHTML; }
+function setStatus(id,msg,ok){ var s=document.getElementById(id); if(!s)return; s.className='send-status '+(ok?'ok':'err'); s.textContent=msg; }
+function bstat(msg){ var s=document.getElementById('bootStatus'); if(s){ s.className='send-status'; s.textContent=msg||''; } }
+function showOnly(id){ ['loginBox','notAdmin','dash'].forEach(function(x){ var el=document.getElementById(x); if(el) el.style.display=(x===id)?'block':'none'; }); }
+
+/* ---------- auth ---------- */
 function wbaSignIn(){
   if(!window.WBAdb){ setStatus('loginStatus','Still loading — refresh and try again.'); return; }
-  var e=document.getElementById('email').value.trim(), p=document.getElementById('password').value;
   setStatus('loginStatus','Signing in…',true);
-  WBAdb.signIn(e,p).then(function(r){
+  WBAdb.signIn(document.getElementById('email').value.trim(), document.getElementById('password').value).then(function(r){
     if(r.error){ setStatus('loginStatus',r.error.message); return; }
     boot();
   });
@@ -111,42 +173,131 @@ function wbaTab(which){
   document.getElementById('panelSubs').style.display = which==='subs'?'block':'none';
 }
 
-function wbaAutoslug(){
-  var slugEl=document.getElementById('pSlug');
-  if(!slugEl.dataset.touched){ slugEl.value = wbaSlugify(document.getElementById('pTitle').value); }
-}
+/* ---------- slug ---------- */
+function wbaAutoslug(){ var s=document.getElementById('pSlug'); if(!s.dataset.touched) s.value=wbaSlugify(document.getElementById('pTitle').value); }
 document.addEventListener('input', function(e){ if(e.target && e.target.id==='pSlug') e.target.dataset.touched='1'; });
 
-function wbaNewPost(){
-  ['postId','pTitle','pSlug','pExcerpt','pCategory','pCover','pTags','pBody'].forEach(function(id){ document.getElementById(id).value=''; });
-  document.getElementById('pStatus').value='draft';
-  var s=document.getElementById('pSlug'); delete s.dataset.touched;
-  document.getElementById('pCategory').value='guide';
-  setStatus('postStatus','',true);
+/* ---------- tags ---------- */
+function renderTags(){
+  document.getElementById('tagBox').innerHTML = wbaTags.map(function(t){
+    return '<span class="tag-chip">'+esc(t)+'<button type="button" onclick="wbaRemoveTag(\''+t.replace(/'/g,"\\'")+'\')">✕</button></span>';
+  }).join('');
+}
+function wbaAddTag(t){ t=(t||'').trim(); if(!t) return; if(wbaTags.map(function(x){return x.toLowerCase();}).indexOf(t.toLowerCase())>-1) return; wbaTags.push(t); renderTags(); }
+function wbaRemoveTag(t){ wbaTags=wbaTags.filter(function(x){return x!==t;}); renderTags(); }
+function wbaTagKey(e){ if(e.key==='Enter'){ e.preventDefault(); wbaAddTag(e.target.value); e.target.value=''; } }
+function cap(w){ return w.charAt(0).toUpperCase()+w.slice(1); }
+function wbaSuggestTags(){
+  var text=(document.getElementById('pTitle').value+' '+document.getElementById('pBody').value).toLowerCase();
+  var existing=(window.wbaAllTags||[]);
+  var fromExisting=existing.filter(function(t){ return t && text.indexOf(t.toLowerCase())>-1; });
+  var words=text.split(/[^a-z]+/).filter(function(w){ return w.length>3 && STOP.indexOf(w)<0; });
+  var freq={}; words.forEach(function(w){ freq[w]=(freq[w]||0)+1; });
+  var auto=Object.keys(freq).sort(function(a,b){return freq[b]-freq[a];}).slice(0,6).map(cap);
+  return { existing: existing, auto: fromExisting.map(cap).concat(auto) };
+}
+function wbaToggleTagSug(){
+  var box=document.getElementById('tagSuggest');
+  if(box.style.display!=='none'){ box.style.display='none'; return; }
+  var s=wbaSuggestTags();
+  function chips(arr,cls){
+    var seen={}, out='';
+    arr.forEach(function(t){ if(!t) return; var k=t.toLowerCase(); if(seen[k]) return; seen[k]=1;
+      if(wbaTags.map(function(x){return x.toLowerCase();}).indexOf(k)>-1) return;
+      out+='<span class="tag-sug '+cls+'" onclick="wbaAddTag(\''+t.replace(/'/g,"\\'")+'\');wbaToggleTagSug();wbaToggleTagSug();">'+esc(t)+'</span>';
+    });
+    return out || '<span class="muted" style="font-size:.72rem;color:#9ca3af;">none yet</span>';
+  }
+  box.innerHTML = '<div class="tsg-label">Suggested for this guide</div><div class="tsg-row">'+chips(s.auto,'auto')+'</div>'
+                + '<div class="tsg-label">From your other guides</div><div class="tsg-row">'+chips(s.existing,'')+'</div>';
+  box.style.display='block';
 }
 
+/* ---------- markdown toolbar ---------- */
+function wbaEmbed(url){ var m=(url||'').match(/(?:youtu\.be\/|v=|embed\/)([\w-]{11})/); var id=m?m[1]:''; return id?('<iframe src="https://www.youtube.com/embed/'+id+'" allowfullscreen loading="lazy"></iframe>'):('<iframe src="'+esc(url)+'" allowfullscreen loading="lazy"></iframe>'); }
+function md(action){
+  var ta=document.getElementById('pBody'); var s=ta.selectionStart,e=ta.selectionEnd,v=ta.value,sel=v.slice(s,e),b=v.slice(0,s),a=v.slice(e),out=v;
+  function wrap(p,q,ph){ out=b+p+(sel||ph)+q+a; }
+  function line(p,ph){ out=b+p+(sel||ph)+a; }
+  if(action==='h2') line('\n## ','Heading');
+  else if(action==='h3') line('\n### ','Sub-heading');
+  else if(action==='bold') wrap('**','**','bold text');
+  else if(action==='italic') wrap('*','*','italic');
+  else if(action==='ul') line('\n- ','List item');
+  else if(action==='ol') line('\n1. ','First item');
+  else if(action==='quote') line('\n> ','Quote');
+  else if(action==='hr') out=b+'\n\n---\n\n'+a;
+  else if(action==='link'){ var u=prompt('Link URL:','https://'); if(u===null) return; out=b+'['+(sel||'link text')+']('+u+')'+a; }
+  else if(action==='video'){ var vu=prompt('YouTube or video URL:','https://'); if(!vu) return; out=b+'\n\n'+wbaEmbed(vu)+'\n\n'+a; }
+  ta.value=out; ta.focus(); wbaRenderPreview();
+}
+function insertTemplate(name){
+  var t={
+    steps:'\n## How to do it\n\n1. **First step** — what to do.\n2. **Second step** — then this.\n3. **Third step** — and you\'re done.\n',
+    tip:'\n> 💡 **Tip:** drop a handy bit of advice here.\n',
+    proscons:'\n### The upside\n- Good thing one\n- Good thing two\n\n### The catch\n- Something to watch for\n',
+    faq:'\n## Quick FAQ\n\n**A common question?**\nThe answer, kept short.\n\n**Another question?**\nAnother clear answer.\n',
+    cta:'\n> **Rather we just handled it?** [Book a free visit](contact.html) and we\'ll sort it — no pressure.\n'
+  }[name];
+  if(!t) return;
+  var ta=document.getElementById('pBody'); ta.value += (ta.value && !ta.value.endsWith('\n')?'\n':'')+t; ta.focus(); wbaRenderPreview();
+}
+function wbaRenderPreview(){ var el=document.getElementById('livePreview'); if(el) el.innerHTML = window.marked ? marked.parse(document.getElementById('pBody').value||'') : esc(document.getElementById('pBody').value); }
+
+/* ---------- images ---------- */
+function wbaPickCover(){ document.getElementById('fileCover').click(); }
+function wbaPickInline(){ document.getElementById('fileInline').click(); }
+function wbaUpload(file, cb){
+  if(!window.WBAdb || !WBAdb.uploadImage){ setStatus('postStatus','Uploading not available — check storage setup.'); return; }
+  setStatus('postStatus','Uploading image…',true);
+  WBAdb.uploadImage(file).then(function(url){ cb(url); setStatus('postStatus','Image uploaded ✓',true); })
+    .catch(function(err){ setStatus('postStatus','Upload failed: '+((err&&err.message)||err)); });
+}
+
+/* ---------- preview modal ---------- */
+function wbaFullPreview(){
+  var cover=document.getElementById('pCover').value.trim();
+  var html='';
+  if(cover) html+='<img class="article-cover" src="'+esc(cover)+'" alt=""/>';
+  html+='<h1>'+esc(document.getElementById('pTitle').value||'Untitled')+'</h1>';
+  html+='<p class="article-meta">WBA · Preview</p>';
+  html+='<div class="article-body">'+(window.marked?marked.parse(document.getElementById('pBody').value||''):'')+'</div>';
+  document.getElementById('pvBody').innerHTML=html;
+  document.getElementById('pvModal').classList.add('show');
+}
+function wbaClosePreview(){ document.getElementById('pvModal').classList.remove('show'); }
+
+/* ---------- posts CRUD ---------- */
+function wbaNewPost(){
+  ['postId','pTitle','pSlug','pExcerpt','pCover','pBody'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('pCategory').value='guide';
+  document.getElementById('pStatus').value='draft';
+  var s=document.getElementById('pSlug'); delete s.dataset.touched;
+  wbaTags=[]; renderTags(); wbaRenderPreview();
+  document.getElementById('tagSuggest').style.display='none';
+  setStatus('postStatus','',true);
+}
 function wbaSave(){
   var title=document.getElementById('pTitle').value.trim();
   var slug=document.getElementById('pSlug').value.trim()||wbaSlugify(title);
   if(!title||!slug){ setStatus('postStatus','Title and slug are required.'); return; }
-  var tags=document.getElementById('pTags').value.split(',').map(function(t){return t.trim();}).filter(Boolean);
   var post={
     id: document.getElementById('postId').value||undefined,
     title:title, slug:slug,
     excerpt:document.getElementById('pExcerpt').value.trim(),
     category:document.getElementById('pCategory').value.trim()||'guide',
     cover_image:document.getElementById('pCover').value.trim()||null,
-    tags:tags,
+    tags:wbaTags.slice(),
     body:document.getElementById('pBody').value,
     status:document.getElementById('pStatus').value
   };
   setStatus('postStatus','Saving…',true);
   WBAdb.savePost(post).then(function(r){
     if(r.error){ setStatus('postStatus',r.error.message); return; }
-    setStatus('postStatus','Saved ✓',true); wbaNewPost(); loadPosts();
+    setStatus('postStatus','Saved ✓ '+(post.status==='published'?'— live on the Blog':'(draft)'),true);
+    wbaNewPost(); loadPosts();
   });
 }
-
 function editPost(p){
   document.getElementById('postId').value=p.id;
   document.getElementById('pTitle').value=p.title||'';
@@ -154,34 +305,30 @@ function editPost(p){
   document.getElementById('pExcerpt').value=p.excerpt||'';
   document.getElementById('pCategory').value=p.category||'guide';
   document.getElementById('pCover').value=p.cover_image||'';
-  document.getElementById('pTags').value=(p.tags||[]).join(', ');
   document.getElementById('pBody').value=p.body||'';
   document.getElementById('pStatus').value=p.status||'draft';
+  wbaTags=(p.tags||[]).slice(); renderTags(); wbaRenderPreview();
   window.scrollTo({top:0,behavior:'smooth'});
 }
-function delPost(id){
-  if(!confirm('Delete this guide? This cannot be undone.')) return;
-  WBAdb.deletePost(id).then(function(){ loadPosts(); });
-}
+function delPost(id){ if(!confirm('Delete this guide? This cannot be undone.')) return; WBAdb.deletePost(id).then(function(){ loadPosts(); }); }
 
 function loadPosts(){
   WBAdb.allPosts().then(function(r){
-    var list=document.getElementById('postList');
-    var posts=r.data||[];
+    var list=document.getElementById('postList'); var posts=r.data||[];
+    var tagset={}; posts.forEach(function(p){ (p.tags||[]).forEach(function(t){ if(t) tagset[t]=1; }); });
+    window.wbaAllTags=Object.keys(tagset);
     if(!posts.length){ list.innerHTML='<p class="admin-note">No guides yet — write your first one above.</p>'; return; }
     list.innerHTML=posts.map(function(p){
       var badge=p.status==='published'?'<span class="muted">● live</span>':'<span class="muted">draft</span>';
       return '<div class="admin-row"><div><strong>'+esc(p.title)+'</strong> '+badge+'<br><span class="muted">/'+esc(p.slug)+'</span></div>'
-        +'<div class="admin-actions"><button class="admin-btn edit" onclick=\'editPost('+JSON.stringify(p).replace(/'/g,"&#39;")+')\'>Edit</button>'
+        +'<div class="admin-actions"><button class="admin-btn edit" onclick=\'editPost('+JSON.stringify(p).replace(/'/g,"&#39;").replace(/</g,"&lt;")+')\'>Edit</button>'
         +'<button class="admin-btn del" onclick="delPost(\''+p.id+'\')">Delete</button></div></div>';
     }).join('');
   });
 }
-
 function loadSubs(){
   WBAdb.allSubs().then(function(r){
-    var list=document.getElementById('subList');
-    var subs=r.data||[];
+    var list=document.getElementById('subList'); var subs=r.data||[];
     var pending=subs.filter(function(s){return s.status==='pending';}).length;
     document.getElementById('subCount').textContent = pending?('('+pending+')'):'';
     if(!subs.length){ list.innerHTML='<p class="admin-note">No submissions yet.</p>'; return; }
@@ -197,11 +344,7 @@ function loadSubs(){
 }
 function setSub(id,status){ WBAdb.setSub(id,status).then(function(){ loadSubs(); }); }
 
-function showOnly(id){
-  ['loginBox','notAdmin','dash'].forEach(function(x){ var el=document.getElementById(x); if(el) el.style.display=(x===id)?'block':'none'; });
-}
-function bstat(msg){ var s=document.getElementById('bootStatus'); if(s){ s.className='send-status'; s.textContent=msg||''; } }
-
+/* ---------- boot ---------- */
 function boot(){
   if(!window.WBAdb){ bstat('Still loading — please refresh.'); return; }
   bstat('Checking your access…');
@@ -211,17 +354,17 @@ function boot(){
     var uid=u.data.user.id;
     WBAdb.isAdmin().then(function(r){
       if(r.error){ showOnly('loginBox'); bstat('Access check failed: '+r.error.message); return; }
-      if(r.data===true){
-        showOnly('dash'); bstat('');
-        document.getElementById('pCategory').value='guide';
-        loadPosts(); loadSubs();
-      } else {
-        showOnly('notAdmin'); bstat('');
-        document.getElementById('uid').textContent=uid;
-      }
+      if(r.data===true){ showOnly('dash'); bstat(''); wbaNewPost(); loadPosts(); loadSubs(); }
+      else { showOnly('notAdmin'); bstat(''); document.getElementById('uid').textContent=uid; }
     });
   }).catch(function(e){ bstat('Something went wrong: '+((e&&e.message)||e)); });
 }
+
+/* wire file inputs */
+window.addEventListener('DOMContentLoaded', function(){
+  var fc=document.getElementById('fileCover'); if(fc) fc.onchange=function(){ var f=this.files[0]; if(f) wbaUpload(f, function(url){ document.getElementById('pCover').value=url; }); this.value=''; };
+  var fi=document.getElementById('fileInline'); if(fi) fi.onchange=function(){ var f=this.files[0]; if(f) wbaUpload(f, function(url){ var ta=document.getElementById('pBody'); ta.value += (ta.value&&!ta.value.endsWith('\n')?'\n':'')+'\n![image]('+url+')\n'; wbaRenderPreview(); }); this.value=''; };
+});
 if(window.sbc){ sbc.auth.onAuthStateChange(function(){ boot(); }); }
 if(window.WBAdb){ boot(); }
 </script>

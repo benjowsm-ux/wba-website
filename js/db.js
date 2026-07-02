@@ -33,6 +33,16 @@
     // ---------- public write (submissions) ----------
     submit: function(payload){ return sb.from('submissions').insert([payload]); },
 
+    // ---------- image upload (admin) -> permanent public URL ----------
+    uploadImage: function(file){
+      var ext = (((file.name || '').split('.').pop()) || 'png').toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
+      var path = 'posts/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
+      return sb.storage.from('media').upload(path, file, { cacheControl: '3600', upsert: false }).then(function(r){
+        if(r.error) throw r.error;
+        return sb.storage.from('media').getPublicUrl(path).data.publicUrl;
+      });
+    },
+
     // ---------- auth ----------
     signIn: function(email, password){ return sb.auth.signInWithPassword({ email: email, password: password }); },
     signOut: function(){ return sb.auth.signOut(); },
@@ -42,10 +52,13 @@
     // ---------- admin ----------
     allPosts: function(){ return sb.from('posts').select('*').order('updated_at', { ascending: false }); },
     savePost: function(p){
-      p.updated_at = new Date().toISOString();
-      if(p.status === 'published' && !p.published_at) p.published_at = new Date().toISOString();
-      if(p.id){ var id = p.id; var copy = Object.assign({}, p); delete copy.id; return sb.from('posts').update(copy).eq('id', id); }
-      return sb.from('posts').insert([p]);
+      var payload = Object.assign({}, p);
+      payload.updated_at = new Date().toISOString();
+      if(payload.status === 'published' && !payload.published_at) payload.published_at = new Date().toISOString();
+      if(p.id){ delete payload.id; return sb.from('posts').update(payload).eq('id', p.id); }
+      delete payload.id;
+      payload.id = wbaUUID();               // generate an id for new posts
+      return sb.from('posts').insert([payload]);
     },
     deletePost: function(id){ return sb.from('posts').delete().eq('id', id); },
     allSubs: function(){ return sb.from('submissions').select('*').order('created_at', { ascending: false }); },
@@ -54,6 +67,12 @@
     }
   };
 })();
+
+/* UUID for new posts (works even if the DB default is missing) */
+function wbaUUID(){
+  if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){ var r=Math.random()*16|0, v=c==='x'?r:(r&0x3|0x8); return v.toString(16); });
+}
 
 /* Slugify helper (title -> url-slug) */
 function wbaSlugify(s){
