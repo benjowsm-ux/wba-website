@@ -39,8 +39,8 @@
     </div>
 
     <div id="notAdmin" style="display:none;">
-      <div class="admin-note">You're signed in, but not yet an <strong>admin</strong>. In Supabase → <strong>SQL Editor</strong> run:<br>
-      <code>insert into public.admins(user_id) values ('<span id="uid"></span>');</code><br>Then refresh.</div>
+      <div class="admin-note">Signed in, but not an <strong>admin</strong> yet. In Supabase → SQL Editor run:<br>
+      <code>insert into public.admins(user_id) values ('<span id="uid"></span>');</code> then refresh.</div>
       <button class="admin-btn del" onclick="wbaSignOut()">Sign out</button>
     </div>
 
@@ -53,29 +53,37 @@
       <div id="panelPosts">
         <div class="booking-form-box">
           <input type="hidden" id="postId"/>
-          <div class="form-row"><input type="text" id="pTitle" placeholder="Blog title" oninput="wbaAutoslug()"/><input type="text" id="pSlug" placeholder="url-slug"/></div>
+          <div class="titleslug">
+            <input type="text" id="pTitle" placeholder="Blog title" oninput="wbaAutoslug()"/>
+            <button type="button" class="chain on" id="chainBtn" title="Slug follows the title — click to unlink" onclick="toggleChain()">🔗</button>
+            <input type="text" id="pSlug" placeholder="url-slug" oninput="wbaSlugEdited()"/>
+          </div>
           <div class="form-row full"><input type="text" id="pExcerpt" placeholder="Short summary (shown on the Blog cards & in Google)"/></div>
           <div class="form-row">
             <input type="text" id="pCategory" placeholder="Type: tutorial / review / news…"/>
             <div class="cover-field"><input type="text" id="pCover" placeholder="Cover image URL"/><button type="button" class="admin-btn edit" onclick="wbaPickCover()">📁</button></div>
           </div>
-          <div class="form-row full"><input type="text" id="pTags" placeholder="Tags, comma separated (optional)"/></div>
 
-          <!-- PROMPT TOOL -->
-          <div class="prompt-tool">
-            <h3>✍️ Write with your AI (free — copy &amp; paste)</h3>
-            <p class="hint">Add your images below first (with a note on each), say what the Blog is about, then generate a prompt to paste into ChatGPT / Claude / Gemini. Paste the reply back to build the text blocks.</p>
+          <div class="field" style="margin-top:.5rem;">
+            <label>Tags</label>
+            <div class="tag-box" id="tagBox"></div>
+            <input type="text" id="tagInput" placeholder="Type a tag, press Enter" onkeydown="wbaTagKey(event)"/>
+          </div>
+
+          <!-- COLLAPSIBLE AI -->
+          <button type="button" class="ai-toggle" id="aiToggle" onclick="toggleAI()">✍️ Write with your AI (free — copy &amp; paste) <span class="chev">▾</span></button>
+          <div class="prompt-tool" id="aiPanel" style="display:none;">
+            <p class="hint">Add your images below (with a note on each), say what the Blog is about, generate the prompt, paste it into ChatGPT / Claude / Gemini — then paste the reply back to build the text.</p>
             <textarea id="promptTopic" placeholder="What's this Blog about? e.g. How to design a menu board in Canva"></textarea>
-            <div style="margin:.5rem 0;"><button type="button" class="admin-btn edit" onclick="wbaGenPrompt()">Generate prompt</button></div>
-            <div class="prompt-out"><textarea id="promptOut" readonly placeholder="Your prompt appears here…"></textarea><button type="button" class="copy-btn" onclick="wbaCopyPrompt()">Copy</button></div>
-            <div style="margin-top:.75rem;"><label style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--navy);">Paste the AI's reply here → build blocks</label>
+            <div style="margin:.6rem 0;"><button type="button" class="admin-btn edit" onclick="wbaGenPrompt()">Generate prompt</button></div>
+            <div class="key-field"><input type="text" id="promptOut" readonly placeholder="Your prompt appears here → then hit copy"/><button type="button" class="key-copy" id="copyIcon" onclick="wbaCopyPrompt()" title="Copy prompt">⧉</button></div>
+            <div style="margin-top:.9rem;"><label>Paste the AI's reply → build blocks</label>
               <textarea id="importText" placeholder="Paste the article your AI wrote…"></textarea>
               <button type="button" class="admin-btn ok" onclick="wbaImportAI()">Build blocks from this</button>
             </div>
           </div>
 
-          <!-- BUILDER -->
-          <label style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--navy);">The Blog (blocks)</label>
+          <label style="margin-top:1.4rem;">The Blog (blocks)</label>
           <div class="builder" id="builder"></div>
           <div class="add-block-bar">
             <button type="button" onclick="addBlock('header')">+ Header</button>
@@ -91,7 +99,7 @@
             <select id="pStatus"><option value="draft">Draft</option><option value="published">Published</option></select>
             <button type="button" class="btn-primary" onclick="wbaSave()">Save Blog</button>
             <button type="button" class="admin-btn edit" onclick="wbaPreview()">👁 Preview</button>
-            <button type="button" class="admin-btn edit" onclick="wbaNewPost()">+ New / clear</button>
+            <button type="button" class="admin-btn del" onclick="wbaNewPost(true)">+ New / clear</button>
             <span class="send-status" id="postStatus"></span>
           </div>
         </div>
@@ -114,8 +122,7 @@
 <script src="js/db.js"></script>
 <script src="js/blocks.js"></script>
 <script>
-var blocks = [];
-var pendingBlock = -1;
+var blocks=[], wbaTags=[], pendingBlock=-1, chainLinked=true, booted=false;
 function esc(s){ var d=document.createElement('div'); d.textContent=(s==null?'':s); return d.innerHTML; }
 function setStatus(id,msg,ok){ var s=document.getElementById(id); if(!s)return; s.className='send-status '+(ok?'ok':'err'); s.textContent=msg; }
 function bstat(msg){ var s=document.getElementById('bootStatus'); if(s){ s.className='send-status'; s.textContent=msg||''; } }
@@ -126,95 +133,95 @@ function wbaSignIn(){ if(!window.WBAdb){ setStatus('loginStatus','Still loading 
 function wbaSignOut(){ WBAdb.signOut().then(function(){ location.reload(); }); }
 function wbaTab(w){ document.getElementById('tabPosts').classList.toggle('on',w==='posts'); document.getElementById('tabSubs').classList.toggle('on',w==='subs');
   document.getElementById('panelPosts').style.display=w==='posts'?'block':'none'; document.getElementById('panelSubs').style.display=w==='subs'?'block':'none'; }
-function wbaAutoslug(){ var s=document.getElementById('pSlug'); if(!s.dataset.touched) s.value=wbaSlugify(document.getElementById('pTitle').value); }
-document.addEventListener('input',function(e){ if(e.target&&e.target.id==='pSlug') e.target.dataset.touched='1'; });
 
-/* ---------- blocks ---------- */
-function blockDefaults(type){
-  return {header:{type:'header',level:2,text:''},body:{type:'body',text:''},image:{type:'image',url:'',alt:'',caption:''},
-    imagetext:{type:'imagetext',url:'',alt:'',side:'left',text:''},button:{type:'button',label:'',url:''},
-    link:{type:'link',text:'',url:''},section:{type:'section',bg:'cream',heading:'',text:''}}[type];
+/* title/slug chain */
+function wbaAutoslug(){ if(chainLinked) document.getElementById('pSlug').value=wbaSlugify(document.getElementById('pTitle').value); }
+function wbaSlugEdited(){ chainLinked=false; document.getElementById('chainBtn').classList.remove('on'); }
+function toggleChain(){ chainLinked=!chainLinked; document.getElementById('chainBtn').classList.toggle('on',chainLinked); if(chainLinked) wbaAutoslug(); }
+
+/* AI panel */
+function toggleAI(){ var p=document.getElementById('aiPanel'), t=document.getElementById('aiToggle'); var open=p.style.display!=='none'; p.style.display=open?'none':'block'; t.classList.toggle('open',!open); }
+function wbaGenPrompt(){
+  var topic=document.getElementById('promptTopic').value.trim(); var imgs=[];
+  blocks.forEach(function(b){ if(b.type==='image'||b.type==='imagetext') imgs.push(b.alt||b.caption||b.text||'(describe this image)'); });
+  var p="You're writing a blog post for Weston Business Authority (WBA) — a friendly local creative & tech agency in Weston-super-Mare, Somerset. Clear, warm, practical UK English. No fluff, short paragraphs. What it's about: "+(topic||'(add your topic)')+". ";
+  if(imgs.length){ p+="It walks through these images IN ORDER — write a short section for each: "; imgs.forEach(function(d,n){ p+=(n+1)+") "+d+"; "; }); }
+  p+="Return plain text: a 1–2 sentence intro, then \"## Heading\" sections with 1–2 short paragraphs each, then a closing paragraph. Use \"## \" for headings. Don't insert the images — I'll place them.";
+  document.getElementById('promptOut').value=p;
 }
-function addBlock(type){ blocks.push(blockDefaults(type)); renderBuilder(); }
+function wbaCopyPrompt(){ var t=document.getElementById('promptOut'); if(!t.value){ wbaGenPrompt(); } t.select(); t.setSelectionRange(0,99999);
+  if(navigator.clipboard){ navigator.clipboard.writeText(t.value); } else { document.execCommand('copy'); }
+  var ic=document.getElementById('copyIcon'); ic.textContent='✓'; setTimeout(function(){ ic.textContent='⧉'; },1200); }
+function wbaImportAI(){ var txt=document.getElementById('importText').value.trim(); if(!txt){ setStatus('postStatus','Paste the AI reply first.'); return; }
+  var nb=wbaParseAIText(txt); if(!nb.length){ setStatus('postStatus','Nothing to import.'); return; }
+  blocks=blocks.concat(nb); renderBuilder(); document.getElementById('importText').value='';
+  setStatus('postStatus','Added '+nb.length+' blocks ✓ — slot your images in.',true); }
+
+/* tags */
+function renderTags(){ document.getElementById('tagBox').innerHTML=wbaTags.map(function(t){ return '<span class="tag-chip">'+esc(t)+'<button type="button" onclick="wbaRemoveTag(\''+t.replace(/'/g,"\\'")+'\')">✕</button></span>'; }).join(''); }
+function wbaAddTag(t){ t=(t||'').trim(); if(!t) return; if(wbaTags.map(function(x){return x.toLowerCase();}).indexOf(t.toLowerCase())>-1) return; wbaTags.push(t); renderTags(); }
+function wbaRemoveTag(t){ wbaTags=wbaTags.filter(function(x){return x!==t;}); renderTags(); }
+function wbaTagKey(e){ if(e.key==='Enter'||e.key===','){ e.preventDefault(); wbaAddTag(e.target.value); e.target.value=''; } }
+
+/* blocks */
+function blockDefaults(t){ return {header:{type:'header',level:2,text:''},body:{type:'body',text:''},image:{type:'image',url:'',alt:'',caption:''},
+  imagetext:{type:'imagetext',url:'',alt:'',side:'left',text:''},button:{type:'button',label:'',url:''},link:{type:'link',text:'',url:''},section:{type:'section',heading:'',text:''}}[t]; }
+function addBlock(t){ blocks.push(blockDefaults(t)); renderBuilder(); }
 function delBlock(i){ blocks.splice(i,1); renderBuilder(); }
 function moveBlock(i,d){ var j=i+d; if(j<0||j>=blocks.length) return; var t=blocks[i]; blocks[i]=blocks[j]; blocks[j]=t; renderBuilder(); }
 function updateBlock(i,f,v){ if(blocks[i]) blocks[i][f]=v; }
+function toggleStyle(i){ var el=document.getElementById('bstyle-'+i); if(el) el.style.display=el.style.display==='none'?'block':'none'; }
 function wbaBlockPick(i){ pendingBlock=i; document.getElementById('fileBlock').click(); }
-
-function ctrls(i){ return '<div class="blk-ctrls"><button type="button" title="Up" onclick="moveBlock('+i+',-1)">↑</button><button type="button" title="Down" onclick="moveBlock('+i+',1)">↓</button><button type="button" title="Delete" onclick="delBlock('+i+')">✕</button></div>'; }
-function card(i,label,inner){ return '<div class="blk-card"><div class="blk-card-head"><span class="blk-card-type">'+label+'</span>'+ctrls(i)+'</div>'+inner+'</div>'; }
-function imgControls(i,b){ var thumb=b.url?'<img src="'+esc(b.url)+'" style="max-height:70px;border-radius:4px;margin-top:.4rem;"/>':'';
-  return '<div class="field"><button type="button" class="admin-btn edit" onclick="wbaBlockPick('+i+')">📁 Upload</button> <input type="text" value="'+esc(b.url)+'" placeholder="…or paste image URL" oninput="updateBlock('+i+',\'url\',this.value)" style="width:auto;flex:1;"/></div>'+thumb; }
+function sel(opts,cur){ return opts.map(function(o){ return '<option value="'+o[0]+'"'+(o[0]===cur?' selected':'')+'>'+o[1]+'</option>'; }).join(''); }
+function ctrls(i){ return '<div class="blk-ctrls"><button type="button" title="Style" onclick="toggleStyle('+i+')">🎨</button><button type="button" title="Up" onclick="moveBlock('+i+',-1)">↑</button><button type="button" title="Down" onclick="moveBlock('+i+',1)">↓</button><button type="button" title="Delete" onclick="delBlock('+i+')">✕</button></div>'; }
+function styleRow(i,b){ var isHex=b.bg&&['cream','white','navy','gold',''].indexOf(b.bg)<0;
+  return '<div class="blk-style" id="bstyle-'+i+'" style="display:none;"><div class="blk-row2">'
+    +'<div><span class="sl">Background</span><select onchange="updateBlock('+i+',\'bg\',this.value)">'+sel([['','None'],['cream','Cream'],['white','White'],['navy','Navy'],['gold','Gold']], isHex?'':(b.bg||''))+'</select></div>'
+    +'<div><span class="sl">Padding</span><select onchange="updateBlock('+i+',\'pad\',this.value)">'+sel([['','Default'],['sm','Small'],['lg','Large']], b.pad||'')+'</select></div></div>'
+    +'<div class="blk-row2" style="margin-top:.4rem;"><div><span class="sl">Custom colour</span><input type="color" value="'+(isHex?esc(b.bg):'#00224d')+'" oninput="updateBlock('+i+',\'bg\',this.value)"/></div><div></div></div></div>'; }
+function card(i,label,inner,b){ return '<div class="blk-card"><div class="blk-card-head"><span class="blk-card-type">'+label+'</span>'+ctrls(i)+'</div>'+inner+styleRow(i,b)+'</div>'; }
+function imgCtl(i,b){ return '<div class="field"><button type="button" class="admin-btn edit" onclick="wbaBlockPick('+i+')">📁 Upload</button> <input type="text" value="'+esc(b.url)+'" placeholder="…or paste image URL" oninput="updateBlock('+i+',\'url\',this.value)" style="flex:1;"/></div>'+(b.url?'<img src="'+esc(b.url)+'" style="max-height:80px;border-radius:6px;margin-top:.4rem;"/>':''); }
 
 function renderBuilder(){
   var el=document.getElementById('builder');
   if(!blocks.length){ el.innerHTML='<div class="builder-empty">No blocks yet — add one below, or paste an AI reply above.</div>'; return; }
   el.innerHTML=blocks.map(function(b,i){
-    if(b.type==='header') return card(i,'Header','<div class="blk-row2"><input type="text" value="'+esc(b.text)+'" placeholder="Heading text" oninput="updateBlock('+i+',\'text\',this.value)"/><select onchange="updateBlock('+i+',\'level\',+this.value)"><option value="2"'+(b.level!==3?' selected':'')+'>Large (H2)</option><option value="3"'+(b.level===3?' selected':'')+'>Small (H3)</option></select></div>');
-    if(b.type==='body') return card(i,'Text','<textarea placeholder="Write your paragraph… (Markdown ok: **bold**, [links](url))" oninput="updateBlock('+i+',\'text\',this.value)">'+esc(b.text)+'</textarea>');
-    if(b.type==='image') return card(i,'Image',imgControls(i,b)+'<div class="blk-row2" style="margin-top:.5rem;"><input type="text" value="'+esc(b.alt)+'" placeholder="Alt text (describe it)" oninput="updateBlock('+i+',\'alt\',this.value)"/><input type="text" value="'+esc(b.caption)+'" placeholder="Caption (optional)" oninput="updateBlock('+i+',\'caption\',this.value)"/></div>');
-    if(b.type==='imagetext') return card(i,'Image &amp; Text',imgControls(i,b)+'<div class="blk-row2" style="margin-top:.5rem;"><input type="text" value="'+esc(b.alt)+'" placeholder="Alt text" oninput="updateBlock('+i+',\'alt\',this.value)"/><select onchange="updateBlock('+i+',\'side\',this.value)"><option value="left"'+(b.side!=='right'?' selected':'')+'>Image on left</option><option value="right"'+(b.side==='right'?' selected':'')+'>Image on right</option></select></div><textarea placeholder="Text beside the image…" oninput="updateBlock('+i+',\'text\',this.value)">'+esc(b.text)+'</textarea>');
-    if(b.type==='button') return card(i,'Button','<div class="blk-row2"><input type="text" value="'+esc(b.label)+'" placeholder="Button label" oninput="updateBlock('+i+',\'label\',this.value)"/><input type="text" value="'+esc(b.url)+'" placeholder="Link (contact.html or https://…)" oninput="updateBlock('+i+',\'url\',this.value)"/></div>');
-    if(b.type==='link') return card(i,'Hyperlink','<div class="blk-row2"><input type="text" value="'+esc(b.text)+'" placeholder="Link text" oninput="updateBlock('+i+',\'text\',this.value)"/><input type="text" value="'+esc(b.url)+'" placeholder="URL" oninput="updateBlock('+i+',\'url\',this.value)"/></div>');
-    if(b.type==='section') return card(i,'Background Section','<div class="blk-row2"><input type="text" value="'+esc(b.heading)+'" placeholder="Section heading" oninput="updateBlock('+i+',\'heading\',this.value)"/><select onchange="updateBlock('+i+',\'bg\',this.value)"><option value="cream"'+(b.bg==='cream'?' selected':'')+'>Cream</option><option value="white"'+(b.bg==='white'?' selected':'')+'>White</option><option value="navy"'+(b.bg==='navy'?' selected':'')+'>Navy</option><option value="gold"'+(b.bg==='gold'?' selected':'')+'>Gold</option></select></div><textarea placeholder="Section text…" oninput="updateBlock('+i+',\'text\',this.value)">'+esc(b.text)+'</textarea>');
+    if(b.type==='header') return card(i,'Header','<div class="blk-row2"><input type="text" value="'+esc(b.text)+'" placeholder="Heading text" oninput="updateBlock('+i+',\'text\',this.value)"/><select onchange="updateBlock('+i+',\'level\',+this.value)"><option value="2"'+(b.level!==3?' selected':'')+'>Large (H2)</option><option value="3"'+(b.level===3?' selected':'')+'>Small (H3)</option></select></div>',b);
+    if(b.type==='body') return card(i,'Text','<textarea placeholder="Write your paragraph… (Markdown ok)" oninput="updateBlock('+i+',\'text\',this.value)">'+esc(b.text)+'</textarea>',b);
+    if(b.type==='image') return card(i,'Image',imgCtl(i,b)+'<div class="blk-row2" style="margin-top:.5rem;"><input type="text" value="'+esc(b.alt)+'" placeholder="Alt / description" oninput="updateBlock('+i+',\'alt\',this.value)"/><input type="text" value="'+esc(b.caption)+'" placeholder="Caption (optional)" oninput="updateBlock('+i+',\'caption\',this.value)"/></div>',b);
+    if(b.type==='imagetext') return card(i,'Image &amp; Text',imgCtl(i,b)+'<div class="blk-row2" style="margin-top:.5rem;"><input type="text" value="'+esc(b.alt)+'" placeholder="Alt text" oninput="updateBlock('+i+',\'alt\',this.value)"/><select onchange="updateBlock('+i+',\'side\',this.value)"><option value="left"'+(b.side!=='right'?' selected':'')+'>Image left</option><option value="right"'+(b.side==='right'?' selected':'')+'>Image right</option></select></div><textarea placeholder="Text beside the image…" oninput="updateBlock('+i+',\'text\',this.value)">'+esc(b.text)+'</textarea>',b);
+    if(b.type==='button') return card(i,'Button','<div class="blk-row2"><input type="text" value="'+esc(b.label)+'" placeholder="Button label" oninput="updateBlock('+i+',\'label\',this.value)"/><input type="text" value="'+esc(b.url)+'" placeholder="Link" oninput="updateBlock('+i+',\'url\',this.value)"/></div>',b);
+    if(b.type==='link') return card(i,'Hyperlink','<div class="blk-row2"><input type="text" value="'+esc(b.text)+'" placeholder="Link text" oninput="updateBlock('+i+',\'text\',this.value)"/><input type="text" value="'+esc(b.url)+'" placeholder="URL" oninput="updateBlock('+i+',\'url\',this.value)"/></div>',b);
+    if(b.type==='section') return card(i,'Section','<div class="field"><input type="text" value="'+esc(b.heading)+'" placeholder="Section heading" oninput="updateBlock('+i+',\'heading\',this.value)"/></div><textarea placeholder="Section text…" oninput="updateBlock('+i+',\'text\',this.value)">'+esc(b.text)+'</textarea>',b);
     return '';
   }).join('');
 }
 
-/* ---------- prompt tool ---------- */
-function wbaGenPrompt(){
-  var topic=document.getElementById('promptTopic').value.trim();
-  var imgs=[]; blocks.forEach(function(b){ if(b.type==='image'||b.type==='imagetext'){ imgs.push(b.alt||b.caption||b.text||'(describe this image)'); } });
-  var p="You're writing a blog post for Weston Business Authority (WBA) — a friendly local creative & tech agency in Weston-super-Mare, Somerset. Write in clear, warm, practical UK English. No fluff, no buzzwords, short paragraphs.\n\n";
-  p+="What this Blog is about:\n"+(topic||'(add your topic above)')+"\n\n";
-  if(imgs.length){ p+="It walks through these images IN ORDER — write a short section for each one:\n"; imgs.forEach(function(d,n){ p+=(n+1)+". "+d+"\n"; }); p+="\n"; }
-  p+="Return it as plain text like this:\n- A 1–2 sentence intro.\n"+(imgs.length?"- For each image: a \"## Short heading\" line, then 1–2 short paragraphs.\n":"- A few \"## Heading\" sections with short paragraphs under each.\n")+"- A closing paragraph.\nUse \"## \" for headings. Don't insert the images — I'll place them myself.";
-  document.getElementById('promptOut').value=p;
-}
-function wbaCopyPrompt(){ var t=document.getElementById('promptOut'); t.select(); if(navigator.clipboard){ navigator.clipboard.writeText(t.value); } else { document.execCommand('copy'); } setStatus('postStatus','Prompt copied ✓',true); }
-function wbaImportAI(){
-  var txt=document.getElementById('importText').value.trim(); if(!txt){ setStatus('postStatus','Paste the AI reply first.'); return; }
-  var newBlocks=wbaParseAIText(txt); if(!newBlocks.length){ setStatus('postStatus','Nothing to import.'); return; }
-  blocks=blocks.concat(newBlocks); renderBuilder(); document.getElementById('importText').value='';
-  setStatus('postStatus','Added '+newBlocks.length+' blocks ✓ — now slot your images in.',true);
-}
-
-/* ---------- images ---------- */
+/* images */
 function wbaPickCover(){ document.getElementById('fileCover').click(); }
 function wbaUpload(file,cb){ if(!window.WBAdb||!WBAdb.uploadImage){ setStatus('postStatus','Uploading needs the storage step — run storage-setup.sql.'); return; }
   setStatus('postStatus','Uploading…',true); WBAdb.uploadImage(file).then(function(url){ cb(url); setStatus('postStatus','Uploaded ✓',true); }).catch(function(e){ setStatus('postStatus','Upload failed: '+((e&&e.message)||e)); }); }
 
-/* ---------- preview / save ---------- */
-function wbaPreview(){
-  try{ localStorage.setItem('wba_preview', JSON.stringify({ title:document.getElementById('pTitle').value, cover:document.getElementById('pCover').value, category:document.getElementById('pCategory').value, blocks:blocks })); }catch(e){}
-  window.open('post.html?preview=1','_blank');
-}
-function wbaNewPost(){
-  ['postId','pTitle','pSlug','pExcerpt','pCover','pTags','promptTopic','promptOut','importText'].forEach(function(id){ document.getElementById(id).value=''; });
+/* preview / save */
+function wbaPreview(){ try{ localStorage.setItem('wba_preview',JSON.stringify({title:document.getElementById('pTitle').value,cover:document.getElementById('pCover').value,category:document.getElementById('pCategory').value,blocks:blocks})); }catch(e){} window.open('post.html?preview=1','_blank'); }
+function wbaNewPost(confirmFirst){ if(confirmFirst && (blocks.length||document.getElementById('pTitle').value) && !confirm('Clear this Blog and start fresh?')) return;
+  ['postId','pTitle','pSlug','pExcerpt','pCover','promptTopic','promptOut','importText'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('pCategory').value='tutorial'; document.getElementById('pStatus').value='draft';
-  var s=document.getElementById('pSlug'); delete s.dataset.touched; blocks=[]; renderBuilder(); setStatus('postStatus','',true);
-}
-function wbaSave(){
-  var title=document.getElementById('pTitle').value.trim(); var slug=document.getElementById('pSlug').value.trim()||wbaSlugify(title);
+  chainLinked=true; document.getElementById('chainBtn').classList.add('on'); blocks=[]; wbaTags=[]; renderTags(); renderBuilder(); setStatus('postStatus','',true); }
+function wbaSave(){ var title=document.getElementById('pTitle').value.trim(); var slug=document.getElementById('pSlug').value.trim()||wbaSlugify(title);
   if(!title||!slug){ setStatus('postStatus','Title and slug are required.'); return; }
-  var tags=document.getElementById('pTags').value.split(',').map(function(t){return t.trim();}).filter(Boolean);
-  var post={ id:document.getElementById('postId').value||undefined, title:title, slug:slug,
-    excerpt:document.getElementById('pExcerpt').value.trim(), category:document.getElementById('pCategory').value.trim()||'tutorial',
-    cover_image:document.getElementById('pCover').value.trim()||null, tags:tags,
-    body:JSON.stringify(blocks), status:document.getElementById('pStatus').value };
+  var post={ id:document.getElementById('postId').value||undefined,title:title,slug:slug,excerpt:document.getElementById('pExcerpt').value.trim(),
+    category:document.getElementById('pCategory').value.trim()||'tutorial',cover_image:document.getElementById('pCover').value.trim()||null,
+    tags:wbaTags.slice(),body:JSON.stringify(blocks),status:document.getElementById('pStatus').value };
   setStatus('postStatus','Saving…',true);
   WBAdb.savePost(post).then(function(r){ if(r.error){ setStatus('postStatus',r.error.message); return; }
-    setStatus('postStatus','Saved ✓ '+(post.status==='published'?'— live on the Blog':'(draft)'),true); wbaNewPost(); loadPosts(); });
-}
-function editPost(p){
-  document.getElementById('postId').value=p.id; document.getElementById('pTitle').value=p.title||'';
-  document.getElementById('pSlug').value=p.slug||''; document.getElementById('pSlug').dataset.touched='1';
+    setStatus('postStatus','Saved ✓ '+(post.status==='published'?'— live on the Blog':'(draft)'),true); loadPosts(); }); }
+function editPost(p){ document.getElementById('postId').value=p.id; document.getElementById('pTitle').value=p.title||'';
+  document.getElementById('pSlug').value=p.slug||''; chainLinked=false; document.getElementById('chainBtn').classList.remove('on');
   document.getElementById('pExcerpt').value=p.excerpt||''; document.getElementById('pCategory').value=p.category||'tutorial';
-  document.getElementById('pCover').value=p.cover_image||''; document.getElementById('pTags').value=(p.tags||[]).join(', ');
-  document.getElementById('pStatus').value=p.status||'draft'; blocks=wbaParseBlocks(p.body); renderBuilder();
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function delPost(id){ if(!confirm('Delete this Blog? This cannot be undone.')) return; WBAdb.deletePost(id).then(function(){ loadPosts(); }); }
+  document.getElementById('pCover').value=p.cover_image||''; wbaTags=(p.tags||[]).slice(); renderTags();
+  document.getElementById('pStatus').value=p.status||'draft'; blocks=wbaParseBlocks(p.body); renderBuilder(); window.scrollTo({top:0,behavior:'smooth'}); }
+function delPost(id){ if(!confirm('Delete this Blog?')) return; WBAdb.deletePost(id).then(function(){ loadPosts(); }); }
 
 function loadPosts(){ WBAdb.allPosts().then(function(r){ var list=document.getElementById('postList'); var posts=r.data||[];
   if(!posts.length){ list.innerHTML='<p class="admin-note">No Blogs yet — build your first one above.</p>'; return; }
@@ -226,23 +233,23 @@ function loadSubs(){ WBAdb.allSubs().then(function(r){ var list=document.getElem
   var pending=subs.filter(function(s){return s.status==='pending';}).length; document.getElementById('subCount').textContent=pending?('('+pending+')'):'';
   if(!subs.length){ list.innerHTML='<p class="admin-note">No submissions yet.</p>'; return; }
   list.innerHTML=subs.map(function(s){ var img=s.image_url?' · <a href="'+esc(s.image_url)+'" target="_blank">photo</a>':'';
-    return '<div class="admin-row"><div><strong>'+esc(s.title||'(untitled)')+'</strong> <span class="muted">'+esc(s.type)+' · '+esc(s.status)+'</span><br>'
-      +'<span class="muted">'+esc(s.description||'')+' '+(s.location?('· '+esc(s.location)):'')+img+'</span><br><span class="muted">'+esc(s.submitter_name||'anon')+'</span></div>'
+    return '<div class="admin-row"><div><strong>'+esc(s.title||'(untitled)')+'</strong> <span class="muted">'+esc(s.type)+' · '+esc(s.status)+'</span><br><span class="muted">'+esc(s.description||'')+img+'</span></div>'
       +'<div class="admin-actions"><button class="admin-btn ok" onclick="setSub(\''+s.id+'\',\'approved\')">Approve</button><button class="admin-btn del" onclick="setSub(\''+s.id+'\',\'rejected\')">Reject</button></div></div>'; }).join(''); }); }
 function setSub(id,st){ WBAdb.setSub(id,st).then(function(){ loadSubs(); }); }
 
-function boot(){ if(!window.WBAdb){ bstat('Still loading — refresh.'); return; } bstat('Checking your access…');
+function boot(){ if(!window.WBAdb){ bstat('Still loading — refresh.'); return; } if(!booted) bstat('Checking your access…');
   WBAdb.currentUser().then(function(u){ if(!u.data||!u.data.user){ showOnly('loginBox'); document.getElementById('signOutLink').style.display='none'; bstat(''); return; }
     document.getElementById('signOutLink').style.display='inline'; var uid=u.data.user.id;
     WBAdb.isAdmin().then(function(r){ if(r.error){ showOnly('loginBox'); bstat('Access check failed: '+r.error.message); return; }
-      if(r.data===true){ showOnly('dash'); bstat(''); wbaNewPost(); loadPosts(); loadSubs(); }
+      if(r.data===true){ showOnly('dash'); bstat(''); loadPosts(); loadSubs(); if(!booted){ booted=true; wbaNewPost(); } }
       else { showOnly('notAdmin'); bstat(''); document.getElementById('uid').textContent=uid; } }); }).catch(function(e){ bstat('Something went wrong: '+((e&&e.message)||e)); }); }
 
 window.addEventListener('DOMContentLoaded',function(){
-  var fc=document.getElementById('fileCover'); if(fc) fc.onchange=function(){ var f=this.files[0]; if(f) wbaUpload(f,function(url){ document.getElementById('pCover').value=url; }); this.value=''; };
-  var fb=document.getElementById('fileBlock'); if(fb) fb.onchange=function(){ var f=this.files[0]; if(f&&pendingBlock>-1) wbaUpload(f,function(url){ blocks[pendingBlock].url=url; renderBuilder(); }); this.value=''; pendingBlock=-1; };
+  var fc=document.getElementById('fileCover'); if(fc) fc.onchange=function(){ var f=this.files[0]; this.value=''; if(f) wbaUpload(f,function(url){ document.getElementById('pCover').value=url; }); };
+  var fb=document.getElementById('fileBlock'); if(fb) fb.onchange=function(){ var f=this.files[0]; var idx=pendingBlock; this.value=''; pendingBlock=-1; if(f&&idx>-1) wbaUpload(f,function(url){ if(blocks[idx]){ blocks[idx].url=url; renderBuilder(); } }); };
 });
-if(window.sbc){ sbc.auth.onAuthStateChange(function(){ boot(); }); }
+/* only react to real sign-in/out — never re-clear on token refresh */
+if(window.sbc) sbc.auth.onAuthStateChange(function(evt){ if(evt==='SIGNED_OUT'){ location.reload(); } else if(!booted){ boot(); } });
 if(window.WBAdb){ boot(); }
 </script>
 </body>

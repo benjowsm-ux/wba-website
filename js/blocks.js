@@ -14,35 +14,51 @@ function wbaParseBlocks(body){
   try { var j = JSON.parse(body); return Array.isArray(j) ? j : []; } catch(e){ return []; }
 }
 
+/* Pick readable text colour for a custom background hex. */
+function wbaTextOn(hex){
+  try{ var c=(hex||'').replace('#',''); if(c.length===3) c=c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+    var r=parseInt(c.substr(0,2),16),g=parseInt(c.substr(2,2),16),bl=parseInt(c.substr(4,2),16);
+    return ((r*299+g*587+bl*114)/1000) > 150 ? '#1a1f2e' : '#ffffff';
+  }catch(e){ return '#1a1f2e'; }
+}
+/* Wrap a block in a styled container if it has a background/padding. */
+function wbaWrapBlock(b, inner){
+  if(!inner) return '';
+  var cls='blk-wrap', style='', preset=['cream','white','navy','gold'];
+  if(b.bg){ cls+=' has-bg'; if(preset.indexOf(b.bg)>-1) cls+=' bg-'+b.bg; else style=' style="background:'+wbaEsc(b.bg)+';color:'+wbaTextOn(b.bg)+'"'; }
+  if(b.pad==='sm') cls+=' pad-sm'; else if(b.pad==='lg') cls+=' pad-lg';
+  if(cls==='blk-wrap' && !style) return inner;
+  return '<div class="'+cls+'"'+style+'>'+inner+'</div>';
+}
+
 /* Render a blocks array to HTML. */
 function wbaRenderBlocks(blocks){
   if(!Array.isArray(blocks)) return '';
   return blocks.map(function(b){
     if(!b || !b.type) return '';
+    var inner = '';
     switch(b.type){
       case 'header':
-        var lv = (b.level === 3 ? 'h3' : 'h2');
-        return '<' + lv + '>' + wbaEsc(b.text) + '</' + lv + '>';
+        var lv = (b.level === 3 ? 'h3' : 'h2'); inner = '<' + lv + '>' + wbaEsc(b.text) + '</' + lv + '>'; break;
       case 'body':
-        return '<div class="blk-body">' + wbaMD(b.text) + '</div>';
+        inner = '<div class="blk-body">' + wbaMD(b.text) + '</div>'; break;
       case 'image':
-        if(!b.url) return '';
-        return '<figure class="blk-image"><img src="' + wbaEsc(b.url) + '" alt="' + wbaEsc(b.alt) + '" loading="lazy"/>'
-             + (b.caption ? '<figcaption>' + wbaEsc(b.caption) + '</figcaption>' : '') + '</figure>';
+        if(!b.url) break;
+        inner = '<figure class="blk-image"><img src="' + wbaEsc(b.url) + '" alt="' + wbaEsc(b.alt) + '" loading="lazy"/>'
+              + (b.caption ? '<figcaption>' + wbaEsc(b.caption) + '</figcaption>' : '') + '</figure>'; break;
       case 'imagetext':
         var img = b.url ? '<div class="blk-it-img"><img src="' + wbaEsc(b.url) + '" alt="' + wbaEsc(b.alt) + '" loading="lazy"/></div>' : '';
-        return '<div class="blk-imagetext' + (b.side === 'right' ? ' img-right' : '') + '">' + img
-             + '<div class="blk-it-text">' + wbaMD(b.text) + '</div></div>';
+        inner = '<div class="blk-imagetext' + (b.side === 'right' ? ' img-right' : '') + '">' + img
+              + '<div class="blk-it-text">' + wbaMD(b.text) + '</div></div>'; break;
       case 'button':
-        return '<div class="blk-button"><a class="btn-primary" href="' + wbaEsc(b.url || '#') + '">' + wbaEsc(b.label || 'Button') + '</a></div>';
+        inner = '<div class="blk-button"><a class="btn-primary" href="' + wbaEsc(b.url || '#') + '">' + wbaEsc(b.label || 'Button') + '</a></div>'; break;
       case 'link':
-        return '<p class="blk-link"><a href="' + wbaEsc(b.url || '#') + '">' + wbaEsc(b.text || b.url || 'Link') + ' →</a></p>';
+        inner = '<p class="blk-link"><a href="' + wbaEsc(b.url || '#') + '">' + wbaEsc(b.text || b.url || 'Link') + ' →</a></p>'; break;
       case 'section':
-        return '<div class="blk-section bg-' + wbaEsc(b.bg || 'cream') + '">'
-             + (b.heading ? '<h2>' + wbaEsc(b.heading) + '</h2>' : '')
-             + (b.text ? wbaMD(b.text) : '') + '</div>';
+        inner = (b.heading ? '<h2>' + wbaEsc(b.heading) + '</h2>' : '') + (b.text ? wbaMD(b.text) : ''); break;
       default: return '';
     }
+    return wbaWrapBlock(b, inner);
   }).join('\n');
 }
 
