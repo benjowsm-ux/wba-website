@@ -90,10 +90,10 @@
           <button type="button" class="ai-toggle" id="aiToggle" onclick="toggleAI()">✍️ Write with your AI (free — copy &amp; paste) <span class="chev">▾</span></button>
           <div class="prompt-tool" id="aiPanel" style="display:none;">
             <p class="hint">Add your images below (with a note on each), say what the Blog is about, generate the prompt, paste it into ChatGPT / Claude / Gemini — then paste the reply back to build the text.</p>
-            <textarea id="promptTopic" placeholder="What's this Blog about? e.g. How to design a menu board in Canva"></textarea>
-            <div style="margin:.6rem 0;"><button type="button" class="admin-btn edit" onclick="wbaGenPrompt()">Generate prompt</button></div>
-            <div class="key-field"><input type="text" id="promptOut" readonly placeholder="Your prompt appears here → then hit copy"/><button type="button" class="key-copy" id="copyIcon" onclick="wbaCopyPrompt()" title="Copy prompt">⧉</button></div>
-            <div style="margin-top:.9rem;"><label>Paste the AI's reply → build blocks</label>
+            <textarea id="promptTopic" placeholder="What's this Blog about? e.g. How to design a café menu board in Canva"></textarea>
+            <button type="button" class="btn-primary" style="margin-top:.7rem;" onclick="wbaGenCopy()">✨ Generate &amp; copy prompt</button>
+            <div class="prompt-out"><textarea id="promptOut" readonly placeholder="Your prompt appears here — and copies to your clipboard automatically."></textarea><button type="button" class="copy-btn" id="copyIcon" onclick="wbaCopyPrompt()" title="Copy again">Copy</button></div>
+            <div style="margin-top:1rem;"><label>Paste the AI's reply here → build blocks</label>
               <textarea id="importText" placeholder="Paste the article your AI wrote…"></textarea>
               <button type="button" class="admin-btn ok" onclick="wbaImportAI()">Build blocks from this</button>
             </div>
@@ -122,6 +122,7 @@
 
         <input type="file" id="fileCover" accept="image/*" style="display:none;"/>
         <input type="file" id="fileBlock" accept="image/*" style="display:none;"/>
+        <p class="admin-note" style="margin-top:1.75rem;">🔄 Publishing, editing or deleting a Blog updates the database instantly — but the <strong>live site rebuilds itself about every 30 minutes</strong>. To push a change live right now, open your repo's <strong>Actions</strong> tab and hit <strong>“Build blog → Run workflow”</strong>.</p>
         <div class="admin-list" id="postList"></div>
       </div>
 
@@ -151,23 +152,33 @@ function wbaTab(w){ document.getElementById('tabPosts').classList.toggle('on',w=
   document.getElementById('panelPosts').style.display=w==='posts'?'block':'none'; document.getElementById('panelSubs').style.display=w==='subs'?'block':'none'; }
 
 /* title/slug chain */
+function setChain(on){ chainLinked=on; var c=document.getElementById('chainBtn'); c.classList.toggle('on',on); c.textContent=on?'🔗':'🔓'; c.title=on?'Linked — slug follows the title (click to unlink)':'Unlinked — slug is independent (click to link)'; }
 function wbaAutoslug(){ if(chainLinked) document.getElementById('pSlug').value=wbaSlugify(document.getElementById('pTitle').value); }
-function wbaSlugEdited(){ chainLinked=false; document.getElementById('chainBtn').classList.remove('on'); }
-function toggleChain(){ chainLinked=!chainLinked; document.getElementById('chainBtn').classList.toggle('on',chainLinked); if(chainLinked) wbaAutoslug(); }
+function wbaSlugEdited(){ setChain(false); }
+function toggleChain(){ setChain(!chainLinked); if(chainLinked) wbaAutoslug(); }
 
 /* AI panel */
 function toggleAI(){ var p=document.getElementById('aiPanel'), t=document.getElementById('aiToggle'); var open=p.style.display!=='none'; p.style.display=open?'none':'block'; t.classList.toggle('open',!open); }
-function wbaGenPrompt(){
+function wbaBuildPrompt(){
   var topic=document.getElementById('promptTopic').value.trim(); var imgs=[];
   blocks.forEach(function(b){ if(b.type==='image'||b.type==='imagetext') imgs.push(b.alt||b.caption||b.text||'(describe this image)'); });
-  var p="You're writing a blog post for Weston Business Authority (WBA) — a friendly local creative & tech agency in Weston-super-Mare, Somerset. Clear, warm, practical UK English. No fluff, short paragraphs. What it's about: "+(topic||'(add your topic)')+". ";
-  if(imgs.length){ p+="It walks through these images IN ORDER — write a short section for each: "; imgs.forEach(function(d,n){ p+=(n+1)+") "+d+"; "; }); }
-  p+="Return plain text: a 1–2 sentence intro, then \"## Heading\" sections with 1–2 short paragraphs each, then a closing paragraph. Use \"## \" for headings. Don't insert the images — I'll place them.";
-  document.getElementById('promptOut').value=p;
+  var p="You're writing a blog post for Weston Business Authority (WBA), a friendly local creative & tech agency in Weston-super-Mare, Somerset.\n\n";
+  p+="TOPIC: "+(topic||'(add your topic above)')+"\n\n";
+  p+="STYLE: warm, clear, practical UK English. Short paragraphs. No fluff, no buzzwords. Write for a local business owner.\n\n";
+  if(imgs.length){ p+="IMAGES (in order — write one short section per image):\n"; imgs.forEach(function(d,n){ p+="  "+(n+1)+". "+d+"\n"; }); p+="\n"; }
+  p+="FORMAT the reply exactly like this so it imports cleanly:\n";
+  p+="- A 1–2 sentence intro paragraph.\n";
+  p+=(imgs.length?"- For each image: a \"## \" heading, then 1–2 short paragraphs.\n":"- A few \"## \" headings, each with 1–2 short paragraphs under it.\n");
+  p+="- A short closing paragraph.\n";
+  p+="Use \"## \" for every heading; plain paragraphs otherwise. Don't add the images yourself — I'll place them.";
+  return p;
 }
-function wbaCopyPrompt(){ var t=document.getElementById('promptOut'); if(!t.value){ wbaGenPrompt(); } t.select(); t.setSelectionRange(0,99999);
+function wbaGenPrompt(){ document.getElementById('promptOut').value = wbaBuildPrompt(); }
+function wbaCopyPrompt(){ var t=document.getElementById('promptOut'); if(!t.value) t.value=wbaBuildPrompt(); t.select(); try{ t.setSelectionRange(0,99999); }catch(e){}
   if(navigator.clipboard){ navigator.clipboard.writeText(t.value); } else { document.execCommand('copy'); }
-  var ic=document.getElementById('copyIcon'); ic.textContent='✓'; setTimeout(function(){ ic.textContent='⧉'; },1200); }
+  var ic=document.getElementById('copyIcon'); if(ic){ ic.textContent='Copied ✓'; setTimeout(function(){ ic.textContent='Copy'; },1400); }
+  setStatus('postStatus','Prompt copied — paste it into your AI.',true); }
+function wbaGenCopy(){ wbaGenPrompt(); wbaCopyPrompt(); }
 function wbaImportAI(){ var txt=document.getElementById('importText').value.trim(); if(!txt){ setStatus('postStatus','Paste the AI reply first.'); return; }
   var nb=wbaParseAIText(txt); if(!nb.length){ setStatus('postStatus','Nothing to import.'); return; }
   blocks=blocks.concat(nb); renderBuilder(); document.getElementById('importText').value='';
@@ -223,7 +234,7 @@ function wbaPreview(){ try{ localStorage.setItem('wba_preview',JSON.stringify({t
 function wbaNewPost(confirmFirst){ if(confirmFirst && (blocks.length||document.getElementById('pTitle').value) && !confirm('Clear this Blog and start fresh?')) return;
   ['postId','pTitle','pSlug','pExcerpt','pCover','promptTopic','promptOut','importText'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('pCategory').value='tutorial'; document.getElementById('pStatus').value='draft';
-  chainLinked=true; document.getElementById('chainBtn').classList.add('on'); blocks=[]; wbaTags=[]; renderTags(); renderBuilder(); setStatus('postStatus','',true); }
+  setChain(true); blocks=[]; wbaTags=[]; renderTags(); renderBuilder(); setStatus('postStatus','',true); }
 function wbaSave(){ var title=document.getElementById('pTitle').value.trim(); var slug=document.getElementById('pSlug').value.trim()||wbaSlugify(title);
   if(!title||!slug){ setStatus('postStatus','Title and slug are required.'); return; }
   var post={ id:document.getElementById('postId').value||undefined,title:title,slug:slug,excerpt:document.getElementById('pExcerpt').value.trim(),
@@ -235,7 +246,7 @@ function wbaSave(){ var title=document.getElementById('pTitle').value.trim(); va
 function clone(a){ return JSON.parse(JSON.stringify(a||[])); }
 function editPost(id){ var p=(window.wbaPostsById||{})[id]; if(!p) return;
   document.getElementById('postId').value=p.id; document.getElementById('pTitle').value=p.title||'';
-  document.getElementById('pSlug').value=p.slug||''; chainLinked=false; document.getElementById('chainBtn').classList.remove('on');
+  document.getElementById('pSlug').value=p.slug||''; setChain(false);
   document.getElementById('pExcerpt').value=p.excerpt||''; document.getElementById('pCategory').value=p.category||'tutorial';
   document.getElementById('pCover').value=p.cover_image||''; wbaTags=(p.tags||[]).slice(); renderTags();
   document.getElementById('pStatus').value=p.status||'draft'; blocks=wbaParseBlocks(p.body); renderBuilder(); window.scrollTo({top:0,behavior:'smooth'}); }
@@ -253,7 +264,9 @@ function wbaUseTemplate(val){
   var ok = !(blocks.length||document.getElementById('pTitle').value) || confirm('Replace the current blocks with this template?');
   document.getElementById('tplPick').value='';
   if(!ok) return;
-  blocks=nb; renderBuilder(); setStatus('postStatus','Template loaded — fill it in and hit Save.',true);
+  blocks=nb; renderBuilder();
+  document.getElementById('builder').scrollIntoView({behavior:'smooth',block:'start'});
+  setStatus('postStatus','Template loaded ('+nb.length+' blocks) — fill it in and Save.',true);
 }
 function wbaSaveTemplate(){ if(!blocks.length){ setStatus('postStatus','Add some blocks first.'); return; }
   var name=prompt('Name this template:'); if(!name||!name.trim()) return; setStatus('postStatus','Saving template…',true);

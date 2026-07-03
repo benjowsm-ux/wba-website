@@ -825,3 +825,38 @@ a.pillar{display:block;text-decoration:none;}
 .tpl-bar select{max-width:260px;}
 .tpl-bar .spacer{flex:1;}
 @media(max-width:560px){.tpl-bar .spacer{display:none;}}
+
+/* ===== CTA band → navy (less "gambling", more premium) ===== */
+.cta-band{background:var(--navy);}
+.cta-band h2{color:#fff;}
+.cta-band p{color:rgba(255,255,255,.62);}
+.cta-band .btn-primary{background:var(--gold);color:var(--ink);}
+.cta-band .btn-primary:hover{background:#ffd83d;box-shadow:0 10px 28px rgba(245,196,22,.3);}
+
+/* ===== ADMIN — de-Scratch: calmer, more professional ===== */
+.blk-card-type{background:none!important;color:#98a2b3!important;padding:0!important;font-size:.64rem!important;letter-spacing:1.5px;font-weight:700;}
+.blk-ctrls button{background:transparent;border:1px solid #e4e8f0;color:#9aa4b2;width:30px;height:30px;border-radius:7px;font-size:.82rem;box-shadow:none;}
+.blk-ctrls button:hover{background:#f2f5f9;color:var(--navy);border-color:#cfd7e2;}
+.blk-card{box-shadow:none;border-color:#e8ebf1;}
+.blk-card:hover{box-shadow:0 4px 18px rgba(10,20,40,.06);border-color:#dbe1ea;}
+.add-block-bar{background:transparent;border:1px dashed #dbe1ea;}
+.add-block-bar button{background:#fff;border:1px solid #e4e8f0;color:#4a5568;box-shadow:none;font-weight:600;}
+.add-block-bar button:hover{background:#f6f8fc;color:var(--navy);border-color:#c9d2de;transform:none;box-shadow:none;}
+.admin-btn.edit{background:#f2f5f9;color:#4a5568;border-color:#e4e8f0;box-shadow:none;}
+.admin-btn.edit:hover{background:#e7ecf3;color:var(--navy);border-color:#d4dce6;}
+.admin-btn.ok{background:#f2f5f9;color:#4a5568;border-color:#e4e8f0;box-shadow:none;}
+.admin-btn.ok:hover{background:#0f9a4d;color:#fff;border-color:#0f9a4d;}
+.admin-btn.del{box-shadow:none;}
+.admin-tab{box-shadow:none;}
+.tpl-bar{box-shadow:none;}
+.admin-row{box-shadow:none;}
+
+/* Prompt output — readable dark panel (not a cramped one-liner) */
+.prompt-out textarea{display:block;width:100%;min-height:120px;background:#0d1b33;color:#cfe0ff;border:1px solid #12233f;border-radius:10px;padding:1rem 1rem;font-family:'Courier New',monospace;font-size:.8rem;line-height:1.65;white-space:pre-wrap;overflow:auto;}
+.prompt-out textarea:focus{box-shadow:0 0 0 3px rgba(4,75,173,.3);border-color:#12233f;}
+.prompt-out .copy-btn{position:absolute;top:.55rem;right:.55rem;}
+
+/* Chain link/unlink — clear states */
+.chain{font-size:1rem;}
+.chain.on{color:var(--blue);background:#eaf1fd;}
+.chain:not(.on){color:#c0392b;background:#fbecea;}
