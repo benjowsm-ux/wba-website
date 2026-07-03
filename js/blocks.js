@@ -62,6 +62,43 @@ function wbaRenderBlocks(blocks){
   }).join('\n');
 }
 
+/* Built-in starter templates — pre-stacked block layouts per content type. */
+var WBA_TEMPLATES = {
+  tutorial: [
+    {type:'header',level:2,text:'How to [do the thing]'},
+    {type:'body',text:'A quick intro — who this is for and what they\'ll walk away with.'},
+    {type:'imagetext',side:'left',text:'**Step 1 —** describe the first step here.'},
+    {type:'imagetext',side:'right',text:'**Step 2 —** describe the next step.'},
+    {type:'imagetext',side:'left',text:'**Step 3 —** and the one after that.'},
+    {type:'section',bg:'cream',heading:'And that\'s it',text:'Wrap up — what they\'ve achieved and what to do next.'},
+    {type:'button',label:'Want us to do it for you?',url:'contact.html'}
+  ],
+  review: [
+    {type:'header',level:2,text:'[Thing] — our honest review'},
+    {type:'body',text:'Set the scene: what it is and why it matters to local businesses.'},
+    {type:'section',bg:'cream',heading:'👍 The good',text:'- Point one\n- Point two\n- Point three'},
+    {type:'section',bg:'cream',heading:'👎 The not-so-good',text:'- Point one\n- Point two'},
+    {type:'header',level:3,text:'The verdict'},
+    {type:'body',text:'Your overall take, in a couple of lines.'},
+    {type:'button',label:'Get help with yours',url:'contact.html'}
+  ],
+  listicle: [
+    {type:'header',level:2,text:'7 [things] every Weston business should [do]'},
+    {type:'body',text:'One-line intro to the list.'},
+    {type:'header',level:3,text:'1. First thing'},{type:'body',text:'Why it matters.'},
+    {type:'header',level:3,text:'2. Second thing'},{type:'body',text:'Why it matters.'},
+    {type:'header',level:3,text:'3. Third thing'},{type:'body',text:'Why it matters.'},
+    {type:'button',label:'Book a free visit',url:'contact.html'}
+  ],
+  news: [
+    {type:'header',level:2,text:'[Headline]'},
+    {type:'body',text:'What happened, in a sentence or two.'},
+    {type:'section',bg:'navy',heading:'The key bit',text:'Pull out the single most important point.'},
+    {type:'body',text:'More detail, and what it means for local businesses.'},
+    {type:'button',label:'Talk to WBA',url:'contact.html'}
+  ]
+};
+
 /* Turn pasted AI text into blocks (headings + paragraphs + markdown images). */
 function wbaParseAIText(text){
   var out = [];

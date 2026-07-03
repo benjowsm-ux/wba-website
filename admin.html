@@ -51,6 +51,22 @@
       </div>
 
       <div id="panelPosts">
+        <div class="tpl-bar">
+          <label>Start from</label>
+          <select id="tplPick" onchange="wbaUseTemplate(this.value)">
+            <option value="">a template…</option>
+            <optgroup label="Built-in">
+              <option value="builtin:tutorial">Tutorial / How-to</option>
+              <option value="builtin:review">Review</option>
+              <option value="builtin:listicle">Listicle</option>
+              <option value="builtin:news">News / Update</option>
+              <option value="builtin:blank">Blank</option>
+            </optgroup>
+            <optgroup label="Your saved templates" id="tplSaved"></optgroup>
+          </select>
+          <span class="spacer"></span>
+          <button type="button" class="admin-btn edit" onclick="wbaSaveTemplate()">💾 Save current as template</button>
+        </div>
         <div class="booking-form-box">
           <input type="hidden" id="postId"/>
           <div class="titleslug">
@@ -216,18 +232,44 @@ function wbaSave(){ var title=document.getElementById('pTitle').value.trim(); va
   setStatus('postStatus','Saving…',true);
   WBAdb.savePost(post).then(function(r){ if(r.error){ setStatus('postStatus',r.error.message); return; }
     setStatus('postStatus','Saved ✓ '+(post.status==='published'?'— live on the Blog':'(draft)'),true); loadPosts(); }); }
-function editPost(p){ document.getElementById('postId').value=p.id; document.getElementById('pTitle').value=p.title||'';
+function clone(a){ return JSON.parse(JSON.stringify(a||[])); }
+function editPost(id){ var p=(window.wbaPostsById||{})[id]; if(!p) return;
+  document.getElementById('postId').value=p.id; document.getElementById('pTitle').value=p.title||'';
   document.getElementById('pSlug').value=p.slug||''; chainLinked=false; document.getElementById('chainBtn').classList.remove('on');
   document.getElementById('pExcerpt').value=p.excerpt||''; document.getElementById('pCategory').value=p.category||'tutorial';
   document.getElementById('pCover').value=p.cover_image||''; wbaTags=(p.tags||[]).slice(); renderTags();
   document.getElementById('pStatus').value=p.status||'draft'; blocks=wbaParseBlocks(p.body); renderBuilder(); window.scrollTo({top:0,behavior:'smooth'}); }
+function stripBlock(b){ var n={type:b.type}; if(b.type==='header') n.level=b.level||2; if(b.type==='imagetext') n.side=b.side||'left'; if(b.bg) n.bg=b.bg; if(b.pad) n.pad=b.pad; return n; }
+function wbaCopyStyle(id){ var p=(window.wbaPostsById||{})[id]; if(!p) return;
+  var layout=wbaParseBlocks(p.body).map(stripBlock);
+  if((blocks.length||document.getElementById('pTitle').value) && !confirm('Start a new Blog using this one\'s layout?')) return;
+  wbaNewPost(false); blocks=layout; document.getElementById('pCategory').value=p.category||'tutorial'; renderBuilder();
+  window.scrollTo({top:0,behavior:'smooth'}); setStatus('postStatus','Layout copied — now fill it with your content.',true); }
+function wbaUseTemplate(val){
+  if(!val){ return; }
+  var nb; if(val==='builtin:blank') nb=[];
+  else if(val.indexOf('builtin:')===0){ nb=clone((window.WBA_TEMPLATES||{})[val.slice(8)]||[]); }
+  else { var p=(window.wbaPostsById||{})[val]; nb=p?clone(wbaParseBlocks(p.body)):[]; }
+  var ok = !(blocks.length||document.getElementById('pTitle').value) || confirm('Replace the current blocks with this template?');
+  document.getElementById('tplPick').value='';
+  if(!ok) return;
+  blocks=nb; renderBuilder(); setStatus('postStatus','Template loaded — fill it in and hit Save.',true);
+}
+function wbaSaveTemplate(){ if(!blocks.length){ setStatus('postStatus','Add some blocks first.'); return; }
+  var name=prompt('Name this template:'); if(!name||!name.trim()) return; setStatus('postStatus','Saving template…',true);
+  WBAdb.savePost({ title:name.trim(), slug:'tpl-'+wbaSlugify(name)+'-'+Math.random().toString(36).slice(2,6), status:'template', category:'template', tags:[], excerpt:'', cover_image:null, body:JSON.stringify(blocks) })
+    .then(function(r){ if(r.error){ setStatus('postStatus',r.error.message); return; } setStatus('postStatus','Template saved ✓',true); loadPosts(); }); }
 function delPost(id){ if(!confirm('Delete this Blog?')) return; WBAdb.deletePost(id).then(function(){ loadPosts(); }); }
 
-function loadPosts(){ WBAdb.allPosts().then(function(r){ var list=document.getElementById('postList'); var posts=r.data||[];
+function populateTemplates(tpls){ var g=document.getElementById('tplSaved'); if(!g) return; g.innerHTML=tpls.map(function(t){ return '<option value="'+t.id+'">'+esc(t.title)+'</option>'; }).join(''); }
+function loadPosts(){ WBAdb.allPosts().then(function(r){ var all=r.data||[]; window.wbaPostsById={}; all.forEach(function(p){ wbaPostsById[p.id]=p; });
+  populateTemplates(all.filter(function(p){return p.status==='template';}));
+  var posts=all.filter(function(p){return p.status!=='template';}); var list=document.getElementById('postList');
   if(!posts.length){ list.innerHTML='<p class="admin-note">No Blogs yet — build your first one above.</p>'; return; }
   list.innerHTML=posts.map(function(p){ var badge=p.status==='published'?'<span class="muted">● live</span>':'<span class="muted">draft</span>';
     return '<div class="admin-row"><div><strong>'+esc(p.title)+'</strong> '+badge+'<br><span class="muted">/'+esc(p.slug)+'</span></div><div class="admin-actions">'
-      +'<button class="admin-btn edit" onclick=\'editPost('+JSON.stringify(p).replace(/'/g,"&#39;").replace(/</g,"&lt;")+')\'>Edit</button>'
+      +'<button class="admin-btn edit" onclick="editPost(\''+p.id+'\')">Edit</button>'
+      +'<button class="admin-btn edit" onclick="wbaCopyStyle(\''+p.id+'\')">Copy style</button>'
       +'<button class="admin-btn del" onclick="delPost(\''+p.id+'\')">Delete</button></div></div>'; }).join(''); }); }
 function loadSubs(){ WBAdb.allSubs().then(function(r){ var list=document.getElementById('subList'); var subs=r.data||[];
   var pending=subs.filter(function(s){return s.status==='pending';}).length; document.getElementById('subCount').textContent=pending?('('+pending+')'):'';

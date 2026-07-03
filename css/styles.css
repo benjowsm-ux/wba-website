@@ -818,3 +818,10 @@ a.pillar{display:block;text-decoration:none;}
 .tag-chip{display:inline-flex;align-items:center;gap:6px;background:#eef3fc;color:var(--blue);border:1px solid #d8e4fb;border-radius:50px;padding:.32rem .75rem;font-size:.75rem;font-weight:700;}
 .tag-chip button{background:none;border:none;color:var(--blue);cursor:pointer;font-size:.95rem;line-height:1;padding:0;}
 .tag-chip button:hover{color:#dc2626;}
+
+/* Template bar */
+.tpl-bar{display:flex;flex-wrap:wrap;gap:.7rem;align-items:center;background:#fff;border:1px solid #e6e9f0;border-radius:14px;box-shadow:0 1px 3px rgba(10,20,40,.05);padding:1rem 1.25rem;margin-bottom:1rem;}
+.tpl-bar label{display:inline!important;margin:0!important;color:#5b6472!important;}
+.tpl-bar select{max-width:260px;}
+.tpl-bar .spacer{flex:1;}
+@media(max-width:560px){.tpl-bar .spacer{display:none;}}
