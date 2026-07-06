@@ -45,7 +45,7 @@ function wbaRenderBlocks(blocks){
       case 'image':
         if(!b.url) break;
         inner = '<figure class="blk-image"><img src="' + wbaEsc(b.url) + '" alt="' + wbaEsc(b.alt) + '" loading="lazy"/>'
-              + (b.caption ? '<figcaption>' + wbaEsc(b.caption) + '</figcaption>' : '') + '</figure>'; break;
+              + ((b.caption && b.capOn !== false) ? '<figcaption>' + wbaEsc(b.caption) + '</figcaption>' : '') + '</figure>'; break;
       case 'imagetext':
         var img = b.url ? '<div class="blk-it-img"><img src="' + wbaEsc(b.url) + '" alt="' + wbaEsc(b.alt) + '" loading="lazy"/></div>' : '';
         inner = '<div class="blk-imagetext' + (b.side === 'right' ? ' img-right' : '') + '">' + img

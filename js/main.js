@@ -289,6 +289,127 @@ function wbaHourIndex(){ return Math.floor(Date.now() / 3600000); }
     .catch(function(){ load(BIZ, B); load(TOUR, T); });
 })();
 
+/* ---- Blog search: predictive dropdown + live grid filter + tag cloud ---- */
+(function(){
+  var input = document.getElementById('blogSearch');
+  var dataEl = document.getElementById('blogIndexData');
+  if(!input || !dataEl) return;
+  var drop = document.getElementById('searchDrop');
+  var posts = []; try{ posts = JSON.parse(dataEl.textContent); }catch(e){}
+  var cards = {};
+  document.querySelectorAll('#blogGrid .blog-card[data-slug]').forEach(function(c){ cards[c.getAttribute('data-slug')] = c; });
+  function he(s){ var d = document.createElement('div'); d.textContent = (s == null ? '' : s); return d.innerHTML; }
+  function score(p, q){
+    var s = 0;
+    if(p.title.toLowerCase().indexOf(q) > -1) s += 3;
+    (p.tags || []).forEach(function(t){ if(String(t).toLowerCase().indexOf(q) > -1) s += 2; });
+    if(String(p.category || '').toLowerCase().indexOf(q) > -1) s += 2;
+    if(String(p.excerpt || '').toLowerCase().indexOf(q) > -1) s += 1;
+    return s;
+  }
+  function update(){
+    var q = input.value.trim().toLowerCase();
+    if(!q){
+      drop.style.display = 'none';
+      posts.forEach(function(p){ if(cards[p.slug]) cards[p.slug].style.display = ''; });
+      return;
+    }
+    var ranked = posts.map(function(p){ return { p: p, s: score(p, q) }; }).filter(function(r){ return r.s > 0; }).sort(function(a, b){ return b.s - a.s; });
+    posts.forEach(function(p){
+      if(cards[p.slug]) cards[p.slug].style.display = ranked.some(function(r){ return r.p.slug === p.slug; }) ? '' : 'none';
+    });
+    drop.innerHTML = ranked.slice(0, 5).map(function(r){
+      return '<a href="/blog/' + encodeURIComponent(r.p.slug) + '/"><b>' + he(r.p.title) + '</b><span>' + he(r.p.category || 'blog') + '</span></a>';
+    }).join('') || '<div class="sd-none">No matches — try another word or a tag.</div>';
+    drop.style.display = 'block';
+  }
+  input.addEventListener('input', update);
+  input.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); var first = drop.querySelector('a'); if(first) location.href = first.href; }
+    if(e.key === 'Escape'){ drop.style.display = 'none'; input.blur(); }
+  });
+  document.addEventListener('click', function(e){ if(!e.target.closest('.blog-search')) drop.style.display = 'none'; });
+  document.querySelectorAll('#tagCloud .tag-go').forEach(function(t){
+    t.addEventListener('click', function(){ input.value = t.getAttribute('data-tag'); input.focus(); update(); });
+  });
+})();
+
+/* ---- Blog post widgets: helpful votes + suggest/report/copy (static pages) ---- */
+(function(){
+  var w = document.querySelector('.helpful');
+  if(!w) return;
+  var SB = 'https://lynzhiyvggqyplssrapi.supabase.co';
+  var K = 'sb_publishable_j_RkzVTMyM-QtmFnLsf_Vw_ulanlx9K';
+  var H = { apikey: K, Authorization: 'Bearer ' + K, 'Content-Type': 'application/json' };
+  var slug = w.getAttribute('data-slug');
+  var title = w.getAttribute('data-title') || document.title;
+  var countEl = w.querySelector('.helpful-count');
+  var btnsEl = w.querySelector('.helpful-btns');
+  var thanksEl = w.querySelector('.helpful-thanks');
+
+  function showCount(){
+    fetch(SB + '/rest/v1/posts?slug=eq.' + encodeURIComponent(slug) + '&select=helpful_yes,helpful_no', { headers: H })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        var y = (d && d[0]) ? (d[0].helpful_yes || 0) : 0;
+        if(y > 0) countEl.textContent = '👍 ' + y + ' reader' + (y === 1 ? '' : 's') + ' found this helpful';
+      }).catch(function(){});
+  }
+  showCount();
+
+  var formEl = document.getElementById('actForm');
+  var labelEl = document.getElementById('actLabel');
+  var msgEl = document.getElementById('actMsg');
+  var actKind = 'article_update';
+  function openForm(kind, label, placeholder){
+    actKind = kind;
+    labelEl.textContent = label;
+    msgEl.placeholder = placeholder;
+    formEl.hidden = false;
+    msgEl.focus();
+  }
+
+  if(localStorage.getItem('wba_voted_' + slug)){ btnsEl.style.display = 'none'; thanksEl.hidden = false; }
+  w.querySelectorAll('button[data-vote]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var up = b.getAttribute('data-vote') === 'yes';
+      try{ localStorage.setItem('wba_voted_' + slug, up ? 'yes' : 'no'); }catch(e){}
+      btnsEl.style.display = 'none'; thanksEl.hidden = false;
+      fetch(SB + '/rest/v1/rpc/vote_helpful', { method: 'POST', headers: H, body: JSON.stringify({ post_slug: slug, up: up }) })
+        .then(function(){ setTimeout(showCount, 500); }).catch(function(){});
+      if(!up) openForm('article_update', 'Sorry to hear it — what would make this better?', 'What was missing, unclear or out of date?');
+    });
+  });
+
+  document.querySelectorAll('.article-actions button[data-act]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var act = b.getAttribute('data-act');
+      if(act === 'copy'){
+        var done = function(){ b.textContent = '✓ Link copied'; setTimeout(function(){ b.textContent = '🔗 Copy link'; }, 1500); };
+        if(navigator.clipboard){ navigator.clipboard.writeText(location.href).then(done).catch(done); } else { done(); }
+        return;
+      }
+      if(act === 'update') openForm('article_update', 'Suggest an update', 'Spotted something out of date, or know something we should add?');
+      if(act === 'report') openForm('article_report', 'Report an issue', "What's wrong — broken link, error, something inappropriate?");
+    });
+  });
+
+  var sendBtn = document.getElementById('actSend');
+  if(sendBtn) sendBtn.addEventListener('click', function(){
+    var s = document.getElementById('actStatus');
+    var msg = msgEl.value.trim();
+    if(!msg){ s.className = 'send-status err'; s.textContent = 'Add a note first.'; return; }
+    s.className = 'send-status'; s.textContent = 'Sending…';
+    fetch(SB + '/rest/v1/submissions', { method: 'POST', headers: Object.assign({ Prefer: 'return=minimal' }, H),
+      body: JSON.stringify({ type: actKind, title: title, description: msg, location: location.pathname, submitter_name: document.getElementById('actName').value.trim() }) })
+      .then(function(r){
+        if(!r.ok) throw new Error('http ' + r.status);
+        formEl.innerHTML = '<p class="act-form-label">🙌 Received — a real person will read it. Thanks for making the Blog better.</p>';
+      })
+      .catch(function(){ s.className = 'send-status err'; s.textContent = 'Something went wrong — WhatsApp us instead: 07902 376369.'; });
+  });
+})();
+
 /* ---- AAA polish: accessibility, performance, mobile CTA (every page) ---- */
 (function(){
   // Mark the current nav link for assistive tech

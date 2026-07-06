@@ -14,7 +14,7 @@
      - /news.json               (Weston business + tourism headlines)
    ========================================================================== */
 import { marked } from 'marked';
-import { writeFileSync, mkdirSync, rmSync, readFileSync } from 'fs';
+import { writeFileSync, mkdirSync, rmSync, readFileSync, existsSync } from 'fs';
 
 const SUPABASE_URL = process.env.WBA_SUPABASE_URL || 'https://lynzhiyvggqyplssrapi.supabase.co';
 const KEY = 'sb_publishable_j_RkzVTMyM-QtmFnLsf_Vw_ulanlx9K';
@@ -43,6 +43,31 @@ const cleanSlug = s => String(s || '').toLowerCase().replace(/[^a-z0-9-]/g, '');
 function fmtDate(iso){ try{ return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}); }catch(e){ return ''; } }
 function cap(s){ return s ? s.charAt(0).toUpperCase() + s.slice(1) : 'Blog'; }
 
+/* Estimated reading time from the block text (≈200 wpm, min 1). */
+function readMins(body){
+  let blocks; try{ blocks = typeof body === 'string' ? JSON.parse(body) : body; }catch(e){ return 1; }
+  if(!Array.isArray(blocks)) return 1;
+  const words = blocks.map(b => [b.text, b.heading, b.caption, b.label].filter(Boolean).join(' ')).join(' ').split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 200));
+}
+
+/* "More like this" — score by shared tags (2pts) + same category (1pt), newest first. */
+function related(p, all){
+  return all.filter(o => o.slug !== p.slug).map(o => {
+    let s = 0;
+    (p.tags || []).forEach(t => { if(t && (o.tags || []).some(x => x && x.toLowerCase() === t.toLowerCase())) s += 2; });
+    if(o.category && o.category === p.category) s += 1;
+    return { o, s };
+  }).sort((a, b) => b.s - a.s || new Date(b.o.published_at || 0) - new Date(a.o.published_at || 0))
+    .slice(0, 3).map(r => r.o);
+}
+
+/* One Blog card — shared by the index and "More like this". */
+function cardHTML(p){
+  const tags = (p.tags || []).slice(0, 3).map(t => `<span class="card-tag">${esc(t)}</span>`).join('');
+  return `<a class="blog-card" data-slug="${esc(p.slug)}" href="/blog/${esc(p.slug)}/">${p.cover_image?`<div class="blog-card-img"><img src="${esc(p.cover_image)}" alt="" loading="lazy"/></div>`:''}<div class="blog-card-body">${p.category?`<div class="blog-cat">${esc(p.category)}</div>`:''}<h3>${esc(p.title)}</h3><p>${esc(p.excerpt||'')}</p>${tags?`<div class="card-tags">${tags}</div>`:''}<span class="blog-read">Read →</span></div></a>`;
+}
+
 /* ---------- block render (Node port of blocks.js) ---------- */
 function textOn(hex){ try{ let c = hex.replace('#',''); if(c.length === 3) c = c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
   const r = parseInt(c.slice(0,2),16), g = parseInt(c.slice(2,4),16), b = parseInt(c.slice(4,6),16);
@@ -58,7 +83,7 @@ function renderBlocks(body){
     switch(b.type){
       case 'header': { const lv = b.level === 3 ? 'h3' : 'h2'; inner = `<${lv}>${esc(b.text)}</${lv}>`; break; }
       case 'body': inner = `<div class="blk-body">${md(b.text)}</div>`; break;
-      case 'image': if(!b.url) break; inner = `<figure class="blk-image"><img src="${esc(b.url)}" alt="${esc(b.alt)}" loading="lazy"/>${b.caption?`<figcaption>${esc(b.caption)}</figcaption>`:''}</figure>`; break;
+      case 'image': if(!b.url) break; inner = `<figure class="blk-image"><img src="${esc(b.url)}" alt="${esc(b.alt)}" loading="lazy"/>${(b.caption && b.capOn !== false)?`<figcaption>${esc(b.caption)}</figcaption>`:''}</figure>`; break;
       case 'imagetext': { const im = b.url?`<div class="blk-it-img"><img src="${esc(b.url)}" alt="${esc(b.alt)}" loading="lazy"/></div>`:''; inner = `<div class="blk-imagetext${b.side==='right'?' img-right':''}">${im}<div class="blk-it-text">${md(b.text)}</div></div>`; break; }
       case 'button': inner = `<div class="blk-button"><a class="btn-primary" href="${esc(b.url||'#')}">${esc(b.label||'Button')}</a></div>`; break;
       case 'link': inner = `<p class="blk-link"><a href="${esc(b.url||'#')}">${esc(b.text||b.url||'Link')} &rarr;</a></p>`; break;
@@ -94,8 +119,9 @@ const FOOTER = `<footer>
 </footer>`;
 
 /* ---------- page builders ---------- */
-function postPage(p){
+function postPage(p, all){
   const u = `${SITE}/blog/${p.slug}/`;
+  const rel = related(p, all);
   const desc = esc(p.excerpt || `${p.title} — a guide from Weston Business Authority.`);
   const ogImg = p.cover_image || DEFAULT_OG;
   const ld = { "@context":"https://schema.org","@type":"BlogPosting","headline":p.title,"description":p.excerpt||'',
@@ -124,9 +150,41 @@ ${NAV}
 </div></header>
 <section class="s-white on-light reveal"><div class="inner"><article class="article">
   ${p.cover_image?`<img class="article-cover" src="${esc(p.cover_image)}" alt="${esc(p.title)}"/>`:''}
-  <p class="article-meta">${esc(p.author||'WBA')} · ${fmtDate(p.published_at)}</p>
+  <div class="byline">
+    <span class="byline-ico"><img src="${FAV}" alt="WBA"/></span>
+    <span class="byline-txt"><b>${esc(p.author||'WBA Team')}</b><span>Published ${fmtDate(p.published_at)} · ${readMins(p.body)} min read${p.category?` · ${esc(cap(p.category))}`:''}</span></span>
+  </div>
   <div class="article-body">${renderBlocks(p.body)}</div>
+  <div class="article-foot">
+    <div class="helpful" data-slug="${esc(p.slug)}" data-title="${esc(p.title)}">
+      <p class="helpful-q">Did you find this helpful?</p>
+      <div class="helpful-btns">
+        <button type="button" data-vote="yes">👍 Yes, cheers</button>
+        <button type="button" data-vote="no">👎 Not really</button>
+      </div>
+      <p class="helpful-thanks" hidden>Thanks — good to know. 🙌</p>
+      <p class="helpful-count" aria-live="polite"></p>
+    </div>
+    <div class="article-actions">
+      <button type="button" data-act="update">✏️ Suggest an update</button>
+      <button type="button" data-act="report">🚩 Report an issue</button>
+      <button type="button" data-act="copy">🔗 Copy link</button>
+    </div>
+    <div class="act-form" id="actForm" hidden>
+      <p class="act-form-label" id="actLabel"></p>
+      <textarea id="actMsg"></textarea>
+      <input type="text" id="actName" placeholder="Your name (optional)"/>
+      <div><button type="button" class="btn-primary" id="actSend">Send</button> <span class="send-status" id="actStatus"></span></div>
+    </div>
+  </div>
 </article></div></section>
+${rel.length?`<section class="s-paper on-light reveal related"><div class="inner">
+  <p class="eyebrow">Keep reading</p>
+  <h2 class="h2">More Like<br><em>This.</em></h2>
+  <div class="blog-grid">
+${rel.map(cardHTML).join('\n')}
+  </div>
+</div></section>`:''}
 <section class="cta-band reveal"><div class="inner">
   <h2>Rather we did it for you?</h2>
   <p>We're the local team behind these guides — happy to just take it off your plate.</p>
@@ -138,8 +196,19 @@ ${FOOTER}
 }
 
 function blogIndex(posts){
-  const cards = posts.length ? posts.map(p => `<a class="blog-card" href="/blog/${esc(p.slug)}/">${p.cover_image?`<div class="blog-card-img"><img src="${esc(p.cover_image)}" alt=""/></div>`:''}<div class="blog-card-body">${p.category?`<div class="blog-cat">${esc(p.category)}</div>`:''}<h3>${esc(p.title)}</h3><p>${esc(p.excerpt||'')}</p><span class="blog-read">Read →</span></div></a>`).join('\n')
+  const cards = posts.length ? posts.map(cardHTML).join('\n')
     : `<p class="blog-empty">No guides published yet — the first ones are on their way. Check back soon!</p>`;
+  const index = JSON.stringify(posts.map(p => ({ slug: p.slug, title: p.title, excerpt: p.excerpt || '', tags: p.tags || [], category: p.category || '' }))).replace(/</g, '\\u003c');
+  const tagCounts = {};
+  posts.forEach(p => (p.tags || []).forEach(t => { if(t) tagCounts[t.toLowerCase()] = (tagCounts[t.toLowerCase()] || 0) + 1; }));
+  const cloud = Object.keys(tagCounts).sort((a, b) => tagCounts[b] - tagCounts[a]).slice(0, 14)
+    .map(t => `<button type="button" class="tag-go" data-tag="${esc(t)}">${esc(t)}</button>`).join('');
+  const searchUI = posts.length ? `<div class="blog-search">
+  <span class="bs-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
+  <input id="blogSearch" type="search" placeholder="Search the Blog — a topic, title or tag…" autocomplete="off"/>
+  <div class="search-drop" id="searchDrop"></div>
+</div>
+${cloud?`<div class="tag-cloud" id="tagCloud">${cloud}</div>`:''}` : '';
   return `<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -159,9 +228,12 @@ ${NAV}
   <h1>Guides<br><em>&amp; Insight.</em></h1>
   <p>Free, practical guides for local businesses — no jargon, no gatekeeping. Written by the team that does this every day.</p>
 </div></header>
-<section class="s-paper on-light reveal"><div class="inner"><div class="blog-grid">
+<section class="s-paper on-light reveal"><div class="inner">
+${searchUI}
+<div class="blog-grid" id="blogGrid">
 ${cards}
 </div></div></section>
+<script id="blogIndexData" type="application/json">${index}</script>
 <section class="cta-band reveal"><div class="inner">
   <h2>Want us to just handle it?</h2>
   <p>Guides are the DIY route. If you'd rather hand it over, that's what we're here for.</p>
@@ -184,25 +256,32 @@ function sitemap(posts){
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${rows.join('\n')}\n</urlset>\n`;
 }
 
-/* /blog/ itself just forwards to the index. Also guarantees the folder
-   always exists, which keeps the workflow's git pathspecs valid. */
-const REDIRECT = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Blog | Weston Business Authority</title><meta http-equiv="refresh" content="0; url=/blog.html"/><link rel="canonical" href="${SITE}/blog.html"/></head><body><a href="/blog.html">Continue to the Blog →</a></body></html>`;
+/* Minimal stub for /blog/ — only used if the very first run can't reach
+   Supabase. Normal runs overwrite it with the full index. Guarantees the
+   folder always exists, which keeps the workflow's git pathspecs valid. */
+const STUB = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><title>Blog | Weston Business Authority</title><link rel="canonical" href="${SITE}/blog.html"/></head><body><a href="/blog.html">Continue to the Blog →</a></body></html>`;
 
 /* ---------- 1) Blogs (fail-soft: keep existing pages if Supabase is down) ---------- */
 mkdirSync('blog', { recursive: true });
-writeFileSync('blog/index.html', REDIRECT);
+if(!existsSync('blog/index.html')) writeFileSync('blog/index.html', STUB);
 
-const postsUrl = `${SUPABASE_URL}/rest/v1/posts?status=eq.published&select=slug,title,excerpt,cover_image,category,tags,body,published_at,author&order=published_at.desc`;
-const res = await fetchRetry(postsUrl, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } });
 let posts = null;
-if(res){ try{ posts = (await res.json()).map(p => ({ ...p, slug: cleanSlug(p.slug) })).filter(p => p.slug && p.title); }catch(e){ console.warn('Posts JSON parse failed:', e.message); } }
+if(process.env.WBA_POSTS_FILE){
+  posts = JSON.parse(readFileSync(process.env.WBA_POSTS_FILE, 'utf8')).map(p => ({ ...p, slug: cleanSlug(p.slug) })).filter(p => p.slug && p.title);
+  console.log(`(test mode: ${posts.length} post(s) from ${process.env.WBA_POSTS_FILE})`);
+} else {
+  const postsUrl = `${SUPABASE_URL}/rest/v1/posts?status=eq.published&select=slug,title,excerpt,cover_image,category,tags,body,published_at,author&order=published_at.desc`;
+  const res = await fetchRetry(postsUrl, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } });
+  if(res){ try{ posts = (await res.json()).map(p => ({ ...p, slug: cleanSlug(p.slug) })).filter(p => p.slug && p.title); }catch(e){ console.warn('Posts JSON parse failed:', e.message); } }
+}
 
 if(posts){
   rmSync('blog', { recursive: true, force: true });
   mkdirSync('blog', { recursive: true });
-  writeFileSync('blog/index.html', REDIRECT);
-  posts.forEach(p => { mkdirSync(`blog/${p.slug}`, { recursive: true }); writeFileSync(`blog/${p.slug}/index.html`, postPage(p)); });
-  writeFileSync('blog.html', blogIndex(posts));
+  posts.forEach(p => { mkdirSync(`blog/${p.slug}`, { recursive: true }); writeFileSync(`blog/${p.slug}/index.html`, postPage(p, posts)); });
+  const indexHTML = blogIndex(posts);
+  writeFileSync('blog.html', indexHTML);
+  writeFileSync('blog/index.html', indexHTML);   /* /blog/ is the same real page */
   writeFileSync('sitemap.xml', sitemap(posts));
   console.log(`Blogs: wrote ${posts.length} page(s), blog.html and sitemap.xml.`);
 } else {
