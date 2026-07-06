@@ -275,8 +275,18 @@ function wbaHourIndex(){ return Math.floor(Date.now() / 3600000); }
 
   var G = 'https://news.google.com/rss/search?q=';
   var TAIL = '&hl=en-GB&gl=GB&ceid=GB:en';
-  load(G + encodeURIComponent('"Weston-super-Mare" business') + TAIL, B);
-  load(G + encodeURIComponent('"Weston-super-Mare" (tourism OR visit OR events OR attraction)') + TAIL, T);
+  var BIZ = G + encodeURIComponent('"Weston-super-Mare" business') + TAIL;
+  var TOUR = G + encodeURIComponent('"Weston-super-Mare" (tourism OR visit OR events OR attraction)') + TAIL;
+
+  /* Prefer the pre-fetched news.json (rebuilt every 30 min by GitHub Actions —
+     reliable, same-origin). Fall back to the live relay only if it's missing. */
+  fetch('/news.json', { cache: 'no-store' })
+    .then(function(r){ if(!r.ok) throw new Error('no news.json'); return r.json(); })
+    .then(function(d){
+      if(B){ (d && d.business && d.business.length) ? render(B, d.business) : load(BIZ, B); }
+      if(T){ (d && d.tourism && d.tourism.length) ? render(T, d.tourism) : load(TOUR, T); }
+    })
+    .catch(function(){ load(BIZ, B); load(TOUR, T); });
 })();
 
 /* ---- AAA polish: accessibility, performance, mobile CTA (every page) ---- */
