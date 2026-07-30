@@ -188,7 +188,7 @@ ${rel.map(cardHTML).join('\n')}
 <section class="cta-band reveal"><div class="inner">
   <h2>Rather we did it for you?</h2>
   <p>We're the local team behind these guides — happy to just take it off your plate.</p>
-  <a href="/contact.html" class="btn-primary">Book a Free Visit →</a>
+  <a href="/contact.html" class="btn-primary">Get in Touch →</a>
 </div></section>
 ${FOOTER}
 <script src="/js/main.js" defer></script>
@@ -237,7 +237,7 @@ ${cards}
 <section class="cta-band reveal"><div class="inner">
   <h2>Want us to just handle it?</h2>
   <p>Guides are the DIY route. If you'd rather hand it over, that's what we're here for.</p>
-  <a href="/contact.html" class="btn-primary">Book a Free Visit →</a>
+  <a href="/contact.html" class="btn-primary">Get in Touch →</a>
 </div></section>
 ${FOOTER}
 <script src="/js/main.js" defer></script>
