@@ -11,6 +11,7 @@
   <url><loc>https://westonbusinessauthority.co.uk/news.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://westonbusinessauthority.co.uk/submit.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://westonbusinessauthority.co.uk/contact.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://westonbusinessauthority.co.uk/free-website-terms.html</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
   <url><loc>https://westonbusinessauthority.co.uk/privacy.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://westonbusinessauthority.co.uk/terms.html</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>

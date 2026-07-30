@@ -2,12 +2,25 @@
    WBA — shared site behaviour. Loaded on every page.
    ========================================================================== */
 
-/* ---- Scroll reveal ---- */
+/* ---- Scroll reveal ----
+   Sections start at opacity:0 and fade in. That's a nice effect but a real
+   risk: if IntersectionObserver never fires (old browser, screenshot tool,
+   print, a JS error above this line) the content stays invisible. So we
+   always guarantee visibility, and treat the animation as a bonus. */
 (function(){
+  function revealAll(){ document.querySelectorAll('.reveal:not(.in)').forEach(function(el){ el.classList.add('in'); }); }
+
+  if(!('IntersectionObserver' in window)){ revealAll(); return; }
+
   var ro = new IntersectionObserver(function(entries){
     entries.forEach(function(x){ if(x.isIntersecting) x.target.classList.add('in'); });
-  }, {threshold:0.08});
+  }, {threshold:0.08, rootMargin:'0px 0px -40px 0px'});
   document.querySelectorAll('.reveal').forEach(function(el){ ro.observe(el); });
+
+  /* Failsafe — nothing stays hidden for more than 2.5s, whatever happens. */
+  setTimeout(revealAll, 2500);
+  /* Print / screenshot: show everything immediately. */
+  window.addEventListener('beforeprint', revealAll);
 })();
 
 /* ---- Mobile nav ---- */
@@ -36,13 +49,46 @@ function toggleFaq(btn){
   if(a) a.style.maxHeight = open ? null : a.scrollHeight + 'px';
 }
 
-/* ---- Forms (Formspree, with WhatsApp fallback) ---- */
+/* ---- Forms ----
+   Every enquiry is sent TWO places: the email service (so we get a nudge)
+   and our own Supabase table (so the lead is never lost if the email
+   service is down, rate-limited, or over its monthly quota).
+   The submission counts as successful if EITHER lands. */
+var WBA_FORM_ENDPOINT = 'https://formspree.io/f/mvzdgzka';
+var WBA_SB = 'https://lynzhiyvggqyplssrapi.supabase.co';
+var WBA_SB_KEY = 'sb_publishable_j_RkzVTMyM-QtmFnLsf_Vw_ulanlx9K';
+
+function wbaSaveLead(payload){
+  var summary = Object.keys(payload)
+    .filter(function(k){ return k.charAt(0) !== '_' && payload[k]; })
+    .map(function(k){ return k + ': ' + payload[k]; }).join('\n');
+  return fetch(WBA_SB + '/rest/v1/submissions', {
+    method:'POST',
+    headers:{ apikey:WBA_SB_KEY, Authorization:'Bearer ' + WBA_SB_KEY,
+              'Content-Type':'application/json', Prefer:'return=minimal' },
+    body: JSON.stringify({
+      type:'enquiry',
+      title: payload.business || payload.name || 'Website enquiry',
+      description: summary,
+      submitter_name: payload.name || '',
+      submitter_email: payload.email || payload.contact || '',
+      location: location.pathname
+    })
+  });
+}
+
 async function postForm(payload){
-  return fetch('https://formspree.io/f/mvzdgzka', {
+  var email = fetch(WBA_FORM_ENDPOINT, {
     method:'POST',
     headers:{'Content-Type':'application/json','Accept':'application/json'},
     body:JSON.stringify(payload)
-  });
+  }).then(function(r){ return r.ok; }).catch(function(){ return false; });
+
+  var saved = wbaSaveLead(payload).then(function(r){ return r.ok; }).catch(function(){ return false; });
+
+  var results = await Promise.all([email, saved]);
+  /* Mimic a fetch Response so existing callers keep working unchanged. */
+  return { ok: results[0] || results[1], emailed: results[0], stored: results[1] };
 }
 
 async function quickSubmit(){

@@ -249,7 +249,7 @@ function sitemap(posts){
     ['/','1.0','weekly'], ['/free-websites.html','1.0','monthly'], ['/services.html','0.9','monthly'], ['/pricing.html','0.9','monthly'],
     ['/work.html','0.8','monthly'], ['/about.html','0.7','monthly'], ['/weston.html','0.8','monthly'],
     ['/blog.html','0.9','weekly'], ['/news.html','0.7','weekly'], ['/submit.html','0.5','monthly'],
-    ['/contact.html','0.9','monthly'], ['/privacy.html','0.3','yearly'], ['/terms.html','0.3','yearly']
+    ['/contact.html','0.9','monthly'], ['/free-website-terms.html','0.4','yearly'], ['/privacy.html','0.3','yearly'], ['/terms.html','0.3','yearly']
   ];
   const rows = staticPages.map(([loc,pri,freq]) => `  <url><loc>${SITE}${loc}</loc><changefreq>${freq}</changefreq><priority>${pri}</priority></url>`);
   posts.forEach(p => rows.push(`  <url><loc>${SITE}/blog/${p.slug}/</loc>${p.published_at?`<lastmod>${new Date(p.published_at).toISOString().slice(0,10)}</lastmod>`:''}<changefreq>monthly</changefreq><priority>0.8</priority></url>`));
