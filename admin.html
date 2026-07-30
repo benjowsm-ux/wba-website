@@ -89,7 +89,7 @@
           <!-- COLLAPSIBLE AI -->
           <button type="button" class="ai-toggle" id="aiToggle" onclick="toggleAI()">✍️ Write with your AI (free — copy &amp; paste) <span class="chev">▾</span></button>
           <div class="prompt-tool" id="aiPanel" style="display:none;">
-            <p class="hint">Add your images below (with a note on each), say what the Blog is about, generate the prompt, paste it into ChatGPT / Claude / Gemini — then paste the reply back. It builds the text blocks <strong>and auto-fills your title, summary and tags</strong>. Byline, date, related posts and the feedback widgets are added automatically on publish — the AI only writes content.</p>
+            <p class="hint">Add your images below (with a note on each), say what the Blog is about, generate the prompt, paste it into ChatGPT / Claude / Gemini — then paste the reply back. It builds the text blocks <strong>and auto-fills your title, slug, summary, category and tags</strong> — the whole form from one paste. Byline, date, related posts and the feedback widgets are added automatically on publish — the AI only writes content.</p>
             <textarea id="promptTopic" placeholder="What's this Blog about? e.g. How to design a café menu board in Canva"></textarea>
             <button type="button" class="btn-primary" style="margin-top:.7rem;" onclick="wbaGenCopy()">✨ Generate &amp; copy prompt</button>
             <div class="prompt-out"><textarea id="promptOut" readonly placeholder="Your prompt appears here — and copies to your clipboard automatically."></textarea><button type="button" class="copy-btn" id="copyIcon" onclick="wbaCopyPrompt()" title="Copy again">Copy</button></div>
@@ -171,9 +171,11 @@ function wbaBuildPrompt(){
   p+=(imgs.length?"- For each image: a \"## \" heading, then 1–2 short paragraphs.\n":"- A few \"## \" headings, each with 1–2 short paragraphs under it.\n");
   p+="- A short closing paragraph.\n";
   p+="Use \"## \" for every heading; plain paragraphs otherwise. You may use **bold**, bullet lists and \"> \" tip lines — they all render. Don't add the images yourself — I'll place them.\n\n";
-  p+="Then FINISH the reply with exactly these three lines (they auto-fill my publishing fields):\n";
+  p+="Then FINISH the reply with exactly these five lines (they auto-fill my publishing fields):\n";
   p+="TITLE: a punchy headline (under 60 characters)\n";
+  p+="SLUG: a short keyword URL slug, lowercase-words-joined-by-hyphens\n";
   p+="EXCERPT: a one-sentence summary (under 25 words) — this becomes the Google snippet\n";
+  p+="CATEGORY: one of: tutorial, guide, case study, review, news\n";
   p+="TAGS: 3–5 short comma-separated topics\n";
   p+="\nNote: the author byline, date, related posts and feedback widgets are added automatically — don't write them.";
   return p;
@@ -186,10 +188,15 @@ function wbaCopyPrompt(){ var t=document.getElementById('promptOut'); if(!t.valu
 function wbaGenCopy(){ wbaGenPrompt(); wbaCopyPrompt(); }
 function wbaImportAI(){ var txt=document.getElementById('importText').value.trim(); if(!txt){ setStatus('postStatus','Paste the AI reply first.'); return; }
   var filled=[];
+  var slugWasEmpty=!document.getElementById('pSlug').value.trim();
   var m=txt.match(/^TITLE:\s*(.+)$/mi);
   if(m){ txt=txt.replace(m[0],'').trim(); if(!document.getElementById('pTitle').value.trim()){ document.getElementById('pTitle').value=m[1].trim(); wbaAutoslug(); filled.push('title'); } }
+  m=txt.match(/^SLUG:\s*(.+)$/mi);
+  if(m){ txt=txt.replace(m[0],'').trim(); var sg=wbaSlugify(m[1]); if(sg && slugWasEmpty){ document.getElementById('pSlug').value=sg; setChain(false); filled.push('slug'); } }
   m=txt.match(/^EXCERPT:\s*(.+)$/mi);
   if(m){ txt=txt.replace(m[0],'').trim(); if(!document.getElementById('pExcerpt').value.trim()){ document.getElementById('pExcerpt').value=m[1].trim(); filled.push('excerpt'); } }
+  m=txt.match(/^CATEGORY:\s*(.+)$/mi);
+  if(m){ txt=txt.replace(m[0],'').trim(); var cv=document.getElementById('pCategory').value.trim(); if(!cv || cv==='tutorial'){ document.getElementById('pCategory').value=m[1].trim().toLowerCase(); filled.push('category'); } }
   m=txt.match(/^TAGS:\s*(.+)$/mi);
   if(m){ txt=txt.replace(m[0],'').trim(); m[1].split(',').forEach(function(t){ wbaAddTag(t.trim()); }); filled.push('tags'); }
   var nb=wbaParseAIText(txt); if(!nb.length && !filled.length){ setStatus('postStatus','Nothing to import.'); return; }

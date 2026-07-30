@@ -99,7 +99,7 @@ const NAV = `<nav>
   <a href="/index.html" class="nav-logo"><img src="${LOGO}" alt="Weston Business Authority"/></a>
   <button class="nav-toggle" aria-label="Open menu" onclick="toggleNav()"><span></span><span></span><span></span></button>
   <div class="nav-links" id="navLinks">
-    <a href="/services.html">Services</a><a href="/pricing.html">Pricing</a><a href="/work.html">Work</a><a href="/weston.html">Weston Guide</a><a href="/blog.html">Blog</a><a href="/contact.html">Contact</a>
+    <a href="/free-websites.html">Free Website</a><a href="/services.html">Services</a><a href="/work.html">Work</a><a href="/weston.html">Weston Guide</a><a href="/blog.html">Blog</a><a href="/contact.html">Contact</a>
     <a href="https://wa.me/447902376369" class="nav-wa" target="_blank">WhatsApp</a>
   </div>
 </nav>`;
@@ -108,7 +108,7 @@ const FOOTER = `<footer>
     <div class="footer-brand"><img src="${LOGO}" alt="WBA"/>
       <p>Your local creative &amp; tech team in Weston-Super-Mare. We build websites, apps &amp; systems, create photography, design, print &amp; media, and grow your business online. Serving our town since 2023.</p></div>
     <div class="footer-col"><h4>Navigate</h4>
-      <a href="/services.html">Services</a><a href="/pricing.html">Pricing</a><a href="/work.html">Work</a><a href="/weston.html">Weston Guide</a><a href="/blog.html">Blog</a><a href="/about.html">About</a><a href="/contact.html">Contact</a></div>
+      <a href="/free-websites.html">Free Website</a><a href="/services.html">Services</a><a href="/pricing.html">Pricing</a><a href="/work.html">Work</a><a href="/weston.html">Weston Guide</a><a href="/blog.html">Blog</a><a href="/about.html">About</a><a href="/contact.html">Contact</a></div>
     <div class="footer-col"><h4>Get in Touch</h4>
       <a href="https://wa.me/447902376369" target="_blank">💬 WhatsApp: 07902 376369</a>
       <a href="mailto:info@westonbusinessauthority.co.uk">✉️ info@westonbusinessauthority.co.uk</a>
@@ -246,7 +246,7 @@ ${FOOTER}
 
 function sitemap(posts){
   const staticPages = [
-    ['/','1.0','weekly'], ['/services.html','0.9','monthly'], ['/pricing.html','0.9','monthly'],
+    ['/','1.0','weekly'], ['/free-websites.html','1.0','monthly'], ['/services.html','0.9','monthly'], ['/pricing.html','0.9','monthly'],
     ['/work.html','0.8','monthly'], ['/about.html','0.7','monthly'], ['/weston.html','0.8','monthly'],
     ['/blog.html','0.9','weekly'], ['/news.html','0.7','weekly'], ['/submit.html','0.5','monthly'],
     ['/contact.html','0.9','monthly'], ['/privacy.html','0.3','yearly'], ['/terms.html','0.3','yearly']
