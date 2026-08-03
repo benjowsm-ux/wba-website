@@ -48,6 +48,7 @@
       <div class="admin-tabs">
         <button class="admin-tab on" id="tabPosts" onclick="wbaTab('posts')">🧱 Blogs</button>
         <button class="admin-tab" id="tabSubs" onclick="wbaTab('subs')">📥 Submissions <span id="subCount"></span></button>
+        <button class="admin-tab" id="tabClients" onclick="wbaTab('clients')">👥 Clients <span id="clCount"></span></button>
       </div>
 
       <div id="panelPosts">
@@ -130,6 +131,44 @@
         <div class="admin-note">Approve to make public; reject to hide. Nothing is public until approved.</div>
         <div class="admin-list" id="subList"></div>
       </div>
+
+      <!-- CLIENTS -->
+      <div id="panelClients" style="display:none;">
+        <div class="gc-bar">
+          <label>GoCardless link</label>
+          <input type="text" id="gcLink" placeholder="Paste your GoCardless payment link here"/>
+          <button type="button" class="admin-btn edit" onclick="wbaSaveGC()">Save</button>
+          <span class="send-status" id="gcStatus"></span>
+        </div>
+        <div class="cl-summary" id="clSummary"></div>
+
+        <div class="booking-form-box">
+          <input type="hidden" id="clId"/>
+          <div class="form-row"><input type="text" id="clBusiness" placeholder="Business name"/><input type="text" id="clContact" placeholder="Contact name"/></div>
+          <div class="form-row"><input type="email" id="clEmail" placeholder="Email"/><input type="text" id="clPhone" placeholder="Phone / WhatsApp"/></div>
+          <div class="form-row"><input type="text" id="clDomain" placeholder="Domain (figtree.co.uk)"/><input type="text" id="clSite" placeholder="Live site URL"/></div>
+          <div class="form-row">
+            <select id="clStatus">
+              <option value="lead">Lead</option>
+              <option value="building">Building</option>
+              <option value="trial">On trial</option>
+              <option value="active">Active (paying)</option>
+              <option value="lapsed">Lapsed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <input type="date" id="clTrialEnds" placeholder="Trial ends"/>
+          </div>
+          <div class="form-row"><input type="text" id="clFee" placeholder="Monthly fee (30.00)"/><input type="text" id="clGcRef" placeholder="GoCardless reference (optional)"/></div>
+          <div class="form-row full"><textarea id="clNotes" placeholder="Notes…"></textarea></div>
+          <div class="editor-actions">
+            <button type="button" class="btn-primary" onclick="wbaSaveClient()">Save client</button>
+            <button type="button" class="admin-btn edit" onclick="wbaTrial14()">Start 14-day trial today</button>
+            <button type="button" class="admin-btn del" onclick="wbaNewClient()">+ New / clear</button>
+            <span class="send-status" id="clStatusMsg"></span>
+          </div>
+        </div>
+        <div class="admin-list" id="clientList"></div>
+      </div>
     </div>
   </div>
 </section>
@@ -148,8 +187,118 @@ function showOnly(id){ ['loginBox','notAdmin','dash'].forEach(function(x){ var e
 function wbaSignIn(){ if(!window.WBAdb){ setStatus('loginStatus','Still loading — refresh.'); return; } setStatus('loginStatus','Signing in…',true);
   WBAdb.signIn(document.getElementById('email').value.trim(),document.getElementById('password').value).then(function(r){ if(r.error){ setStatus('loginStatus',r.error.message); return; } boot(); }); }
 function wbaSignOut(){ WBAdb.signOut().then(function(){ location.reload(); }); }
-function wbaTab(w){ document.getElementById('tabPosts').classList.toggle('on',w==='posts'); document.getElementById('tabSubs').classList.toggle('on',w==='subs');
-  document.getElementById('panelPosts').style.display=w==='posts'?'block':'none'; document.getElementById('panelSubs').style.display=w==='subs'?'block':'none'; }
+function wbaTab(w){
+  var tabs={posts:'tabPosts',subs:'tabSubs',clients:'tabClients'};
+  var panels={posts:'panelPosts',subs:'panelSubs',clients:'panelClients'};
+  Object.keys(tabs).forEach(function(k){
+    var t=document.getElementById(tabs[k]); if(t) t.classList.toggle('on',k===w);
+    var p=document.getElementById(panels[k]); if(p) p.style.display=(k===w)?'block':'none';
+  });
+}
+
+/* ---------- clients ---------- */
+var wbaGC='';
+function wbaLoadGC(){
+  WBAdb.getSetting('gocardless_link').then(function(r){
+    wbaGC=(r.data&&r.data.value)||'';
+    var el=document.getElementById('gcLink'); if(el) el.value=wbaGC;
+  }).catch(function(){});
+}
+function wbaSaveGC(){
+  var v=document.getElementById('gcLink').value.trim();
+  setStatus('gcStatus','Saving…',true);
+  WBAdb.setSetting('gocardless_link',v).then(function(r){
+    if(r.error){ setStatus('gcStatus',r.error.message); return; }
+    wbaGC=v; setStatus('gcStatus','Saved ✓',true); loadClients();
+  });
+}
+function daysLeft(d){ if(!d) return null;
+  var end=new Date(d+'T00:00:00'), now=new Date(); now.setHours(0,0,0,0);
+  return Math.round((end-now)/86400000); }
+function wbaTrial14(){
+  var d=new Date(); d.setDate(d.getDate()+14);
+  document.getElementById('clTrialEnds').value=d.toISOString().slice(0,10);
+  document.getElementById('clStatus').value='trial';
+  setStatus('clStatusMsg','Trial ends '+d.toLocaleDateString('en-GB')+' — billing starts the day after.',true);
+}
+function wbaNewClient(){
+  ['clId','clBusiness','clContact','clEmail','clPhone','clDomain','clSite','clTrialEnds','clGcRef','clNotes'].forEach(function(id){ document.getElementById(id).value=''; });
+  document.getElementById('clStatus').value='lead';
+  document.getElementById('clFee').value='30.00';
+  setStatus('clStatusMsg','',true);
+}
+function wbaSaveClient(){
+  var biz=document.getElementById('clBusiness').value.trim();
+  if(!biz){ setStatus('clStatusMsg','Business name is required.'); return; }
+  var fee=parseFloat(document.getElementById('clFee').value)||30;
+  var c={ id:document.getElementById('clId').value||undefined, business:biz,
+    contact_name:document.getElementById('clContact').value.trim(),
+    email:document.getElementById('clEmail').value.trim(),
+    phone:document.getElementById('clPhone').value.trim(),
+    domain:document.getElementById('clDomain').value.trim(),
+    site_url:document.getElementById('clSite').value.trim(),
+    status:document.getElementById('clStatus').value,
+    trial_ends:document.getElementById('clTrialEnds').value||null,
+    monthly_fee:fee, gc_ref:document.getElementById('clGcRef').value.trim(),
+    notes:document.getElementById('clNotes').value.trim() };
+  setStatus('clStatusMsg','Saving…',true);
+  WBAdb.saveClient(c).then(function(r){
+    if(r.error){ setStatus('clStatusMsg',r.error.message); return; }
+    setStatus('clStatusMsg','Saved ✓',true); wbaNewClient(); loadClients();
+  });
+}
+function editClient(id){
+  var c=(window.wbaClientsById||{})[id]; if(!c) return;
+  document.getElementById('clId').value=c.id;
+  document.getElementById('clBusiness').value=c.business||'';
+  document.getElementById('clContact').value=c.contact_name||'';
+  document.getElementById('clEmail').value=c.email||'';
+  document.getElementById('clPhone').value=c.phone||'';
+  document.getElementById('clDomain').value=c.domain||'';
+  document.getElementById('clSite').value=c.site_url||'';
+  document.getElementById('clStatus').value=c.status||'lead';
+  document.getElementById('clTrialEnds').value=c.trial_ends||'';
+  document.getElementById('clFee').value=c.monthly_fee||'30.00';
+  document.getElementById('clGcRef').value=c.gc_ref||'';
+  document.getElementById('clNotes').value=c.notes||'';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function delClient(id){ if(!confirm('Delete this client?')) return; WBAdb.deleteClient(id).then(function(){ loadClients(); }); }
+function copyGC(name){
+  if(!wbaGC){ alert('Add your GoCardless link at the top of this tab first.'); return; }
+  var msg='Hi '+(name||'there')+' — here’s the link to set up your monthly subscription for the website. It takes about a minute and you won’t need to think about it again: '+wbaGC;
+  if(navigator.clipboard) navigator.clipboard.writeText(msg);
+  setStatus('clStatusMsg','WhatsApp message copied ✓',true);
+}
+function loadClients(){
+  WBAdb.allClients().then(function(r){
+    var list=document.getElementById('clientList'); var cs=r.data||[];
+    window.wbaClientsById={}; cs.forEach(function(c){ wbaClientsById[c.id]=c; });
+    var counts={trial:0,active:0,lapsed:0};
+    cs.forEach(function(c){ if(counts[c.status]!=null) counts[c.status]++; });
+    var mrr=cs.filter(function(c){return c.status==='active';}).reduce(function(a,c){return a+(+c.monthly_fee||0);},0);
+    document.getElementById('clCount').textContent=counts.trial?('('+counts.trial+')'):'';
+    document.getElementById('clSummary').innerHTML=
+      '<div class="cl-sum"><b>'+cs.length+'</b>total</div>'+
+      '<div class="cl-sum"><b>'+counts.trial+'</b>on trial</div>'+
+      '<div class="cl-sum"><b>'+counts.active+'</b>paying</div>'+
+      '<div class="cl-sum"><b>£'+mrr.toFixed(2)+'</b>monthly recurring</div>'+
+      (counts.lapsed?'<div class="cl-sum"><b>'+counts.lapsed+'</b>lapsed</div>':'');
+    if(!cs.length){ list.innerHTML='<p class="admin-note">No clients yet — add your first above.</p>'; return; }
+    list.innerHTML=cs.map(function(c){
+      var d=daysLeft(c.trial_ends);
+      var trial=(c.status==='trial'&&d!=null)
+        ? '<span class="cl-days'+(d<=3?' soon':'')+'">'+(d<0?'trial ended — start billing':(d+' day'+(d===1?'':'s')+' of trial left'))+'</span>' : '';
+      return '<div class="admin-row"><div><strong>'+esc(c.business)+'</strong> <span class="cl-status cl-'+esc(c.status)+'">'+esc(c.status)+'</span><br>'
+        +'<span class="muted">'+esc(c.contact_name||'')+(c.domain?(' · '+esc(c.domain)):'')+(c.monthly_fee?(' · £'+(+c.monthly_fee).toFixed(2)+'/mo'):'')+'</span>'
+        +(trial?'<br>'+trial:'')+'</div>'
+        +'<div class="admin-actions">'
+        +'<button class="admin-btn edit" onclick="copyGC(\''+String(c.contact_name||'').replace(/'/g,"\\'")+'\')">Copy pay link</button>'
+        +'<button class="admin-btn edit" onclick="editClient(\''+c.id+'\')">Edit</button>'
+        +'<button class="admin-btn del" onclick="delClient(\''+c.id+'\')">Delete</button></div></div>';
+    }).join('');
+  });
+}
 
 /* title/slug chain */
 function setChain(on){ chainLinked=on; var c=document.getElementById('chainBtn'); c.classList.toggle('on',on); c.textContent=on?'🔗':'🔓'; c.title=on?'Linked — slug follows the title (click to unlink)':'Unlinked — slug is independent (click to link)'; }
@@ -315,7 +464,7 @@ function boot(){ if(!window.WBAdb){ bstat('Still loading — refresh.'); return;
   WBAdb.currentUser().then(function(u){ if(!u.data||!u.data.user){ showOnly('loginBox'); document.getElementById('signOutLink').style.display='none'; bstat(''); return; }
     document.getElementById('signOutLink').style.display='inline'; var uid=u.data.user.id;
     WBAdb.isAdmin().then(function(r){ if(r.error){ showOnly('loginBox'); bstat('Access check failed: '+r.error.message); return; }
-      if(r.data===true){ showOnly('dash'); bstat(''); loadPosts(); loadSubs(); if(!booted){ booted=true; wbaNewPost(); } }
+      if(r.data===true){ showOnly('dash'); bstat(''); loadPosts(); loadSubs(); loadClients(); wbaLoadGC(); if(!booted){ booted=true; wbaNewPost(); wbaNewClient(); } }
       else { showOnly('notAdmin'); bstat(''); document.getElementById('uid').textContent=uid; } }); }).catch(function(e){ bstat('Something went wrong: '+((e&&e.message)||e)); }); }
 
 window.addEventListener('DOMContentLoaded',function(){

@@ -62,6 +62,22 @@
     },
     deletePost: function(id){ return sb.from('posts').delete().eq('id', id); },
     allSubs: function(){ return sb.from('submissions').select('*').order('created_at', { ascending: false }); },
+
+    // ---------- clients (free-website subscriptions) ----------
+    allClients: function(){ return sb.from('clients').select('*').order('created_at', { ascending: false }); },
+    saveClient: function(c){
+      var payload = Object.assign({}, c);
+      payload.updated_at = new Date().toISOString();
+      if(c.id){ delete payload.id; return sb.from('clients').update(payload).eq('id', c.id); }
+      delete payload.id;
+      payload.id = wbaUUID();
+      return sb.from('clients').insert([payload]);
+    },
+    deleteClient: function(id){ return sb.from('clients').delete().eq('id', id); },
+    getSetting: function(key){ return sb.from('settings').select('value').eq('key', key).maybeSingle(); },
+    setSetting: function(key, value){
+      return sb.from('settings').upsert({ key: key, value: value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+    },
     setSub: function(id, status){
       return sb.from('submissions').update({ status: status, reviewed_at: new Date().toISOString() }).eq('id', id);
     }
