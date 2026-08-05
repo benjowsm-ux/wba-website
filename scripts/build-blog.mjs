@@ -192,6 +192,8 @@ ${rel.map(cardHTML).join('\n')}
 </div></section>
 ${FOOTER}
 <script src="/js/main.js" defer></script>
+<script src="/js/consent.js" defer></script>
+<script src="/js/analytics.js" defer></script>
 </body></html>`;
 }
 
@@ -241,6 +243,8 @@ ${cards}
 </div></section>
 ${FOOTER}
 <script src="/js/main.js" defer></script>
+<script src="/js/consent.js" defer></script>
+<script src="/js/analytics.js" defer></script>
 </body></html>`;
 }
 

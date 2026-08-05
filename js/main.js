@@ -91,6 +91,19 @@ async function postForm(payload){
   return { ok: results[0] || results[1], emailed: results[0], stored: results[1] };
 }
 
+/* ---- Lead captured ----
+   Called ONLY when a submission genuinely landed (email or Supabase).
+   Fires our own analytics event, and the Meta Pixel if consent was given.
+   Both are optional — if neither script is loaded, this does nothing. */
+function wbaLeadCaptured(which){
+  try{ if(typeof wbaTrack === 'function') wbaTrack('form_submit', which); }catch(e){}
+  try{
+    if(typeof fbq === 'function'){
+      fbq('track','Lead',{ content_name:'Free Website Enquiry', content_category:which });
+    }
+  }catch(e){}
+}
+
 async function quickSubmit(){
   var n = document.getElementById('qname').value.trim();
   var p = document.getElementById('qphone').value.trim();
@@ -98,6 +111,7 @@ async function quickSubmit(){
   try{
     var r = await postForm({name:n, contact:p, _subject:'Quick Enquiry — WBA Website'});
     if(r.ok){
+      wbaLeadCaptured('quick-form');
       document.getElementById('qname').value='';
       document.getElementById('qphone').value='';
       showModal();
@@ -121,6 +135,7 @@ async function submitForm(){
   try{
     var r = await postForm({name:name, business:biz, contact:method||'Not specified', email:email, message:msg||'No message', _subject:'Visit Request — '+biz});
     if(r.ok){
+      wbaLeadCaptured('enquiry-form');
       ['fname','fbiz','femail','fmsg'].forEach(function(id){ document.getElementById(id).value=''; });
       document.getElementById('fmethod').selectedIndex=0;
       s.textContent=''; showModal();
