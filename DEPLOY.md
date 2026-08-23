@@ -70,7 +70,9 @@ Then, in order:
 1. `supabase/schema.sql` — adds the `featured` column and indexes
 2. `supabase/rls.sql` — the security policies
 3. `supabase/seed-posts.sql` — optional, the seven placeholder posts
-4. **GitHub → Actions → Build feed → Run workflow** — regenerates `/feed/` from
+4. `supabase/storage.sql` — the media bucket behind Admin → Photos
+5. `supabase/page-content.sql` — the table behind Edit mode
+6. **GitHub → Actions → Build feed → Run workflow** — regenerates `/feed/` from
    the database. Until it runs, the Feed shows the placeholder build.
 
 ---
@@ -176,3 +178,31 @@ while it loads. Nothing external is fetched any more except Google Fonts (and
 jsdelivr on the admin page).
 
 Don't delete `img/` — every page references it.
+
+
+---
+
+## Edit mode
+
+Sign in at `/admin/`, then open any page: a bar appears at the bottom letting you
+click into the copy and change it. Full write-up in
+[docs/EDIT-MODE.md](docs/EDIT-MODE.md).
+
+Two things to know:
+
+- **Saved is not live.** An edit is stored instantly and baked into the static
+  HTML by the next build — every 5 minutes, or press **Publish now** in
+  **Admin → Pages**. The bar shows a count of what is waiting.
+- **Run `supabase/page-content.sql`** or nothing saves.
+
+## Admin → Checks
+
+One click, and it tells you exactly what is and is not wired up — signed in,
+recognised as an admin, can read posts, can save posts, edit storage, photo
+storage — by making each request for real and printing the SQL for whatever is
+missing. Start there whenever something "doesn't work".
+
+It also catches a trap worth knowing about: when row-level security refuses an
+UPDATE, PostgREST returns **200 with an empty array, not an error**. Code that
+only checks for an error reports "Saved" while nothing changed. Every write now
+verifies that a row actually came back.

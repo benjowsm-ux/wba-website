@@ -86,18 +86,32 @@
     currentUser: function(){ return sb.auth.getUser(); },
     isAdmin: function(){ return sb.rpc('is_admin'); },
 
-    /* ---------- admin: posts ---------- */
+    /* ---------- admin: posts ----------------------------------------------
+       IMPORTANT, and the source of a real bug worth remembering:
+
+       When row-level security refuses an UPDATE or DELETE, PostgREST does NOT
+       return an error. The USING clause simply matches no rows, so you get
+       HTTP 200 and an empty array. Code that only checks `r.error` therefore
+       reports "Saved" while nothing whatsoever has changed.
+
+       Verified against the live API with the public key:
+         PATCH /posts?id=eq.<id>  ->  200, []  and the row untouched.
+
+       So every write here ends in .select(): the caller can then tell the
+       difference between "saved" and "silently refused" by looking at how
+       many rows came back. `wroteNothing()` below is that test.
+       ---------------------------------------------------------------------- */
     allPosts: function(){ return sb.from('posts').select('*').order('updated_at', { ascending: false }); },
     savePost: function(p){
       var payload = Object.assign({}, p);
       payload.updated_at = new Date().toISOString();
       if(payload.status === 'published' && !payload.published_at) payload.published_at = new Date().toISOString();
-      if(p.id){ delete payload.id; return sb.from('posts').update(payload).eq('id', p.id); }
+      if(p.id){ delete payload.id; return sb.from('posts').update(payload).eq('id', p.id).select('id'); }
       delete payload.id;
       payload.id = wbaUUID();
-      return sb.from('posts').insert([payload]);
+      return sb.from('posts').insert([payload]).select('id');
     },
-    deletePost: function(id){ return sb.from('posts').delete().eq('id', id); },
+    deletePost: function(id){ return sb.from('posts').delete().eq('id', id).select('id'); },
 
     /* Only one post per pillar can hold the home-page slot. */
     clearFeatured: function(pillar, exceptId){
@@ -109,29 +123,68 @@
     /* ---------- admin: submissions ---------- */
     allSubs: function(){ return sb.from('submissions').select('*').order('created_at', { ascending: false }); },
     setSub: function(id, status){
-      return sb.from('submissions').update({ status: status, reviewed_at: new Date().toISOString() }).eq('id', id);
+      return sb.from('submissions').update({ status: status, reviewed_at: new Date().toISOString() }).eq('id', id).select('id');
     },
-    deleteSub: function(id){ return sb.from('submissions').delete().eq('id', id); },
+    deleteSub: function(id){ return sb.from('submissions').delete().eq('id', id).select('id'); },
 
     /* ---------- admin: clients ---------- */
     allClients: function(){ return sb.from('clients').select('*').order('created_at', { ascending: false }); },
     saveClient: function(c){
       var payload = Object.assign({}, c);
       payload.updated_at = new Date().toISOString();
-      if(c.id){ delete payload.id; return sb.from('clients').update(payload).eq('id', c.id); }
+      if(c.id){ delete payload.id; return sb.from('clients').update(payload).eq('id', c.id).select('id'); }
       delete payload.id;
       payload.id = wbaUUID();
-      return sb.from('clients').insert([payload]);
+      return sb.from('clients').insert([payload]).select('id');
     },
-    deleteClient: function(id){ return sb.from('clients').delete().eq('id', id); },
+    deleteClient: function(id){ return sb.from('clients').delete().eq('id', id).select('id'); },
+
+    /* ---------- page content (Edit mode) --------------------------------
+       Read is public so the build can fetch overrides with the publishable
+       key. Write is admin-only, enforced by RLS -- calling savePageContent
+       from a signed-out console gets a 401, not a saved row.
+       -------------------------------------------------------------------- */
+    /* Takes a page path, or a list of them — edit mode asks for this page
+       plus '*' (the nav and footer) in a single round trip. */
+    getPageContent: function(page){
+      var q = sb.from('page_content').select('page,key,value,kind,updated_at');
+      return Array.isArray(page) ? q.in('page', page) : q.eq('page', page);
+    },
+
+    allPageContent: function(){
+      return sb.from('page_content').select('*').order('updated_at', { ascending: false });
+    },
+
+    /* One round trip for the whole page. onConflict matches the unique index
+       on (page, key), so re-editing the same line updates rather than piling
+       up rows. updated_at/updated_by are set by a trigger, not by us -- the
+       client does not get to say who made the change. */
+    savePageContent: function(rows){
+      return sb.from('page_content')
+               .upsert(rows, { onConflict: 'page,key' })
+               .select('key');
+    },
+
+    resetPageContent: function(page, key){
+      return sb.from('page_content').delete().eq('page', page).eq('key', key).select('key');
+    },
 
     /* ---------- admin: settings ---------- */
     getSetting: function(key){ return sb.from('settings').select('value').eq('key', key).maybeSingle(); },
     setSetting: function(key, value){
-      return sb.from('settings').upsert({ key: key, value: value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+      return sb.from('settings').upsert({ key: key, value: value, updated_at: new Date().toISOString() }, { onConflict: 'key' }).select('key');
     }
   };
 })();
+
+/* Did that write actually change anything?
+
+   Postgres row-level security refuses a write by matching zero rows, not by
+   raising an error, so `!r.error` is not the same as "it worked". Pass any
+   write result through this before telling somebody their work is saved. */
+function wbaWroteNothing(r){
+  return !!r && !r.error && Array.isArray(r.data) && r.data.length === 0;
+}
 
 /* UUID for new rows (works even if the database default is missing). */
 function wbaUUID(){

@@ -24,8 +24,8 @@
 <div class="modal-bg" id="modal">
   <div class="modal">
     <div class="modal-ico">✓</div>
-    <h3>Message sent</h3>
-    <p>We've got it. We'll come back to you asap.</p>
+    <h3 data-edit="page.h3">Message sent</h3>
+    <p data-edit="page.body" data-edit-kind="rich">We've got it. We'll come back to you asap.</p>
     <button class="btn btn-primary" onclick="closeModal()">Close</button>
   </div>
 </div>
@@ -48,9 +48,9 @@
 
 <header class="page-hero">
   <div class="inner">
-    <p class="crumb"><a href="/">Home</a> · Contact</p>
-    <h1 class="h-lg">Tell us what<br><em class="accent">you're about.</em></h1>
-    <p class="lede">As broad or as brief as you like. We'll come back asap.</p>
+    <p data-edit="hero.body" data-edit-kind="rich" class="crumb"><a href="/">Home</a> · Contact</p>
+    <h1 data-edit="hero.h1" data-edit-kind="rich" class="h-lg">Tell us what<br><em class="accent">you're about.</em></h1>
+    <p data-edit="hero.lede" data-edit-kind="rich" class="lede">As broad or as brief as you like. We'll come back asap.</p>
   </div>
 </header>
 
@@ -58,9 +58,9 @@
   <div class="inner">
     <div class="split">
       <div>
-        <p class="eyebrow">Ways to reach us</p>
-        <h2 class="h-md">However's easiest.</h2>
-        <p class="body-copy" style="margin-top:1rem;">Most of our work starts and finishes on WhatsApp. If you'd rather we came and looked at the premises, we will.</p>
+        <p data-edit="hero.eyebrow" data-edit-kind="rich" class="eyebrow">Ways to reach us</p>
+        <h2 data-edit="hero.h2" class="h-md">However's easiest.</h2>
+        <p data-edit="hero.body-2" data-edit-kind="rich" class="body-copy" style="margin-top:1rem;">Most of our work starts and finishes on WhatsApp. If you'd rather we came and looked at the premises, we will.</p>
 
         <div class="stack-sm" style="margin-top:2rem;">
           <p><a class="link-go" href="https://wa.me/447902376369" target="_blank" rel="noopener" data-track="contact-whatsapp">WhatsApp 07902 376369</a></p>
@@ -68,7 +68,7 @@
           <p><a class="link-go" href="tel:+447902376369">Call 07902 376369</a></p>
         </div>
 
-        <p class="small" style="margin-top:2rem;">Weston-super-Mare, Somerset, BS22 — serving Worle, Clevedon, Nailsea and the villages between.</p>
+        <p data-edit="hero.body-3" data-edit-kind="rich" class="small" style="margin-top:2rem;">Weston-super-Mare, Somerset, BS22 — serving Worle, Clevedon, Nailsea and the villages between.</p>
       </div>
 
       <div class="form-box">
@@ -103,18 +103,18 @@
   <div class="footer-grid">
     <div class="footer-brand">
       <img src="/img/wba-logo.png" alt="WBA" width="500" height="255"/>
-      <p>A design &amp; technology agency in Weston-super-Mare. We build, create and grow for local business.</p>
+      <p data-edit-scope="shared" data-edit="footer.body" data-edit-kind="rich">A design &amp; technology agency in Weston-super-Mare. We build, create and grow for local business.</p>
     </div>
     <div class="footer-col">
-      <h4>Site</h4>
+      <h4 data-edit-scope="shared" data-edit="footer.h4">Site</h4>
       <a href="/">Home</a><a href="/sites/">Sites</a><a href="/services/">Services</a><a href="/about/">About</a><a href="/feed/">Feed</a>
     </div>
     <div class="footer-col">
-      <h4>What we do</h4>
+      <h4 data-edit-scope="shared" data-edit="footer.h4-2">What we do</h4>
       <a href="/services/#build">Build</a><a href="/services/#create">Create</a><a href="/services/#grow">Grow</a><a href="/contact/">Contact</a>
     </div>
     <div class="footer-col">
-      <h4>Get in touch</h4>
+      <h4 data-edit-scope="shared" data-edit="footer.h4-3">Get in touch</h4>
       <a href="https://wa.me/447902376369" target="_blank" rel="noopener">WhatsApp 07902 376369</a>
       <a href="mailto:info@westonbusinessauthority.co.uk">info@westonbusinessauthority.co.uk</a>
       <a href="/free-website-terms/">Free site terms</a>
@@ -128,5 +128,6 @@
 
 <script src="/js/main.js" defer></script>
 <script src="/js/analytics.js" defer></script>
+<script src="/js/edit-boot.js" defer></script>
 </body>
 </html>

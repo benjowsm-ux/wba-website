@@ -1314,3 +1314,183 @@ h1,h2,h3,h4,.intro-statement{text-wrap:balance;}
    height — which stretched the footer mark to 345x30. Pin width:auto so the
    intrinsic ratio always wins. */
 .nav-logo img,.footer-brand img{width:auto;}
+
+/* ==========================================================================
+   18. EDIT MODE
+   Only ever rendered for a signed-in admin — js/edit.js appends the bar and
+   adds .wba-has-editbar to <body>. Everything here is namespaced wba-* so it
+   can be lifted into another site without colliding with that site's classes.
+   ========================================================================== */
+#wba-editbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:9999;
+  font-family:var(--font-body);
+  background:#0b1220;color:#fff;
+  border-top:1px solid rgba(255,255,255,.14);
+  box-shadow:0 -8px 30px rgba(6,12,26,.34);
+  /* Respect a phone's home indicator / rounded corners. */
+  padding-bottom:env(safe-area-inset-bottom,0);
+}
+.wba-eb-in{
+  display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;
+  padding:.62rem clamp(.9rem,3vw,1.4rem);
+}
+.wba-eb-title{font-family:var(--font-display);font-size:.9rem;letter-spacing:.01em;}
+.wba-eb-count{font-size:.78rem;color:rgba(255,255,255,.62);}
+.wba-eb-spacer{flex:1 1 auto;min-width:0;}
+
+/* A quiet pulse, so it reads as live without demanding attention. */
+.wba-eb-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--gold);
+  box-shadow:0 0 0 0 rgba(245,196,22,.55);
+  animation:wba-eb-pulse 2.6s var(--ease) infinite;flex:0 0 auto;
+}
+@keyframes wba-eb-pulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(245,196,22,.5);}
+  50%    {box-shadow:0 0 0 6px rgba(245,196,22,0);}
+}
+#wba-editbar.is-dirty .wba-eb-dot{background:#ff9f43;}
+
+.wba-eb-btn{
+  font:inherit;font-size:.8rem;font-weight:600;line-height:1;
+  padding:.5rem .8rem;border-radius:var(--r-pill);cursor:pointer;
+  border:1px solid rgba(255,255,255,.22);
+  background:rgba(255,255,255,.08);color:#fff;text-decoration:none;
+  display:inline-flex;align-items:center;white-space:nowrap;
+  transition:background var(--t-fast) var(--ease),border-color var(--t-fast) var(--ease);
+}
+.wba-eb-btn:hover{background:rgba(255,255,255,.17);border-color:rgba(255,255,255,.4);}
+.wba-eb-btn.solid{background:var(--gold);border-color:var(--gold);color:#0b1220;}
+.wba-eb-btn.solid:hover{background:var(--gold-hi);border-color:var(--gold-hi);}
+.wba-eb-btn.ghost{background:transparent;}
+.wba-eb-btn.wba-eb-x{padding:.5rem .62rem;font-size:1rem;}
+.wba-eb-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+/* The UA rule for [hidden] is display:none at element specificity, so the
+   class rule above beats it and Save/Discard would sit there permanently.
+   Restore it explicitly. */
+.wba-eb-btn[hidden]{display:none;}
+
+.wba-eb-msg{
+  font-size:.78rem;padding:0 clamp(.9rem,3vw,1.4rem);
+  color:rgba(255,255,255,.66);max-height:0;overflow:hidden;
+  transition:max-height var(--t) var(--ease),padding var(--t) var(--ease);
+}
+.wba-eb-msg:not(:empty){max-height:5rem;padding-bottom:.62rem;}
+.wba-eb-msg.ok {color:#6ee7a8;}
+.wba-eb-msg.bad{color:#ff9a9a;}
+
+/* Keep the bar from covering the end of the page. */
+body.wba-has-editbar{padding-bottom:4.6rem;}
+
+/* ---- the editable regions themselves ---------------------------------- */
+/* Off by default: an admin reading the site should see the site, not a grid
+   of dashed boxes. The outlines only appear once editing is switched on. */
+body.wba-editing [data-edit]{
+  outline:1px dashed rgba(10,83,199,.5);
+  outline-offset:3px;border-radius:2px;
+  transition:outline-color var(--t-fast) var(--ease),background var(--t-fast) var(--ease);
+}
+body.wba-editing [data-edit]:hover{
+  outline-color:var(--blue);background:rgba(10,83,199,.06);
+}
+body.wba-editing [data-edit][data-edit-on]:focus{
+  outline:2px solid var(--blue);outline-offset:3px;
+  background:rgba(10,83,199,.07);
+}
+/* Saved, but the build hasn't run yet — so this is not what visitors see. */
+body.wba-editing [data-edit-pending]{outline-color:#ff9f43;}
+body.wba-editing [data-edit-pending]::after{
+  content:'awaiting publish';
+  position:absolute;transform:translate(.4rem,-1.1rem);
+  font:600 .58rem/1 var(--font-body);letter-spacing:.06em;text-transform:uppercase;
+  color:#8a5a13;background:#ffe6b8;border-radius:3px;padding:.18rem .34rem;
+  pointer-events:none;white-space:nowrap;
+}
+body.wba-editing [data-edit-pending]{position:relative;}
+
+@media (max-width:560px){
+  .wba-eb-count{width:100%;order:5;}
+  body.wba-has-editbar{padding-bottom:6.4rem;}
+}
+@media (prefers-reduced-motion:reduce){
+  .wba-eb-dot{animation:none;}
+}
+/* Never print the editing chrome. */
+@media print{
+  #wba-editbar{display:none;}
+  body.wba-has-editbar{padding-bottom:0;}
+}
+
+/* ==========================================================================
+   19. ADMIN — PAGES & CHECKS
+   ========================================================================== */
+.pg-group + .pg-group{margin-top:1.6rem;}
+.pg-group h4{
+  font-family:var(--font-display);font-size:.82rem;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--faint);
+  margin:0 0 .6rem;padding-bottom:.4rem;border-bottom:1px solid var(--line);
+}
+.pg-row{
+  display:grid;gap:.5rem 1rem;align-items:start;
+  grid-template-columns:minmax(0,13rem) minmax(0,1fr) auto;
+  padding:.7rem 0;border-bottom:1px solid var(--line-soft);
+}
+.pg-row:last-child{border-bottom:0;}
+.pg-key code{
+  font:500 .76rem/1.4 var(--font-mono);color:var(--navy);
+  background:var(--blue-soft);border-radius:var(--r-xs);padding:.14rem .4rem;
+  overflow-wrap:anywhere;
+}
+.pg-tag{
+  margin-left:.4rem;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--faint);border:1px solid var(--line);border-radius:var(--r-xs);padding:.1rem .3rem;
+}
+.pg-val{font-size:.88rem;color:var(--text);min-width:0;overflow-wrap:anywhere;}
+.pg-act{display:flex;gap:.35rem;flex-wrap:wrap;}
+.pg-act .admin-btn{padding:.3rem .55rem;font-size:.74rem;}
+
+/* ---- checks ---- */
+.ck-row{
+  display:grid;gap:.2rem .7rem;align-items:start;
+  grid-template-columns:auto minmax(0,1fr);
+  padding:.7rem 0;border-bottom:1px solid var(--line-soft);
+}
+.ck-row:last-child{border-bottom:0;}
+.ck-dot{
+  width:9px;height:9px;border-radius:50%;margin-top:.42rem;flex:0 0 auto;
+  background:var(--faint);
+}
+.ck-ok   .ck-dot{background:#16a34a;}
+.ck-bad  .ck-dot{background:#dc2626;}
+.ck-warn .ck-dot{background:#d97706;}
+.ck-main{display:flex;flex-wrap:wrap;gap:.2rem .6rem;align-items:baseline;min-width:0;}
+.ck-main strong{font-size:.92rem;color:var(--ink);}
+.ck-detail{font-size:.82rem;color:var(--slate);overflow-wrap:anywhere;}
+.ck-fix{
+  grid-column:2;font-size:.82rem;line-height:1.6;color:var(--text);
+  background:#fff8e6;border:1px solid #f2dfae;border-radius:var(--r-sm);
+  padding:.6rem .75rem;margin-top:.35rem;overflow-wrap:anywhere;
+}
+.ck-fix code{
+  display:inline-block;font:500 .76rem/1.5 var(--font-mono);
+  background:#fff;border:1px solid #eadfc2;border-radius:var(--r-xs);
+  padding:.16rem .4rem;margin-top:.25rem;overflow-wrap:anywhere;
+}
+/* A failing check earns a red count on the tab, not a silent pass. */
+.admin-tab.has-problem .count{background:#dc2626;color:#fff;}
+
+@media (max-width:700px){
+  .pg-row{grid-template-columns:1fr;}
+  .pg-act{justify-content:flex-start;}
+  .ck-fix{grid-column:1 / -1;}
+}
+
+/* ---- admin: writing aids ---------------------------------------------- */
+.draft-bar{
+  display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;
+  background:#fff8e6;border:1px solid #f2dfae;border-radius:var(--r-sm);
+  padding:.6rem .75rem;margin-bottom:.9rem;font-size:.85rem;color:var(--text);
+}
+.draft-bar span{flex:1 1 14rem;min-width:0;}
+.draft-bar .admin-btn{padding:.32rem .6rem;font-size:.76rem;}
+.post-meta-line{font-size:.78rem;color:var(--faint);white-space:nowrap;}
+.post-meta-line.is-dirty{color:#b45309;font-weight:600;}

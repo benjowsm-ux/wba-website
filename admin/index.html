@@ -59,12 +59,15 @@
         <button class="admin-tab" id="tabSubs" onclick="wbaTab('subs')">Inbox <span class="count" id="subCount"></span></button>
         <button class="admin-tab" id="tabClients" onclick="wbaTab('clients')">Clients <span class="count" id="clCount"></span></button>
         <button class="admin-tab" id="tabMedia" onclick="wbaTab('media')">Photos <span class="count" id="mdCount"></span></button>
+        <button class="admin-tab" id="tabPages" onclick="wbaTab('pages')">Pages <span class="count" id="pgCount"></span></button>
+        <button class="admin-tab" id="tabChecks" onclick="wbaTab('checks')">Checks <span class="count" id="ckCount"></span></button>
       </div>
 
       <!-- ============================ FEED ============================ -->
       <div id="panelPosts">
         <div class="admin-card">
           <input type="hidden" id="postId"/>
+          <div class="draft-bar" id="draftBar" style="display:none;"></div>
 
           <div class="title-slug">
             <input type="text" id="pTitle" placeholder="Post title" oninput="wbaAutoslug()"/>
@@ -136,6 +139,7 @@
             <button type="button" class="admin-btn" onclick="wbaPreview()">Preview</button>
             <span class="spacer"></span>
             <button type="button" class="admin-btn danger" onclick="wbaNewPost(true)">New / clear</button>
+            <span class="post-meta-line" id="postMeta"></span>
             <span class="send-status" id="postStatus"></span>
           </div>
         </div>
@@ -225,6 +229,48 @@
           <p class="muted-note" id="mediaEmpty" style="display:none;">No photos uploaded yet.</p>
         </div>
       </div>
+
+      <!-- =========================== PAGES ============================ -->
+      <div id="panelPages" style="display:none;">
+        <div class="admin-card" style="margin-bottom:1rem;">
+          <p class="muted-note" style="margin:0 0 .8rem;">
+            Every wording change made in <strong>Edit mode</strong> lands here. The
+            site itself still ships as static HTML &mdash; these overrides are baked
+            into it by the next build, which is why a change can be saved but not
+            yet visible to visitors.
+          </p>
+          <div class="media-head">
+            <input type="search" id="pageFilter" placeholder="Filter by page or key" oninput="wbaRenderPages()"/>
+            <button type="button" class="admin-btn" onclick="wbaLoadPages()">Refresh</button>
+            <a class="admin-btn solid" id="publishLink" target="_blank" rel="noopener"
+               href="https://github.com/benjowsm-ux/wba-website/actions/workflows/feed.yml">Publish now</a>
+          </div>
+          <span class="send-status" id="pagesStatus"></span>
+        </div>
+
+        <div class="admin-card">
+          <div class="admin-list" id="pageList"></div>
+          <p class="muted-note" id="pagesEmpty" style="display:none;">
+            No wording changes yet. Open any page on the site while signed in and
+            the Edit mode bar appears at the bottom.
+          </p>
+        </div>
+      </div>
+
+      <!-- =========================== CHECKS =========================== -->
+      <div id="panelChecks" style="display:none;">
+        <div class="admin-card">
+          <div class="media-head">
+            <strong style="font-family:var(--font-display);">Is everything wired up?</strong>
+            <span class="spacer" style="flex:1 1 auto;"></span>
+            <button type="button" class="admin-btn" onclick="wbaRunChecks()">Run again</button>
+          </div>
+          <p class="muted-note" style="margin:.2rem 0 1.1rem;">
+            Each line is a real request, made as you, right now &mdash; not a guess.
+          </p>
+          <div id="checkList"></div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -267,10 +313,14 @@ function wbaSignIn(){
 function wbaSignOut(){ WBAdb.signOut().then(function(){ location.reload(); }); }
 
 function wbaTab(which){
-  var tabs = { posts:'tabPosts', subs:'tabSubs', clients:'tabClients', media:'tabMedia' };
-  var panels = { posts:'panelPosts', subs:'panelSubs', clients:'panelClients', media:'panelMedia' };
+  var tabs = { posts:'tabPosts', subs:'tabSubs', clients:'tabClients', media:'tabMedia',
+               pages:'tabPages', checks:'tabChecks' };
+  var panels = { posts:'panelPosts', subs:'panelSubs', clients:'panelClients', media:'panelMedia',
+                 pages:'panelPages', checks:'panelChecks' };
   /* the library is only fetched when you actually open it */
-  if(which === 'media' && !window.wbaMediaLoaded) wbaLoadMedia();
+  if(which === 'media'  && !window.wbaMediaLoaded) wbaLoadMedia();
+  if(which === 'pages'  && !window.wbaPagesLoaded) wbaLoadPages();
+  if(which === 'checks') wbaRunChecks();
   Object.keys(tabs).forEach(function(k){
     var t = el(tabs[k]); if(t) t.classList.toggle('on', k === which);
     var p = el(panels[k]); if(p) p.style.display = (k === which) ? 'block' : 'none';
@@ -433,6 +483,322 @@ function wbaUpload(file, cb){
   WBAdb.uploadImage(file)
     .then(function(url){ cb(url); setStatus('postStatus', 'Uploaded', true); })
     .catch(function(e){ setStatus('postStatus', 'Upload failed: ' + ((e && e.message) || e)); });
+}
+
+/* --------------------------------------------------- writing a post ------ */
+/* Three things that matter when you are actually writing rather than testing:
+   you can see how long the piece is, Ctrl+S works, and closing the tab by
+   accident does not cost you the draft. */
+
+var WBA_DRAFT_KEY = 'wba-draft-v1';
+var wbaDraftTimer = null;
+
+/* Words across every block, plus the excerpt. Roughly 200wpm, same figure the
+   Feed generator uses, so the reading time shown here matches the site. */
+function wbaWordCount(){
+  var words = (blocks || []).map(function(b){
+    return [b.text, b.heading, b.caption, b.label].filter(Boolean).join(' ');
+  }).join(' ');
+  words += ' ' + (val('pExcerpt') || '');
+  var n = words.split(/\s+/).filter(Boolean).length;
+  return { words: n, mins: Math.max(1, Math.round(n / 200)) };
+}
+
+function wbaUpdateMeta(){
+  var m = el('postMeta');
+  if(!m) return;
+  var c = wbaWordCount();
+  var bits = [c.words + (c.words === 1 ? ' word' : ' words'), c.mins + ' min read',
+              (blocks || []).length + ' block' + ((blocks || []).length === 1 ? '' : 's')];
+  if(wbaDirty) bits.push('unsaved');
+  m.textContent = bits.join(' · ');
+  m.classList.toggle('is-dirty', !!wbaDirty);
+}
+
+/* Mark the editor dirty and schedule a local backup. The backup is a safety
+   net for a closed tab or a browser crash -- it is not a substitute for Save,
+   and it never leaves this machine. */
+var wbaDirty = false;
+function wbaTouch(){
+  wbaDirty = true;
+  wbaUpdateMeta();
+  clearTimeout(wbaDraftTimer);
+  wbaDraftTimer = setTimeout(wbaStashDraft, 800);
+}
+
+function wbaCurrentDraft(){
+  return {
+    at: Date.now(),
+    id: val('postId'), title: val('pTitle'), slug: val('pSlug'),
+    excerpt: val('pExcerpt'), pillar: val('pPillar'), cover: val('pCover'),
+    status: (el('pStatus') || {}).value, featured: !!(el('pFeatured') || {}).checked,
+    tags: (wbaTags || []).slice(), blocks: blocks || []
+  };
+}
+
+function wbaStashDraft(){
+  try{ localStorage.setItem(WBA_DRAFT_KEY, JSON.stringify(wbaCurrentDraft())); }
+  catch(e){ /* storage full or blocked — the editor still works */ }
+}
+
+function wbaClearDraft(){
+  wbaDirty = false;
+  try{ localStorage.removeItem(WBA_DRAFT_KEY); }catch(e){}
+  wbaUpdateMeta();
+}
+
+/* Offer a recovered draft rather than restoring it silently: silently
+   replacing what somebody sees is how you lose their trust and their work. */
+function wbaOfferDraft(){
+  var raw = null;
+  try{ raw = localStorage.getItem(WBA_DRAFT_KEY); }catch(e){ return; }
+  if(!raw) return;
+
+  var d;
+  try{ d = JSON.parse(raw); }catch(e){ return; }
+  if(!d || (!d.title && !(d.blocks || []).length)) return;
+
+  var age = Math.round((Date.now() - (d.at || 0)) / 60000);
+  var when = age < 1 ? 'less than a minute ago' :
+             age < 60 ? age + ' minute' + (age === 1 ? '' : 's') + ' ago' :
+             Math.round(age / 60) + ' hour' + (Math.round(age / 60) === 1 ? '' : 's') + ' ago';
+
+  var box = el('draftBar');
+  if(!box) return;
+  box.innerHTML =
+    '<span>Unsaved draft found &mdash; <strong>' + wbaEsc(d.title || 'Untitled') + '</strong>, ' + when + '.</span>' +
+    '<button type="button" class="admin-btn solid" onclick="wbaRestoreDraft()">Restore it</button>' +
+    '<button type="button" class="admin-btn" onclick="wbaDiscardDraft()">Discard</button>';
+  box.style.display = 'flex';
+}
+
+function wbaRestoreDraft(){
+  var d;
+  try{ d = JSON.parse(localStorage.getItem(WBA_DRAFT_KEY)); }catch(e){ return; }
+  if(!d) return;
+  el('postId').value   = d.id || '';
+  el('pTitle').value   = d.title || '';
+  el('pSlug').value    = d.slug || '';
+  el('pExcerpt').value = d.excerpt || '';
+  el('pPillar').value  = d.pillar || '';
+  el('pCover').value   = d.cover || '';
+  if(el('pStatus'))   el('pStatus').value = d.status || 'draft';
+  if(el('pFeatured')) el('pFeatured').checked = !!d.featured;
+  wbaTags = (d.tags || []).slice();
+  blocks  = (d.blocks || []).slice();
+  slugLocked = true;
+  renderTags(); renderBuilder(); updateFeatNote(); wbaUpdateMeta();
+  el('draftBar').style.display = 'none';
+  setStatus('postStatus', 'Draft restored. Nothing is saved to the database until you press Save.', true);
+}
+
+function wbaDiscardDraft(){
+  wbaClearDraft();
+  el('draftBar').style.display = 'none';
+}
+
+/* Wiring. Kept out of the markup so the editor keeps working if this block
+   ever fails to load. */
+window.addEventListener('DOMContentLoaded', function(){
+  ['pTitle','pSlug','pExcerpt','pPillar','pCover','pStatus','pFeatured'].forEach(function(id){
+    var e = el(id);
+    if(e) e.addEventListener('input', wbaTouch), e.addEventListener('change', wbaTouch);
+  });
+
+  /* Block edits happen inside dynamically rebuilt markup, so listen on the
+     container rather than trying to re-bind after every render. */
+  var b = el('builder');
+  if(b){ b.addEventListener('input', wbaTouch); b.addEventListener('change', wbaTouch); }
+
+  document.addEventListener('keydown', function(ev){
+    if((ev.metaKey || ev.ctrlKey) && String(ev.key).toLowerCase() === 's'){
+      var onPosts = el('panelPosts') && el('panelPosts').style.display !== 'none';
+      if(!onPosts) return;
+      ev.preventDefault();
+      wbaSave();
+    }
+  });
+
+  window.addEventListener('beforeunload', function(ev){
+    if(!wbaDirty) return;
+    ev.preventDefault();
+    ev.returnValue = '';
+  });
+
+  wbaOfferDraft();
+  wbaUpdateMeta();
+});
+
+/* ------------------------------------------------------- page overrides --- */
+/* Every wording change made in Edit mode lands in page_content. This tab is
+   where you see them all at once, and where you undo one. */
+window.wbaPages = [];
+window.wbaPagesLoaded = false;
+
+function wbaLoadPages(){
+  if(!window.WBAdb || !WBAdb.allPageContent) return;
+  window.wbaPagesLoaded = true;
+  setStatus('pagesStatus', 'Loading…', true);
+  WBAdb.allPageContent().then(function(r){
+    if(r.error){
+      setStatus('pagesStatus', /page_content/.test(r.error.message)
+        ? 'The page_content table does not exist yet — run supabase/page-content.sql.'
+        : 'Could not load: ' + r.error.message);
+      return;
+    }
+    window.wbaPages = r.data || [];
+    var c = el('pgCount'); if(c) c.textContent = wbaPages.length || '';
+    setStatus('pagesStatus', '');
+    wbaRenderPages();
+  });
+}
+
+function wbaRenderPages(){
+  var box = el('pageList'), empty = el('pagesEmpty');
+  if(!box) return;
+  var q = (val('pageFilter') || '').toLowerCase();
+  var list = wbaPages.filter(function(r){
+    return !q || (r.page + ' ' + r.key + ' ' + (r.value || '')).toLowerCase().indexOf(q) > -1;
+  });
+
+  empty.style.display = list.length ? 'none' : 'block';
+  if(wbaPages.length && !list.length) empty.textContent = 'Nothing matches that filter.';
+
+  /* Grouped by page, so it reads like a site rather than a database table. */
+  var groups = {};
+  list.forEach(function(r){ (groups[r.page] = groups[r.page] || []).push(r); });
+
+  box.innerHTML = Object.keys(groups).sort().map(function(page){
+    var label = page === '*' ? 'Every page &mdash; nav &amp; footer' : wbaEsc(page);
+    var rows = groups[page].map(function(r){
+      var open = page === '*' ? '' :
+        '<a class="admin-btn" href="' + wbaEsc(page) + '" target="_blank" rel="noopener">Open</a>';
+      /* A rich value is already sanitised markup, so it can be shown as-is;
+         a text value is raw and must be escaped. */
+      var shown = r.kind === 'rich' ? r.value : wbaEsc(r.value);
+      return '<div class="pg-row">' +
+        '<div class="pg-key"><code>' + wbaEsc(r.key) + '</code>' +
+          (r.kind === 'rich' ? '<span class="pg-tag">rich</span>' : '') + '</div>' +
+        '<div class="pg-val">' + shown + '</div>' +
+        '<div class="pg-act">' + open +
+          '<button type="button" class="admin-btn danger" onclick="wbaResetPage(&quot;' +
+            wbaEsc(page) + '&quot;,&quot;' + wbaEsc(r.key) + '&quot;)">Revert</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    return '<div class="pg-group"><h4>' + label + '</h4>' + rows + '</div>';
+  }).join('');
+}
+
+/* Reverting deletes the override, so the next build restores whatever the HTML
+   file itself says. The original wording was never destroyed — that is the
+   point of keeping the source of truth in the repo. */
+function wbaResetPage(page, key){
+  if(!confirm('Revert "' + key + '" to the wording in the page source?\n\n' +
+              'Visitors see the change at the next publish.')) return;
+  WBAdb.resetPageContent(page, key).then(function(r){
+    if(r.error){ setStatus('pagesStatus', 'Could not revert: ' + r.error.message); return; }
+    setStatus('pagesStatus', 'Reverted.', true);
+    wbaLoadPages();
+  });
+}
+
+/* ------------------------------------------------------------- checks ---- */
+/* Every line here is a real request made as you, right now. The point is to
+   answer "why doesn't it work?" with evidence rather than a shrug. */
+function wbaCheckRow(name, state, detail, fix){
+  return '<div class="ck-row ck-' + state + '">' +
+    '<span class="ck-dot" aria-hidden="true"></span>' +
+    '<div class="ck-main"><strong>' + name + '</strong>' +
+      (detail ? '<span class="ck-detail">' + detail + '</span>' : '') + '</div>' +
+    (fix ? '<div class="ck-fix">' + fix + '</div>' : '') +
+  '</div>';
+}
+
+function wbaRunChecks(){
+  var box = el('checkList');
+  if(!box) return;
+  box.innerHTML = '<p class="muted-note">Running…</p>';
+
+  var rows = [], failures = 0;
+  function add(name, ok, detail, fix){
+    var state = ok === true ? 'ok' : (ok === null ? 'warn' : 'bad');
+    rows.push(wbaCheckRow(name, state, detail, ok === true ? '' : fix));
+    if(ok === false) failures++;
+  }
+  function finish(){
+    box.innerHTML = rows.join('');
+    var c = el('ckCount'); if(c) c.textContent = failures ? String(failures) : '';
+    var t = el('tabChecks'); if(t) t.classList.toggle('has-problem', failures > 0);
+  }
+
+  var sb = window.sbc;
+  add('Supabase library', !!sb, sb ? 'Loaded.' : 'Did not load.',
+      'The CDN script is blocked — check an ad blocker or the network tab.');
+  if(!sb){ finish(); return; }
+
+  var userId = null;
+
+  WBAdb.currentUser().then(function(u){
+    var user = u && u.data && u.data.user;
+    userId = user ? user.id : null;
+    add('Signed in', !!user, user ? wbaEsc(user.email || user.id) : 'No session.',
+        'Sign in on this page first.');
+    if(!user) return null;
+
+    return WBAdb.isAdmin();
+  }).then(function(r){
+    if(r === null) return null;
+    var isAdmin = r && r.data === true;
+    add('Recognised as an admin', isAdmin,
+        isAdmin ? 'is_admin() returned true.'
+                : (r && r.error ? wbaEsc(r.error.message) : 'is_admin() returned false.'),
+        'Run this in Supabase &rarr; SQL Editor, then refresh:<br>' +
+        '<code>insert into public.admins(user_id) values (&#39;' + wbaEsc(userId || '') + '&#39;);</code>');
+
+    return sb.from('posts').select('id').limit(1);
+  }).then(function(p){
+    if(p === null) return null;
+    add('Can read posts', !p.error, p.error ? wbaEsc(p.error.message) : 'Yes.',
+        'Run <code>supabase/rls.sql</code>.');
+
+    /* Prove the write path without leaving anything behind: update a row to
+       its own id. RLS either allows it or refuses, and nothing changes. */
+    var id = p.data && p.data[0] && p.data[0].id;
+    if(!id) return { skip: true };
+    return sb.from('posts').update({ id: id }).eq('id', id).select('id');
+  }).then(function(w){
+    if(w === null) return null;
+    if(w.skip){
+      add('Can save posts', null, 'No posts to test against.', '');
+    }else if(w.error){
+      add('Can save posts', false, wbaEsc(w.error.message),
+          'The <code>posts_admin_all</code> policy is missing. Run <code>supabase/rls.sql</code>.');
+    }else if(wbaWroteNothing(w)){
+      /* The trap: a refused UPDATE is 200 with an empty array, not an error.
+         Checking only w.error would report this as working. */
+      add('Can save posts', false,
+          'Refused silently — the update returned 200 but changed no rows.',
+          'That is row-level security turning you down. Fix the admin check above, ' +
+          'or run <code>supabase/rls.sql</code> if the policy is missing.');
+    }else{
+      add('Can save posts', true, 'Yes — this is exactly what Save does.', '');
+    }
+    return sb.from('page_content').select('page').limit(1);
+  }).then(function(pc){
+    if(pc === null) return null;
+    add('Edit mode storage', !pc.error,
+        pc.error ? wbaEsc(pc.error.message) : 'page_content is present.',
+        'Run <code>supabase/page-content.sql</code>.');
+    return sb.storage.from('media').list('posts', { limit: 1 });
+  }).then(function(m){
+    if(m === null) return null;
+    add('Photo storage', !m.error,
+        m.error ? wbaEsc(m.error.message) : 'The media bucket is present.',
+        'Run <code>supabase/storage.sql</code>.');
+  }).catch(function(e){
+    rows.push(wbaCheckRow('Unexpected error', 'bad', wbaEsc(String((e && e.message) || e)), ''));
+  }).then(finish);
 }
 
 /* ---------------------------------------------------- media library ------- */
@@ -631,11 +997,18 @@ function wbaSave(){
   setStatus('postStatus', 'Saving…', true);
   WBAdb.savePost(post).then(function(r){
     if(r.error){ setStatus('postStatus', r.error.message); return; }
+    /* A refused write returns 200 with no rows, so this is the difference
+       between "saved" and "silently discarded". See js/db.js. */
+    if(wbaWroteNothing(r)){
+      setStatus('postStatus', 'Not saved — the database refused the write. Open the Checks tab.');
+      return;
+    }
     /* Only one post per pillar holds the home-page slot. */
     if(!featured) return finish();
     return WBAdb.clearFeatured(pillar, id).then(finish);
 
     function finish(){
+      wbaClearDraft();
       setStatus('postStatus', 'Saved' + (post.status === 'published' ? ' — live on the Feed after the next build' : ' as a draft'), true);
       loadPosts();
     }

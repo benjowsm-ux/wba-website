@@ -1,13 +1,23 @@
 name: Build feed
 
-# Rebuilds the Feed pages from Supabase and injects the featured cards back
-# into index.html and services.html. Fails soft: if Supabase is unreachable
-# the script keeps the existing pages and exits 0, so a transient blip never
-# turns the run red or blanks the site.
+# Two jobs in one: rebuild the Feed pages from Supabase, and bake any Edit-mode
+# wording changes into the static HTML. Both write files; this workflow is what
+# turns "saved in the admin" into "live on the site".
+#
+# Fails soft. If Supabase is unreachable the script keeps the existing pages and
+# exits 0, so a transient blip never turns the run red or blanks the site.
+#
+# Runs every 5 minutes because Edit mode depends on it: a typo fixed in the
+# browser is not visible to anyone until this has run. The repo is public, so
+# Actions minutes are free, and a run that changes nothing makes no commit.
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
+  # Lets a "publish now" button trigger a build later, without giving the
+  # browser a token that can push code.
+  repository_dispatch:
+    types: [publish]
 
 permissions:
   contents: write
@@ -31,18 +41,27 @@ jobs:
       - name: Install renderer
         run: npm install --no-save marked@12
 
-      - name: Generate Feed pages
+      - name: Check the sanitiser still holds
+        # The bake step writes database content into public HTML. If the
+        # allow-list ever regresses, the build must stop rather than publish.
+        run: node scripts/test-page-content.mjs
+
+      - name: Generate Feed pages and bake page edits
         run: node scripts/build-feed.mjs
 
       - name: Commit changes
         run: |
           git config user.name "wba-feed-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A feed feed.html blog blog.html sitemap.xml index.html services.html
+          # Stage everything. The old version listed individual paths, which
+          # silently dropped Edit-mode changes to /sites/, /about/, /contact/
+          # and the legal pages — they were written and then never committed.
+          # A fresh checkout means the only changed files are ones we just wrote.
+          git add -A
           if git diff --cached --quiet; then
             echo "No changes."
           else
-            git commit -m "Rebuild Feed [skip ci]"
+            git commit -m "Rebuild Feed and page edits [skip ci]"
             git pull --rebase origin main
             git push
           fi

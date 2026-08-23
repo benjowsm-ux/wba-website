@@ -29,6 +29,7 @@
 
 import { marked } from 'marked';
 import { writeFileSync, readFileSync, mkdirSync, rmSync, existsSync, readdirSync } from 'fs';
+import { replaceEditable, renderValue, declaredKeys, pagePathFor } from './lib/page-content.mjs';
 
 const SUPABASE_URL = process.env.WBA_SUPABASE_URL || 'https://lynzhiyvggqyplssrapi.supabase.co';
 const KEY  = process.env.WBA_SUPABASE_KEY || 'sb_publishable_j_RkzVTMyM-QtmFnLsf_Vw_ulanlx9K';
@@ -250,7 +251,7 @@ function nav(active){
     `<a href="${href}"${active === key ? ' class="active"' : ''}>${label}</a>`;
   return `<nav class="nav">
   <div class="nav-inner">
-    <a href="/" class="nav-logo" aria-label="WBA home"><img src="${LOGO}" alt="WBA"/></a>
+    <a href="/" class="nav-logo" aria-label="WBA home"><img src="${LOGO}" alt="WBA" width="500" height="255"/></a>
     <button class="nav-toggle" aria-label="Menu" aria-expanded="false" onclick="toggleNav()"><span></span><span></span><span></span></button>
     <div class="nav-links" id="navLinks">
       ${link('/','Home','home')}
@@ -267,19 +268,19 @@ function nav(active){
 const FOOTER = `<footer>
   <div class="footer-grid">
     <div class="footer-brand">
-      <img src="${LOGO}" alt="WBA"/>
-      <p>A design &amp; technology agency in Weston-super-Mare. We build, create and grow for local business.</p>
+      <img src="${LOGO}" alt="WBA" width="500" height="255"/>
+      <p data-edit="footer.body" data-edit-kind="rich" data-edit-scope="shared">A design &amp; technology agency in Weston-super-Mare. We build, create and grow for local business.</p>
     </div>
     <div class="footer-col">
-      <h4>Site</h4>
+      <h4 data-edit="footer.h4" data-edit-scope="shared">Site</h4>
       <a href="/">Home</a><a href="/sites/">Sites</a><a href="/services/">Services</a><a href="/about/">About</a><a href="/feed/">Feed</a>
     </div>
     <div class="footer-col">
-      <h4>What we do</h4>
+      <h4 data-edit="footer.h4-2" data-edit-scope="shared">What we do</h4>
       <a href="/services/#build">Build</a><a href="/services/#create">Create</a><a href="/services/#grow">Grow</a><a href="/contact/">Contact</a>
     </div>
     <div class="footer-col">
-      <h4>Get in touch</h4>
+      <h4 data-edit="footer.h4-3" data-edit-scope="shared">Get in touch</h4>
       <a href="https://wa.me/447902376369" target="_blank" rel="noopener">WhatsApp 07902 376369</a>
       <a href="mailto:info@westonbusinessauthority.co.uk">info@westonbusinessauthority.co.uk</a>
       <a href="/contact/">Contact</a>
@@ -292,7 +293,8 @@ const FOOTER = `<footer>
 </footer>`;
 
 const SCRIPTS = `<script src="/js/main.js" defer></script>
-<script src="/js/analytics.js" defer></script>`;
+<script src="/js/analytics.js" defer></script>
+<script src="/js/edit-boot.js" defer></script>`;
 
 function head(opts){
   const { title, desc, url, image = DEFAULT_OG, type = 'website', ld = null } = opts;
@@ -760,3 +762,137 @@ injectPillarRows(posts);
 injectExplore(posts);
 
 console.log(`Feed: wrote ${posts.length} post page(s), feed/index.html and sitemap.xml.`);
+
+/* ==========================================================================
+   Edit mode — bake page_content overrides into the static HTML.
+
+   This runs LAST, after every injector, so it also covers markup the
+   generator itself just wrote. Overrides are applied to the file on disk;
+   the database stays the edit log and the HTML stays what ships.
+   ========================================================================== */
+async function bakePageContent(){
+  /* Test mode has no database. Skip quietly rather than failing the build. */
+  if(process.env.WBA_POSTS_FILE && !process.env.WBA_PAGE_CONTENT_FILE){
+    console.log('Edit mode: skipped (test build, no database).');
+    return;
+  }
+
+  let rows = null;
+  if(process.env.WBA_PAGE_CONTENT_FILE){
+    rows = JSON.parse(readFileSync(process.env.WBA_PAGE_CONTENT_FILE, 'utf8'));
+  }else{
+    const url = `${SUPABASE_URL}/rest/v1/page_content?select=page,key,value,kind`;
+    const res = await fetchRetry(url, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } });
+    if(!res){
+      console.warn('Edit mode: page_content unreachable — leaving the HTML as built.');
+      return;
+    }
+    try{ rows = await res.json(); }
+    catch(e){ console.warn('Edit mode: page_content JSON parse failed:', e.message); return; }
+  }
+
+  if(!Array.isArray(rows)){
+    /* A 404 here means the table does not exist yet, which is a normal state
+       before supabase/page-content.sql has been run. Say so once, plainly. */
+    const hint = rows && rows.message ? ` (${rows.message})` : '';
+    console.warn(`Edit mode: no page_content table yet${hint} — run supabase/page-content.sql.`);
+    return;
+  }
+  if(!rows.length){
+    console.log('Edit mode: no overrides saved.');
+    return;
+  }
+
+  /* page -> [row] */
+  const byPage = new Map();
+  for(const r of rows){
+    if(!byPage.has(r.page)) byPage.set(r.page, []);
+    byPage.get(r.page).push(r);
+  }
+
+  /* Every HTML file the site ships, mapped to the path edit.js would report. */
+  const files = [];
+  (function scan(dir){
+    for(const e of readdirSync(dir, { withFileTypes: true })){
+      const full = dir === '.' ? e.name : `${dir}/${e.name}`;
+      if(e.isDirectory()){
+        if(['node_modules','.git','.github','scripts','supabase','photos','img','css','js','.claude'].includes(e.name)) continue;
+        scan(full);
+      }else if(/\.html?$/i.test(e.name)){
+        files.push(full);
+      }
+    }
+  })('.');
+
+  let applied = 0, skipped = 0, orphaned = 0;
+  const problems = [];
+  const sharedSeen = new Map();   // shared key -> how many pages it landed on
+
+  /* '*' holds the nav and footer — copy that lives on every page, so one edit
+     has to reach all of them. Applied to every file, before the page's own
+     rows, so a page-specific override still wins if the keys ever collide. */
+  const shared = byPage.get('*') || [];
+  byPage.delete('*');
+
+  for(const file of files){
+    const page = pagePathFor(file);
+    const own  = byPage.get(page) || [];
+    const overrides = shared.concat(own);
+    if(!overrides.length) continue;
+
+    let html = readFileSync(file, 'utf8');
+    const declared = new Set(declaredKeys(html));
+    let touched = false;
+
+    for(const row of overrides){
+      const isShared = row.page === '*';
+
+      if(!declared.has(row.key)){
+        /* A shared key simply isn't on this page — the admin panel has no
+           footer, for one — which is normal and not worth reporting. A
+           page's OWN key going missing means the markup changed under it,
+           and that is worth naming: the row is otherwise invisibly dead. */
+        if(!isShared){
+          orphaned++;
+          problems.push(`  ${page} ${row.key}: no longer in the markup`);
+        }else{
+          sharedSeen.set(row.key, sharedSeen.get(row.key) || 0);
+        }
+        continue;
+      }
+
+      const out = replaceEditable(html, row.key, renderValue(row.value, row.kind));
+      if(out.status === 'ok'){
+        html = out.html; touched = true; applied++;
+        if(isShared) sharedSeen.set(row.key, (sharedSeen.get(row.key) || 0) + 1);
+      }else{
+        skipped++;
+        problems.push(`  ${page} ${row.key}: ${out.status}`);
+      }
+    }
+
+    if(touched) writeFileSync(file, html);
+    byPage.delete(page);
+  }
+
+  /* A shared key that matched nothing anywhere really is dead. */
+  for(const [key, hits] of sharedSeen){
+    if(hits === 0){
+      orphaned++;
+      problems.push(`  * ${key}: shared key found on no page`);
+    }
+  }
+
+  /* Overrides whose page no longer exists at all. */
+  for(const [page, list] of byPage){
+    orphaned += list.length;
+    problems.push(`  ${page}: page not found (${list.length} override(s))`);
+  }
+
+  console.log(`Edit mode: applied ${applied} override(s)` +
+              (skipped ? `, ${skipped} failed` : '') +
+              (orphaned ? `, ${orphaned} orphaned` : '') + '.');
+  if(problems.length) console.warn(problems.join('\n'));
+}
+
+await bakePageContent();
