@@ -51,8 +51,6 @@
       var p = new URLSearchParams(location.search);
       var found = false;
       keys.forEach(function (k) { if (p.get(k)) { out[k] = p.get(k).slice(0, 120); found = true; } });
-      /* Meta click id — lets you match a lead to a click even without UTMs */
-      if (p.get('fbclid') && !out.utm_source) { out.utm_source = 'facebook'; out.utm_medium = 'paid'; found = true; }
 
       if (found && SESSION_STITCHING) sessionStorage.setItem('wba_attr', JSON.stringify(out));
       if (!found && SESSION_STITCHING) {
@@ -88,7 +86,7 @@
   function send(name, label, value) {
     var row = {
       name: name,
-      path: location.pathname.replace(/\.html$/, '') || '/',
+      path: location.pathname.replace(/index\.html$/, '').replace(/(.)\/$/, '$1') || '/',
       label: label ? String(label).slice(0, 120) : null,
       referrer: REF || null,
       utm_source: ATTR.utm_source || null,
@@ -183,7 +181,7 @@
     if (tag) { send('cta', tag); return; }
 
     /* Primary buttons anywhere on the site */
-    if (a.className && /btn-primary|btn-dark|btn-white/.test(a.className)) {
+    if (a.className && /btn-primary|btn-gold|btn-white/.test(a.className)) {
       send('cta', text || href);
       return;
     }

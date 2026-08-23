@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WBA Admin</title>
+<meta name="robots" content="noindex, nofollow"/>
+<link rel="icon" type="image/png" sizes="512x512" href="https://res.cloudinary.com/du3psvz2u/image/upload/v1780318702/android-chrome-512x512_nzg5wu.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<meta name="theme-color" content="#0b1220"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/css/styles.css"/>
+<noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo" aria-label="WBA home"><img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776177977/Logo_4_zfjgwh.png" alt="WBA"/></a>
+    <div class="nav-links" id="navLinks" style="max-height:none;">
+      <a href="/feed/">View the Feed</a>
+      <a href="#" id="signOutLink" style="display:none;" onclick="wbaSignOut();return false;">Sign out</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-hero">
+  <div class="inner">
+    <p class="crumb">WBA · Admin</p>
+    <h1 class="h-lg">Control room.</h1>
+    <p class="lede">Write the Feed, review what people have sent in, and keep track of clients.</p>
+  </div>
+</header>
+
+<section class="admin-shell">
+  <div class="admin-wrap">
+    <div class="send-status" id="bootStatus" style="text-align:center;margin-bottom:1rem;"></div>
+
+    <!-- LOGIN -->
+    <div class="admin-card admin-login" id="loginBox">
+      <div class="field"><label for="email">Email</label><input type="email" id="email" autocomplete="username" placeholder="you@westonbusinessauthority.co.uk"/></div>
+      <div class="field"><label for="password">Password</label><input type="password" id="password" autocomplete="current-password" placeholder="••••••••"/></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="wbaSignIn()">Sign in</button>
+      <div class="send-status" id="loginStatus"></div>
+    </div>
+
+    <div class="admin-card" id="notAdmin" style="display:none;">
+      <div class="admin-note">Signed in, but not an <strong>admin</strong> yet. In Supabase → SQL Editor run:<br>
+        <code>insert into public.admins(user_id) values ('<span id="uid"></span>');</code> then refresh.</div>
+      <button class="admin-btn danger" onclick="wbaSignOut()">Sign out</button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dash" style="display:none;">
+      <div class="admin-tabs">
+        <button class="admin-tab on" id="tabPosts" onclick="wbaTab('posts')">Feed</button>
+        <button class="admin-tab" id="tabSubs" onclick="wbaTab('subs')">Inbox <span class="count" id="subCount"></span></button>
+        <button class="admin-tab" id="tabClients" onclick="wbaTab('clients')">Clients <span class="count" id="clCount"></span></button>
+      </div>
+
+      <!-- ============================ FEED ============================ -->
+      <div id="panelPosts">
+        <div class="admin-card">
+          <input type="hidden" id="postId"/>
+
+          <div class="title-slug">
+            <input type="text" id="pTitle" placeholder="Post title" oninput="wbaAutoslug()"/>
+            <input type="text" id="pSlug" placeholder="url-slug" oninput="wbaSlugEdited()"/>
+          </div>
+
+          <div class="form-row full" style="margin-bottom:.75rem;">
+            <input type="text" id="pExcerpt" placeholder="Short summary — shown on the cards and in Google"/>
+          </div>
+
+          <div class="editor-grid">
+            <div>
+              <label for="pPillar">Pillar</label>
+              <select id="pPillar">
+                <option value="">None — a plain note</option>
+                <option value="build">Build</option>
+                <option value="create">Create</option>
+                <option value="grow">Grow</option>
+              </select>
+            </div>
+            <div>
+              <label for="pCover">Cover image</label>
+              <div class="cover-field">
+                <input type="text" id="pCover" placeholder="Image URL"/>
+                <button type="button" class="admin-btn" onclick="wbaPickCover()">Upload</button>
+              </div>
+            </div>
+            <div>
+              <label for="pStatus">Status</label>
+              <select id="pStatus"><option value="draft">Draft</option><option value="published">Published</option></select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="tagInput">Tags</label>
+            <div class="tag-box" id="tagBox"></div>
+            <input type="text" id="tagInput" placeholder="Type a tag, press Enter" onkeydown="wbaTagKey(event)"/>
+          </div>
+
+          <label class="check-row" style="margin:1rem 0 .25rem;">
+            <input type="checkbox" id="pFeatured"/>
+            <span>Feature this on the home page — takes the slot for its pillar</span>
+          </label>
+          <p class="small" id="featNote" style="margin-bottom:1rem;"></p>
+
+          <label>The post</label>
+          <div class="builder" id="builder"></div>
+
+          <div class="add-block-bar">
+            <button type="button" onclick="addBlock('header')">Header</button>
+            <button type="button" onclick="addBlock('body')">Text</button>
+            <button type="button" onclick="addBlock('image')">Image</button>
+            <button type="button" onclick="addBlock('imagetext')">Image &amp; text</button>
+            <button type="button" onclick="addBlock('section')">Section</button>
+            <button type="button" onclick="addBlock('button')">Button</button>
+            <button type="button" onclick="addBlock('link')">Link</button>
+            <span style="flex:1"></span>
+            <select id="tplPick" onchange="wbaUseTemplate(this.value)" style="max-width:180px;">
+              <option value="">Start from a layout…</option>
+              <option value="guide">Guide / how-to</option>
+              <option value="project">Project write-up</option>
+              <option value="note">Short note</option>
+              <option value="blank">Blank</option>
+            </select>
+          </div>
+
+          <div class="editor-actions">
+            <button type="button" class="admin-btn solid" onclick="wbaSave()">Save post</button>
+            <button type="button" class="admin-btn" onclick="wbaPreview()">Preview</button>
+            <span class="spacer"></span>
+            <button type="button" class="admin-btn danger" onclick="wbaNewPost(true)">New / clear</button>
+            <span class="send-status" id="postStatus"></span>
+          </div>
+        </div>
+
+        <input type="file" id="fileCover" accept="image/*" style="display:none;"/>
+        <input type="file" id="fileBlock" accept="image/*" style="display:none;"/>
+
+        <div class="admin-note" style="margin-top:1.5rem;">
+          Saving updates the database straight away. The public pages rebuild on a schedule — to push a change live right now, open the repo's <strong>Actions</strong> tab and run <strong>Build feed</strong>.
+        </div>
+
+        <div class="admin-list" id="postList"></div>
+      </div>
+
+      <!-- ============================ INBOX ============================ -->
+      <div id="panelSubs" style="display:none;">
+        <div class="admin-note">Enquiries from the site forms, plus anything readers send from a post. Approve to make public, reject to hide — nothing is public until approved.</div>
+        <div class="admin-list" id="subList"></div>
+      </div>
+
+      <!-- ============================ CLIENTS ============================ -->
+      <div id="panelClients" style="display:none;">
+        <div class="admin-card" style="margin-bottom:1rem;">
+          <label for="gcLink">Payment link</label>
+          <div class="cover-field">
+            <input type="text" id="gcLink" placeholder="Paste your GoCardless payment link"/>
+            <button type="button" class="admin-btn" onclick="wbaSaveGC()">Save</button>
+          </div>
+          <span class="send-status" id="gcStatus"></span>
+        </div>
+
+        <div class="sum-row" id="clSummary"></div>
+
+        <div class="admin-card">
+          <input type="hidden" id="clId"/>
+          <div class="form-row"><input type="text" id="clBusiness" placeholder="Business name"/><input type="text" id="clContact" placeholder="Contact name"/></div>
+          <div class="form-row"><input type="email" id="clEmail" placeholder="Email"/><input type="text" id="clPhone" placeholder="Phone / WhatsApp"/></div>
+          <div class="form-row"><input type="text" id="clDomain" placeholder="Domain"/><input type="text" id="clSite" placeholder="Live site URL"/></div>
+          <div class="form-row">
+            <select id="clStatus">
+              <option value="lead">Lead</option>
+              <option value="building">Building</option>
+              <option value="trial">On trial</option>
+              <option value="active">Active (paying)</option>
+              <option value="lapsed">Lapsed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <input type="date" id="clTrialEnds"/>
+          </div>
+          <div class="form-row"><input type="text" id="clFee" placeholder="Monthly fee (30.00)"/><input type="text" id="clGcRef" placeholder="Payment reference (optional)"/></div>
+          <div class="form-row full"><textarea id="clNotes" placeholder="Notes…"></textarea></div>
+          <div class="editor-actions">
+            <button type="button" class="admin-btn solid" onclick="wbaSaveClient()">Save client</button>
+            <button type="button" class="admin-btn" onclick="wbaTrial14()">Start 14-day trial today</button>
+            <span class="spacer"></span>
+            <button type="button" class="admin-btn danger" onclick="wbaNewClient()">New / clear</button>
+            <span class="send-status" id="clStatusMsg"></span>
+          </div>
+        </div>
+
+        <div class="admin-list" id="clientList"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="/js/db.js"></script>
+<script src="/js/blocks.js"></script>
+<script>
+/* ==========================================================================
+   WBA admin. Plain functions, no framework — everything here is doing one
+   of three jobs: talk to Supabase, render a list, or edit the block array.
+   ========================================================================== */
+var blocks = [], wbaTags = [], pendingBlock = -1, slugLocked = false, booted = false;
+
+function esc(s){ var d = document.createElement('div'); d.textContent = (s == null ? '' : s); return d.innerHTML; }
+function jsq(s){ return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+function el(id){ return document.getElementById(id); }
+function val(id){ var e = el(id); return e ? e.value.trim() : ''; }
+function setStatus(id, msg, ok){
+  var s = el(id); if(!s) return;
+  s.className = 'send-status' + (msg ? (ok ? ' ok' : ' err') : '');
+  s.textContent = msg || '';
+}
+function bstat(msg){ var s = el('bootStatus'); if(s){ s.className = 'send-status'; s.textContent = msg || ''; } }
+function showOnly(id){
+  ['loginBox','notAdmin','dash'].forEach(function(x){ var e = el(x); if(e) e.style.display = (x === id) ? 'block' : 'none'; });
+}
+
+/* ---------------------------------------------------------------- auth ---- */
+function wbaSignIn(){
+  if(!window.WBAdb){ setStatus('loginStatus', 'Still loading — refresh.'); return; }
+  setStatus('loginStatus', 'Signing in…', true);
+  WBAdb.signIn(val('email'), el('password').value).then(function(r){
+    if(r.error){ setStatus('loginStatus', r.error.message); return; }
+    boot();
+  });
+}
+function wbaSignOut(){ WBAdb.signOut().then(function(){ location.reload(); }); }
+
+function wbaTab(which){
+  var tabs = { posts:'tabPosts', subs:'tabSubs', clients:'tabClients' };
+  var panels = { posts:'panelPosts', subs:'panelSubs', clients:'panelClients' };
+  Object.keys(tabs).forEach(function(k){
+    var t = el(tabs[k]); if(t) t.classList.toggle('on', k === which);
+    var p = el(panels[k]); if(p) p.style.display = (k === which) ? 'block' : 'none';
+  });
+}
+
+/* --------------------------------------------------------------- slug ----- */
+function wbaAutoslug(){ if(!slugLocked) el('pSlug').value = wbaSlugify(val('pTitle')); }
+function wbaSlugEdited(){ slugLocked = true; }
+
+/* --------------------------------------------------------------- tags ----- */
+function renderTags(){
+  el('tagBox').innerHTML = wbaTags.map(function(t){
+    return '<span class="tag-chip">' + esc(t) + '<button type="button" aria-label="Remove tag" onclick="wbaRemoveTag(\'' + jsq(t) + '\')">&times;</button></span>';
+  }).join('');
+}
+function wbaAddTag(t){
+  t = (t || '').trim(); if(!t) return;
+  if(wbaTags.some(function(x){ return x.toLowerCase() === t.toLowerCase(); })) return;
+  wbaTags.push(t); renderTags();
+}
+function wbaRemoveTag(t){ wbaTags = wbaTags.filter(function(x){ return x !== t; }); renderTags(); }
+function wbaTagKey(e){
+  if(e.key === 'Enter' || e.key === ','){ e.preventDefault(); wbaAddTag(e.target.value); e.target.value = ''; }
+}
+
+/* ------------------------------------------------------------- blocks ----- */
+function blockDefaults(t){
+  return {
+    header:    { type:'header', level:2, text:'' },
+    body:      { type:'body', text:'' },
+    image:     { type:'image', url:'', alt:'', caption:'' },
+    imagetext: { type:'imagetext', url:'', alt:'', side:'left', text:'' },
+    button:    { type:'button', label:'', url:'' },
+    link:      { type:'link', text:'', url:'' },
+    section:   { type:'section', heading:'', text:'' }
+  }[t];
+}
+function addBlock(t){ blocks.push(blockDefaults(t)); renderBuilder(); }
+function delBlock(i){ blocks.splice(i, 1); renderBuilder(); }
+function moveBlock(i, d){
+  var j = i + d; if(j < 0 || j >= blocks.length) return;
+  var tmp = blocks[i]; blocks[i] = blocks[j]; blocks[j] = tmp;
+  renderBuilder();
+}
+function updateBlock(i, field, v){ if(blocks[i]) blocks[i][field] = v; }
+function toggleStyle(i){ var e = el('bstyle-' + i); if(e) e.style.display = (e.style.display === 'none' ? 'block' : 'none'); }
+function wbaBlockPick(i){ pendingBlock = i; el('fileBlock').click(); }
+
+function opts(list, cur){
+  return list.map(function(o){
+    return '<option value="' + o[0] + '"' + (o[0] === cur ? ' selected' : '') + '>' + o[1] + '</option>';
+  }).join('');
+}
+function ctrls(i){
+  return '<div class="blk-ctrls">'
+    + '<button type="button" title="Background &amp; padding" onclick="toggleStyle(' + i + ')">◧</button>'
+    + '<button type="button" title="Move up" onclick="moveBlock(' + i + ',-1)">↑</button>'
+    + '<button type="button" title="Move down" onclick="moveBlock(' + i + ',1)">↓</button>'
+    + '<button type="button" title="Delete" onclick="delBlock(' + i + ')">×</button>'
+    + '</div>';
+}
+function styleRow(i, b){
+  var isHex = b.bg && WBA_BG_PRESETS.indexOf(b.bg) < 0;
+  return '<div class="blk-style" id="bstyle-' + i + '" style="display:none;"><div class="blk-row2">'
+    + '<div><span class="sl">Background</span><select onchange="updateBlock(' + i + ',\'bg\',this.value)">'
+      + opts([['','None'],['mist','Mist'],['white','White'],['ink','Ink'],['gold','Gold']], isHex ? '' : (b.bg || ''))
+      + '</select></div>'
+    + '<div><span class="sl">Padding</span><select onchange="updateBlock(' + i + ',\'pad\',this.value)">'
+      + opts([['','Default'],['sm','Small'],['lg','Large']], b.pad || '')
+      + '</select></div>'
+    + '</div></div>';
+}
+function card(i, label, inner, b){
+  return '<div class="blk-card"><div class="blk-head"><span class="blk-type">' + label + '</span>' + ctrls(i) + '</div>'
+    + inner + styleRow(i, b) + '</div>';
+}
+function imgCtl(i, b){
+  return '<div class="cover-field">'
+    + '<input type="text" value="' + esc(b.url) + '" placeholder="Image URL" oninput="updateBlock(' + i + ',\'url\',this.value)"/>'
+    + '<button type="button" class="admin-btn" onclick="wbaBlockPick(' + i + ')">Upload</button></div>'
+    + (b.url ? '<img class="blk-thumb" src="' + esc(b.url) + '" alt=""/>' : '');
+}
+
+function renderBuilder(){
+  var wrap = el('builder');
+  if(!blocks.length){
+    wrap.innerHTML = '<div class="builder-empty">No blocks yet — add one below, or start from a layout.</div>';
+    return;
+  }
+  wrap.innerHTML = blocks.map(function(b, i){
+    switch(b.type){
+      case 'header':
+        return card(i, 'Header',
+          '<div class="blk-row2">'
+          + '<input type="text" value="' + esc(b.text) + '" placeholder="Heading text" oninput="updateBlock(' + i + ',\'text\',this.value)"/>'
+          + '<select onchange="updateBlock(' + i + ',\'level\',+this.value)">'
+          + '<option value="2"' + (b.level !== 3 ? ' selected' : '') + '>Large</option>'
+          + '<option value="3"' + (b.level === 3 ? ' selected' : '') + '>Small</option></select></div>', b);
+
+      case 'body':
+        return card(i, 'Text',
+          '<textarea placeholder="Write your paragraph — Markdown works" oninput="updateBlock(' + i + ',\'text\',this.value)">' + esc(b.text) + '</textarea>', b);
+
+      case 'image':
+        return card(i, 'Image', imgCtl(i, b)
+          + '<div class="blk-row2" style="margin-top:.5rem;">'
+          + '<input type="text" value="' + esc(b.alt) + '" placeholder="Alt text — describe the image" oninput="updateBlock(' + i + ',\'alt\',this.value)"/>'
+          + '<input type="text" value="' + esc(b.caption) + '" placeholder="Caption (optional)" oninput="updateBlock(' + i + ',\'caption\',this.value)"/>'
+          + '</div>', b);
+
+      case 'imagetext':
+        return card(i, 'Image &amp; text', imgCtl(i, b)
+          + '<div class="blk-row2" style="margin-top:.5rem;">'
+          + '<input type="text" value="' + esc(b.alt) + '" placeholder="Alt text" oninput="updateBlock(' + i + ',\'alt\',this.value)"/>'
+          + '<select onchange="updateBlock(' + i + ',\'side\',this.value)">'
+          + '<option value="left"' + (b.side !== 'right' ? ' selected' : '') + '>Image left</option>'
+          + '<option value="right"' + (b.side === 'right' ? ' selected' : '') + '>Image right</option></select></div>'
+          + '<textarea placeholder="Text beside the image…" oninput="updateBlock(' + i + ',\'text\',this.value)">' + esc(b.text) + '</textarea>', b);
+
+      case 'section':
+        return card(i, 'Section',
+          '<input type="text" value="' + esc(b.heading) + '" placeholder="Section heading" oninput="updateBlock(' + i + ',\'heading\',this.value)"/>'
+          + '<textarea style="margin-top:.5rem;" placeholder="Section text…" oninput="updateBlock(' + i + ',\'text\',this.value)">' + esc(b.text) + '</textarea>', b);
+
+      case 'button':
+        return card(i, 'Button',
+          '<div class="blk-row2">'
+          + '<input type="text" value="' + esc(b.label) + '" placeholder="Button label" oninput="updateBlock(' + i + ',\'label\',this.value)"/>'
+          + '<input type="text" value="' + esc(b.url) + '" placeholder="Link" oninput="updateBlock(' + i + ',\'url\',this.value)"/></div>', b);
+
+      case 'link':
+        return card(i, 'Link',
+          '<div class="blk-row2">'
+          + '<input type="text" value="' + esc(b.text) + '" placeholder="Link text" oninput="updateBlock(' + i + ',\'text\',this.value)"/>'
+          + '<input type="text" value="' + esc(b.url) + '" placeholder="URL" oninput="updateBlock(' + i + ',\'url\',this.value)"/></div>', b);
+
+      default: return '';
+    }
+  }).join('');
+}
+
+/* ------------------------------------------------------------ layouts ----- */
+function clone(a){ return JSON.parse(JSON.stringify(a || [])); }
+function wbaUseTemplate(v){
+  el('tplPick').value = '';
+  if(!v) return;
+  var next = (v === 'blank') ? [] : clone((window.WBA_TEMPLATES || {})[v] || []);
+  if((blocks.length || val('pTitle')) && !confirm('Replace the current blocks with this layout?')) return;
+  blocks = next;
+  renderBuilder();
+  setStatus('postStatus', 'Layout loaded — ' + next.length + ' block(s).', true);
+}
+
+/* ------------------------------------------------------------- images ----- */
+function wbaPickCover(){ el('fileCover').click(); }
+function wbaUpload(file, cb){
+  if(!window.WBAdb || !WBAdb.uploadImage){ setStatus('postStatus', 'Image storage is not set up yet.'); return; }
+  setStatus('postStatus', 'Uploading…', true);
+  WBAdb.uploadImage(file)
+    .then(function(url){ cb(url); setStatus('postStatus', 'Uploaded', true); })
+    .catch(function(e){ setStatus('postStatus', 'Upload failed: ' + ((e && e.message) || e)); });
+}
+
+/* --------------------------------------------------- featured awareness --- */
+function updateFeatNote(){
+  var pillar = val('pPillar');
+  var note = el('featNote');
+  if(!note) return;
+  if(!pillar){
+    note.textContent = 'A post needs a pillar before it can be featured.';
+    el('pFeatured').disabled = true;
+    el('pFeatured').checked = false;
+    return;
+  }
+  el('pFeatured').disabled = false;
+  var holder = Object.keys(window.wbaPostsById || {})
+    .map(function(k){ return wbaPostsById[k]; })
+    .filter(function(p){ return p.featured && p.category === pillar && p.id !== val('postId'); })[0];
+  note.textContent = holder
+    ? 'Currently featured under ' + pillar + ': “' + holder.title + '”. Ticking this takes the slot from it.'
+    : 'Nothing is featured under ' + pillar + ' yet.';
+}
+
+/* -------------------------------------------------------------- posts ----- */
+function wbaPreview(){
+  try{
+    localStorage.setItem('wba_preview', JSON.stringify({
+      title: val('pTitle'), excerpt: val('pExcerpt'),
+      cover: val('pCover'), pillar: val('pPillar'), blocks: blocks
+    }));
+  }catch(e){}
+  window.open('/post/?preview=1', '_blank');
+}
+
+function wbaNewPost(confirmFirst){
+  if(confirmFirst && (blocks.length || val('pTitle')) && !confirm('Clear this post and start fresh?')) return;
+  ['postId','pTitle','pSlug','pExcerpt','pCover'].forEach(function(id){ el(id).value = ''; });
+  el('pPillar').value = '';
+  el('pStatus').value = 'draft';
+  el('pFeatured').checked = false;
+  slugLocked = false;
+  blocks = []; wbaTags = [];
+  renderTags(); renderBuilder(); updateFeatNote();
+  setStatus('postStatus', '');
+}
+
+function wbaSave(){
+  var title = val('pTitle');
+  var slug = val('pSlug') || wbaSlugify(title);
+  if(!title || !slug){ setStatus('postStatus', 'A title and a slug are required.'); return; }
+
+  var pillar = val('pPillar');
+  var featured = el('pFeatured').checked && !!pillar;
+  var id = val('postId') || undefined;
+
+  var post = {
+    id: id, title: title, slug: slug,
+    excerpt: val('pExcerpt'),
+    category: pillar,
+    cover_image: val('pCover') || null,
+    tags: wbaTags.slice(),
+    body: JSON.stringify(blocks),
+    featured: featured,
+    status: el('pStatus').value
+  };
+
+  setStatus('postStatus', 'Saving…', true);
+  WBAdb.savePost(post).then(function(r){
+    if(r.error){ setStatus('postStatus', r.error.message); return; }
+    /* Only one post per pillar holds the home-page slot. */
+    if(!featured) return finish();
+    return WBAdb.clearFeatured(pillar, id).then(finish);
+
+    function finish(){
+      setStatus('postStatus', 'Saved' + (post.status === 'published' ? ' — live on the Feed after the next build' : ' as a draft'), true);
+      loadPosts();
+    }
+  });
+}
+
+function editPost(id){
+  var p = (window.wbaPostsById || {})[id];
+  if(!p) return;
+  el('postId').value = p.id;
+  el('pTitle').value = p.title || '';
+  el('pSlug').value = p.slug || '';
+  el('pExcerpt').value = p.excerpt || '';
+  el('pPillar').value = ['build','create','grow'].indexOf(p.category) > -1 ? p.category : '';
+  el('pCover').value = p.cover_image || '';
+  el('pStatus').value = p.status || 'draft';
+  el('pFeatured').checked = !!p.featured;
+  slugLocked = true;
+  wbaTags = (p.tags || []).slice();
+  blocks = wbaParseBlocks(p.body);
+  renderTags(); renderBuilder(); updateFeatNote();
+  setStatus('postStatus', '');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function duplicatePost(id){
+  var p = (window.wbaPostsById || {})[id];
+  if(!p) return;
+  if((blocks.length || val('pTitle')) && !confirm('Replace what you are editing with a copy of this post?')) return;
+  wbaNewPost(false);
+  el('pTitle').value = (p.title || '') + ' (copy)';
+  wbaAutoslug();
+  el('pExcerpt').value = p.excerpt || '';
+  el('pPillar').value = ['build','create','grow'].indexOf(p.category) > -1 ? p.category : '';
+  el('pCover').value = p.cover_image || '';
+  wbaTags = (p.tags || []).slice();
+  blocks = wbaParseBlocks(p.body);
+  renderTags(); renderBuilder(); updateFeatNote();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setStatus('postStatus', 'Copied — it saves as a new draft.', true);
+}
+
+function delPost(id){
+  var p = (window.wbaPostsById || {})[id];
+  if(!confirm('Delete “' + ((p && p.title) || 'this post') + '”? This cannot be undone.')) return;
+  WBAdb.deletePost(id).then(function(){ loadPosts(); });
+}
+
+function loadPosts(){
+  WBAdb.allPosts().then(function(r){
+    var posts = r.data || [];
+    window.wbaPostsById = {};
+    posts.forEach(function(p){ wbaPostsById[p.id] = p; });
+
+    var list = el('postList');
+    if(!posts.length){
+      list.innerHTML = '<p class="admin-note">No posts yet — write your first one above.</p>';
+      updateFeatNote();
+      return;
+    }
+    list.innerHTML = posts.map(function(p){
+      var live = p.status === 'published';
+      return '<div class="admin-row"><div>'
+        + '<strong>' + esc(p.title) + '</strong> '
+        + '<span class="pip ' + (live ? 'live' : 'draft') + '">' + (live ? 'live' : 'draft') + '</span> '
+        + (p.featured ? '<span class="pip feat">featured</span> ' : '')
+        + '<br><span class="muted">/' + esc(p.slug) + (p.category ? ' · ' + esc(p.category) : '') + '</span>'
+        + '</div><div class="admin-actions">'
+        + '<button class="admin-btn" onclick="editPost(\'' + p.id + '\')">Edit</button>'
+        + '<button class="admin-btn" onclick="duplicatePost(\'' + p.id + '\')">Duplicate</button>'
+        + '<button class="admin-btn danger" onclick="delPost(\'' + p.id + '\')">Delete</button>'
+        + '</div></div>';
+    }).join('');
+    updateFeatNote();
+  });
+}
+
+/* -------------------------------------------------------------- inbox ----- */
+function loadSubs(){
+  WBAdb.allSubs().then(function(r){
+    var subs = r.data || [];
+    var pending = subs.filter(function(s){ return s.status === 'pending'; }).length;
+    el('subCount').textContent = pending ? pending : '';
+
+    var list = el('subList');
+    if(!subs.length){ list.innerHTML = '<p class="admin-note">Nothing in the inbox.</p>'; return; }
+    list.innerHTML = subs.map(function(s){
+      var when = s.created_at ? new Date(s.created_at).toLocaleDateString('en-GB') : '';
+      return '<div class="admin-row"><div>'
+        + '<strong>' + esc(s.title || '(untitled)') + '</strong> '
+        + '<span class="pip">' + esc(s.type || 'enquiry') + '</span> '
+        + '<span class="muted">' + esc(s.status || '') + (when ? ' · ' + when : '') + '</span>'
+        + '<br><span class="muted">' + esc(s.description || '') + '</span>'
+        + (s.submitter_email ? '<br><span class="muted">' + esc(s.submitter_email) + '</span>' : '')
+        + '</div><div class="admin-actions">'
+        + '<button class="admin-btn good" onclick="setSub(\'' + s.id + '\',\'approved\')">Approve</button>'
+        + '<button class="admin-btn" onclick="setSub(\'' + s.id + '\',\'rejected\')">Reject</button>'
+        + '<button class="admin-btn danger" onclick="delSub(\'' + s.id + '\')">Delete</button>'
+        + '</div></div>';
+    }).join('');
+  });
+}
+function setSub(id, status){ WBAdb.setSub(id, status).then(loadSubs); }
+function delSub(id){ if(confirm('Delete this permanently?')) WBAdb.deleteSub(id).then(loadSubs); }
+
+/* ------------------------------------------------------------ clients ----- */
+var wbaGC = '';
+function wbaLoadGC(){
+  WBAdb.getSetting('gocardless_link').then(function(r){
+    wbaGC = (r.data && r.data.value) || '';
+    var e = el('gcLink'); if(e) e.value = wbaGC;
+  }).catch(function(){});
+}
+function wbaSaveGC(){
+  var v = val('gcLink');
+  setStatus('gcStatus', 'Saving…', true);
+  WBAdb.setSetting('gocardless_link', v).then(function(r){
+    if(r.error){ setStatus('gcStatus', r.error.message); return; }
+    wbaGC = v; setStatus('gcStatus', 'Saved', true); loadClients();
+  });
+}
+function daysLeft(d){
+  if(!d) return null;
+  var end = new Date(d + 'T00:00:00'), now = new Date();
+  now.setHours(0, 0, 0, 0);
+  return Math.round((end - now) / 86400000);
+}
+function wbaTrial14(){
+  var d = new Date(); d.setDate(d.getDate() + 14);
+  el('clTrialEnds').value = d.toISOString().slice(0, 10);
+  el('clStatus').value = 'trial';
+  setStatus('clStatusMsg', 'Trial ends ' + d.toLocaleDateString('en-GB') + ' — billing starts the day after.', true);
+}
+function wbaNewClient(){
+  ['clId','clBusiness','clContact','clEmail','clPhone','clDomain','clSite','clTrialEnds','clGcRef','clNotes']
+    .forEach(function(id){ el(id).value = ''; });
+  el('clStatus').value = 'lead';
+  el('clFee').value = '30.00';
+  setStatus('clStatusMsg', '');
+}
+function wbaSaveClient(){
+  var biz = val('clBusiness');
+  if(!biz){ setStatus('clStatusMsg', 'Business name is required.'); return; }
+  var c = {
+    id: val('clId') || undefined,
+    business: biz,
+    contact_name: val('clContact'),
+    email: val('clEmail'),
+    phone: val('clPhone'),
+    domain: val('clDomain'),
+    site_url: val('clSite'),
+    status: el('clStatus').value,
+    trial_ends: val('clTrialEnds') || null,
+    monthly_fee: parseFloat(val('clFee')) || 30,
+    gc_ref: val('clGcRef'),
+    notes: val('clNotes')
+  };
+  setStatus('clStatusMsg', 'Saving…', true);
+  WBAdb.saveClient(c).then(function(r){
+    if(r.error){ setStatus('clStatusMsg', r.error.message); return; }
+    setStatus('clStatusMsg', 'Saved', true);
+    wbaNewClient(); loadClients();
+  });
+}
+function editClient(id){
+  var c = (window.wbaClientsById || {})[id]; if(!c) return;
+  el('clId').value = c.id;
+  el('clBusiness').value = c.business || '';
+  el('clContact').value = c.contact_name || '';
+  el('clEmail').value = c.email || '';
+  el('clPhone').value = c.phone || '';
+  el('clDomain').value = c.domain || '';
+  el('clSite').value = c.site_url || '';
+  el('clStatus').value = c.status || 'lead';
+  el('clTrialEnds').value = c.trial_ends || '';
+  el('clFee').value = c.monthly_fee || '30.00';
+  el('clGcRef').value = c.gc_ref || '';
+  el('clNotes').value = c.notes || '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function delClient(id){ if(confirm('Delete this client?')) WBAdb.deleteClient(id).then(loadClients); }
+function copyGC(name){
+  if(!wbaGC){ alert('Add your payment link at the top of this tab first.'); return; }
+  var msg = 'Hi ' + (name || 'there') + " — here's the link to set up your monthly subscription for the website. "
+          + "It takes about a minute and you won't need to think about it again: " + wbaGC;
+  if(navigator.clipboard) navigator.clipboard.writeText(msg);
+  setStatus('clStatusMsg', 'Message copied', true);
+}
+function loadClients(){
+  WBAdb.allClients().then(function(r){
+    var cs = r.data || [];
+    window.wbaClientsById = {};
+    cs.forEach(function(c){ wbaClientsById[c.id] = c; });
+
+    var counts = { trial: 0, active: 0, lapsed: 0 };
+    cs.forEach(function(c){ if(counts[c.status] != null) counts[c.status]++; });
+    var mrr = cs.filter(function(c){ return c.status === 'active'; })
+                .reduce(function(a, c){ return a + (+c.monthly_fee || 0); }, 0);
+
+    el('clCount').textContent = counts.trial ? counts.trial : '';
+    el('clSummary').innerHTML =
+        '<div class="sum"><b>' + cs.length + '</b>total</div>'
+      + '<div class="sum"><b>' + counts.trial + '</b>on trial</div>'
+      + '<div class="sum"><b>' + counts.active + '</b>paying</div>'
+      + '<div class="sum"><b>£' + mrr.toFixed(2) + '</b>monthly recurring</div>'
+      + (counts.lapsed ? '<div class="sum"><b>' + counts.lapsed + '</b>lapsed</div>' : '');
+
+    var list = el('clientList');
+    if(!cs.length){ list.innerHTML = '<p class="admin-note">No clients yet — add your first above.</p>'; return; }
+    list.innerHTML = cs.map(function(c){
+      var d = daysLeft(c.trial_ends);
+      var trial = (c.status === 'trial' && d != null)
+        ? '<br><span class="muted">' + (d < 0 ? 'trial ended — start billing' : d + ' day' + (d === 1 ? '' : 's') + ' of trial left') + '</span>'
+        : '';
+      return '<div class="admin-row"><div>'
+        + '<strong>' + esc(c.business) + '</strong> <span class="pip">' + esc(c.status) + '</span>'
+        + '<br><span class="muted">' + esc(c.contact_name || '')
+        + (c.domain ? ' · ' + esc(c.domain) : '')
+        + (c.monthly_fee ? ' · £' + (+c.monthly_fee).toFixed(2) + '/mo' : '') + '</span>'
+        + trial
+        + '</div><div class="admin-actions">'
+        + '<button class="admin-btn" onclick="copyGC(\'' + jsq(c.contact_name) + '\')">Copy pay link</button>'
+        + '<button class="admin-btn" onclick="editClient(\'' + c.id + '\')">Edit</button>'
+        + '<button class="admin-btn danger" onclick="delClient(\'' + c.id + '\')">Delete</button>'
+        + '</div></div>';
+    }).join('');
+  });
+}
+
+/* --------------------------------------------------------------- boot ----- */
+function boot(){
+  if(!window.WBAdb){ bstat('Still loading — refresh.'); return; }
+  if(!booted) bstat('Checking your access…');
+
+  WBAdb.currentUser().then(function(u){
+    if(!u.data || !u.data.user){
+      showOnly('loginBox');
+      el('signOutLink').style.display = 'none';
+      bstat('');
+      return;
+    }
+    el('signOutLink').style.display = 'inline';
+    var uid = u.data.user.id;
+
+    WBAdb.isAdmin().then(function(r){
+      if(r.error){ showOnly('loginBox'); bstat('Access check failed: ' + r.error.message); return; }
+      if(r.data === true){
+        showOnly('dash'); bstat('');
+        loadPosts(); loadSubs(); loadClients(); wbaLoadGC();
+        if(!booted){ booted = true; wbaNewPost(false); wbaNewClient(); }
+      }else{
+        showOnly('notAdmin'); bstat('');
+        el('uid').textContent = uid;
+      }
+    });
+  }).catch(function(e){ bstat('Something went wrong: ' + ((e && e.message) || e)); });
+}
+
+window.addEventListener('DOMContentLoaded', function(){
+  var fc = el('fileCover');
+  if(fc) fc.onchange = function(){
+    var f = this.files[0]; this.value = '';
+    if(f) wbaUpload(f, function(url){ el('pCover').value = url; });
+  };
+  var fb = el('fileBlock');
+  if(fb) fb.onchange = function(){
+    var f = this.files[0], idx = pendingBlock;
+    this.value = ''; pendingBlock = -1;
+    if(f && idx > -1) wbaUpload(f, function(url){ if(blocks[idx]){ blocks[idx].url = url; renderBuilder(); } });
+  };
+  var pillar = el('pPillar');
+  if(pillar) pillar.addEventListener('change', updateFeatNote);
+});
+
+/* React to real sign-in/out only — never re-clear the editor on a token refresh. */
+if(window.sbc) sbc.auth.onAuthStateChange(function(evt){
+  if(evt === 'SIGNED_OUT') location.reload();
+  else if(!booted) boot();
+});
+if(window.WBAdb) boot();
+</script>
+</body>
+</html>

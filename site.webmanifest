@@ -1,11 +1,11 @@
 {
   "name": "Weston Business Authority",
   "short_name": "WBA",
-  "description": "Weston-Super-Mare's local marketing agency — social, photo, ads, SEO, print and tech.",
+  "description": "WBA — a design & tech agency in Weston-super-Mare. Build, create, grow.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#00224d",
-  "theme_color": "#00224d",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
   "icons": [
     {
       "src": "https://res.cloudinary.com/du3psvz2u/image/upload/v1780318702/android-chrome-512x512_nzg5wu.png",

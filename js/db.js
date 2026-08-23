@@ -1,7 +1,12 @@
 /* ==========================================================================
    WBA — Supabase client + data helpers.
-   The publishable key is PUBLIC by design (row-level security protects data).
-   Load AFTER the supabase-js CDN script.
+   The publishable key is PUBLIC by design; row-level security is what
+   actually protects the data. Load AFTER the supabase-js CDN script.
+
+   Posts use two fields that drive the whole site:
+     category  — the pillar: 'build' | 'create' | 'grow' (or '' for a plain note)
+     featured  — pin this post to the pillar's slot on the home page
+   Run supabase/schema.sql once to add `featured` if it isn't there yet.
    ========================================================================== */
 (function(){
   var SUPABASE_URL = 'https://lynzhiyvggqyplssrapi.supabase.co';
@@ -15,10 +20,10 @@
   window.sbc = sb;
 
   window.WBAdb = {
-    // ---------- public reads ----------
+    /* ---------- public reads ---------- */
     listPosts: function(){
       return sb.from('posts')
-        .select('slug,title,excerpt,cover_image,category,tags,published_at')
+        .select('slug,title,excerpt,cover_image,category,tags,featured,published_at')
         .eq('status', 'published')
         .order('published_at', { ascending: false });
     },
@@ -30,10 +35,11 @@
       if(type) q = q.eq('type', type);
       return q;
     },
-    // ---------- public write (submissions) ----------
+
+    /* ---------- public write ---------- */
     submit: function(payload){ return sb.from('submissions').insert([payload]); },
 
-    // ---------- image upload (admin) -> permanent public URL ----------
+    /* ---------- image upload (admin) -> permanent public URL ---------- */
     uploadImage: function(file){
       var ext = (((file.name || '').split('.').pop()) || 'png').toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
       var path = 'posts/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
@@ -43,13 +49,13 @@
       });
     },
 
-    // ---------- auth ----------
+    /* ---------- auth ---------- */
     signIn: function(email, password){ return sb.auth.signInWithPassword({ email: email, password: password }); },
     signOut: function(){ return sb.auth.signOut(); },
     currentUser: function(){ return sb.auth.getUser(); },
     isAdmin: function(){ return sb.rpc('is_admin'); },
 
-    // ---------- admin ----------
+    /* ---------- admin: posts ---------- */
     allPosts: function(){ return sb.from('posts').select('*').order('updated_at', { ascending: false }); },
     savePost: function(p){
       var payload = Object.assign({}, p);
@@ -57,13 +63,26 @@
       if(payload.status === 'published' && !payload.published_at) payload.published_at = new Date().toISOString();
       if(p.id){ delete payload.id; return sb.from('posts').update(payload).eq('id', p.id); }
       delete payload.id;
-      payload.id = wbaUUID();               // generate an id for new posts
+      payload.id = wbaUUID();
       return sb.from('posts').insert([payload]);
     },
     deletePost: function(id){ return sb.from('posts').delete().eq('id', id); },
-    allSubs: function(){ return sb.from('submissions').select('*').order('created_at', { ascending: false }); },
 
-    // ---------- clients (free-website subscriptions) ----------
+    /* Only one post per pillar can hold the home-page slot. */
+    clearFeatured: function(pillar, exceptId){
+      var q = sb.from('posts').update({ featured: false }).eq('category', pillar).eq('featured', true);
+      if(exceptId) q = q.neq('id', exceptId);
+      return q;
+    },
+
+    /* ---------- admin: submissions ---------- */
+    allSubs: function(){ return sb.from('submissions').select('*').order('created_at', { ascending: false }); },
+    setSub: function(id, status){
+      return sb.from('submissions').update({ status: status, reviewed_at: new Date().toISOString() }).eq('id', id);
+    },
+    deleteSub: function(id){ return sb.from('submissions').delete().eq('id', id); },
+
+    /* ---------- admin: clients ---------- */
     allClients: function(){ return sb.from('clients').select('*').order('created_at', { ascending: false }); },
     saveClient: function(c){
       var payload = Object.assign({}, c);
@@ -74,23 +93,25 @@
       return sb.from('clients').insert([payload]);
     },
     deleteClient: function(id){ return sb.from('clients').delete().eq('id', id); },
+
+    /* ---------- admin: settings ---------- */
     getSetting: function(key){ return sb.from('settings').select('value').eq('key', key).maybeSingle(); },
     setSetting: function(key, value){
       return sb.from('settings').upsert({ key: key, value: value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
-    },
-    setSub: function(id, status){
-      return sb.from('submissions').update({ status: status, reviewed_at: new Date().toISOString() }).eq('id', id);
     }
   };
 })();
 
-/* UUID for new posts (works even if the DB default is missing) */
+/* UUID for new rows (works even if the database default is missing). */
 function wbaUUID(){
   if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){ var r=Math.random()*16|0, v=c==='x'?r:(r&0x3|0x8); return v.toString(16); });
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){
+    var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
 }
 
-/* Slugify helper (title -> url-slug) */
+/* Title -> url-slug */
 function wbaSlugify(s){
   return (s || '').toLowerCase().trim()
     .replace(/[^a-z0-9\s-]/g, '')
