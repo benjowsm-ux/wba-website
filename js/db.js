@@ -39,14 +39,45 @@
     /* ---------- public write ---------- */
     submit: function(payload){ return sb.from('submissions').insert([payload]); },
 
-    /* ---------- image upload (admin) -> permanent public URL ---------- */
-    uploadImage: function(file){
-      var ext = (((file.name || '').split('.').pop()) || 'png').toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
-      var path = 'posts/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
-      return sb.storage.from('media').upload(path, file, { cacheControl: '3600', upsert: false }).then(function(r){
-        if(r.error) throw r.error;
-        return sb.storage.from('media').getPublicUrl(path).data.publicUrl;
+    /* ---------- media library (admin) ----------------------------------
+       Everything lives in the `media` bucket under posts/. Uploads are
+       downscaled in the browser first: a phone or camera JPEG is routinely
+       6-12MB, and shipping that to a visitor on mobile data undoes every
+       other performance decision on the site. 1920px wide at q0.82 is
+       indistinguishable on screen and usually 10-20x smaller.
+       -------------------------------------------------------------------- */
+    MEDIA_DIR: 'posts',
+
+    uploadImage: function(file, opts){
+      opts = opts || {};
+      return WBAmedia.shrink(file, opts.maxEdge || 1920, opts.quality || 0.82)
+        .then(function(out){
+          var base = WBAmedia.safeName(file.name, out.ext);
+          var path = 'posts/' + Date.now().toString(36) + '-' + base;
+          return sb.storage.from('media')
+            .upload(path, out.blob, { cacheControl: '31536000', upsert: false, contentType: out.type })
+            .then(function(r){
+              if(r.error) throw r.error;
+              return sb.storage.from('media').getPublicUrl(path).data.publicUrl;
+            });
+        });
+    },
+
+    /* Newest first. Supabase returns name/created_at/metadata per object. */
+    listMedia: function(limit, offset){
+      return sb.storage.from('media').list('posts', {
+        limit: limit || 100,
+        offset: offset || 0,
+        sortBy: { column: 'created_at', order: 'desc' }
       });
+    },
+
+    mediaUrl: function(name){
+      return sb.storage.from('media').getPublicUrl('posts/' + name).data.publicUrl;
+    },
+
+    deleteMedia: function(name){
+      return sb.storage.from('media').remove(['posts/' + name]);
     },
 
     /* ---------- auth ---------- */

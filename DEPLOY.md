@@ -131,3 +131,48 @@ Publish deploy** restores the old site in seconds without touching git at all.
 That's the fastest undo if something looks wrong.
 
 The old site is also intact locally at `Desktop\Claude Stuff\WBA-Site\`.
+
+---
+
+## The Photos tab (added after launch)
+
+**Admin → Photos.** Drag photos in, or click to pick them. They land in the
+Supabase `media` bucket and appear in the grid, newest first. Each one gives you
+three buttons:
+
+- **Cover** — sets it as the cover image of whatever post is open in the Feed tab
+- **Copy URL** — puts the public URL on your clipboard, to paste into an image block
+- **Delete** — removes it from storage permanently
+
+### It resizes before uploading
+
+A photo off a phone or a camera is routinely 4000–6000px wide and 6–12MB.
+Uploading that as-is would make it the slowest thing on the page. So the browser
+resizes every image to a **1920px longest edge** and re-encodes it as WebP at
+quality 0.82 before a single byte reaches Supabase. Measured on a 4032×3024
+test image: **9.6× smaller**, in under half a second, with no visible difference
+at screen sizes.
+
+Portrait shots keep their orientation (EXIF is applied on decode, so nothing
+uploads sideways) and their aspect ratio. SVGs pass through untouched.
+
+### One-time setup
+
+Run **`supabase/storage.sql`** in the SQL Editor. It creates the `media` bucket
+and locks writes to admins — reads stay public, because a visitor's browser
+fetches these images with no session at all. Run `supabase/rls.sql` first; the
+storage policies call `public.is_admin()`.
+
+If uploads fail with *"violates row level security"*, your account is missing a
+row in `public.admins`.
+
+---
+
+## The logo is now served from this repo
+
+It used to load from Cloudinary on every page. It's now `img/wba-logo.png` and
+`img/wba-icon.png`, with explicit `width`/`height` so the header can't reflow
+while it loads. Nothing external is fetched any more except Google Fonts (and
+jsdelivr on the admin page).
+
+Don't delete `img/` — every page references it.

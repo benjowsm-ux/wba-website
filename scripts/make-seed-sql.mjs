@@ -21,9 +21,10 @@ const rows = posts.map(p => {
   const body = JSON.stringify(p.body);
   return `  (${q(p.slug)}, ${q(p.title)}, ${q(p.excerpt)}, ${q(p.cover_image)}, ${q(p.category)}, ` +
          `${arr(p.tags)}, ${q(body)}, ${p.featured ? 'true' : 'false'}, ${q(p.author || 'WBA')}, ` +
-         /* draft, not published — these are starting points to edit in the
-            admin, not copy anyone should find on the live site */
-         `'draft', ${q(p.published_at)}::timestamptz)`;
+         /* published: these are real write-ups, not lorem ipsum, and the
+            home/pillar/related slots have nothing to show until they exist.
+            Edit them in the admin; nothing here is embarrassing if read. */
+         `'published', ${q(p.published_at)}::timestamptz)`;
 }).join(',\n');
 
 const sql = `-- ==========================================================================
@@ -34,9 +35,10 @@ const sql = `-- ================================================================
 -- Run supabase/schema.sql FIRST (it adds the \`featured\` column).
 -- Then paste this into Supabase -> SQL Editor -> Run.
 --
--- These land as DRAFTS. Open each one in the admin, rewrite it, and switch
--- Status to Published when it's yours. Nothing appears on the live site until
--- you do, and until the Build feed workflow runs.
+-- These land as PUBLISHED, so the Feed, the home spotlight and the related
+-- reading blocks all have something to show. Open each one in the admin and
+-- rewrite it in your own words — that's what they're there for. Switch any of
+-- them to Draft if you'd rather it wasn't public while you work on it.
 --
 -- Safe to re-run: it matches on slug and updates rather than duplicating.
 -- Delete them later with:

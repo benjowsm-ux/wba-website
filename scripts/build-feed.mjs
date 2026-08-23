@@ -33,8 +33,8 @@ import { writeFileSync, readFileSync, mkdirSync, rmSync, existsSync, readdirSync
 const SUPABASE_URL = process.env.WBA_SUPABASE_URL || 'https://lynzhiyvggqyplssrapi.supabase.co';
 const KEY  = process.env.WBA_SUPABASE_KEY || 'sb_publishable_j_RkzVTMyM-QtmFnLsf_Vw_ulanlx9K';
 const SITE = 'https://westonbusinessauthority.co.uk';
-const LOGO = 'https://res.cloudinary.com/du3psvz2u/image/upload/v1776177977/Logo_4_zfjgwh.png';
-const FAV  = 'https://res.cloudinary.com/du3psvz2u/image/upload/v1780318702/android-chrome-512x512_nzg5wu.png';
+const LOGO = '/img/wba-logo.png';
+const FAV  = '/img/wba-icon.png';
 const DEFAULT_OG = `${SITE}/photos/seafront-pier.jpg`;
 
 const PILLARS = ['build', 'create', 'grow'];
@@ -292,7 +292,6 @@ const FOOTER = `<footer>
 </footer>`;
 
 const SCRIPTS = `<script src="/js/main.js" defer></script>
-<script src="/js/consent.js" defer></script>
 <script src="/js/analytics.js" defer></script>`;
 
 function head(opts){
@@ -575,6 +574,13 @@ function injectBetween(file, marker, html){
   }
   /* Keep the opening marker line intact, replace everything up to the closing one. */
   const startLineEnd = src.indexOf('\n', i);
+  /* A start marker whose comment runs onto a second line would leave the
+     injected markup inside an unclosed <!-- ... -->: invisible in the browser,
+     and the generator would still report success. Refuse instead. */
+  if(src.slice(i, startLineEnd).indexOf('-->') === -1){
+    console.warn(`inject: ${marker} start marker in ${file} does not close its comment on one line - skipped.`);
+    return false;
+  }
   const out = src.slice(0, startLineEnd + 1) + html + '\n    ' + src.slice(j);
   writeFileSync(file, out);
   return true;
@@ -593,6 +599,29 @@ const PILLAR_FALLBACK = {
   grow:   '/photos/high-street.jpg'
 };
 
+/* One article, laid out sideways, filling the space under the intro. Renders
+   nothing at all while the Feed is empty — an empty box is worse than none. */
+function injectSpotlight(posts){
+  const p = posts.find(x => x.featured) || posts[0];
+  if(!p){
+    injectBetween('index.html', 'SPOTLIGHT', '');
+    console.log('Home: no posts yet, spotlight left empty.');
+    return;
+  }
+  const img = postImages(p, 1)[0];
+  const html = `    <a class="spotlight" href="/feed/${esc(p.slug)}/">
+      ${img ? `<div class="spotlight-media"><img src="${esc(img)}" alt=""${dimAttrs(img)} loading="lazy"/></div>` : ''}
+      <div>
+        <p class="eyebrow">${pillarOf(p) ? esc(cap(pillarOf(p))) : 'From the Feed'}</p>
+        <h3>${esc(p.title)}</h3>
+        <p>${esc(p.excerpt || '')}</p>
+        <span class="link-go">Read more</span>
+      </div>
+    </a>`;
+  injectBetween('index.html', 'SPOTLIGHT', html);
+  console.log(`Home: spotlight -> ${p.slug}`);
+}
+
 function injectPillarMedia(posts){
   let n = 0;
   PILLARS.forEach(k => {
@@ -605,10 +634,41 @@ function injectPillarMedia(posts){
 }
 
 /* Related reading at the foot of the Sites page. */
+/* Related reading under the Sites page.
+
+   "Newest three" was handing whoever reads about a free website a post about
+   reporting metrics. Score each post against what that page is actually about
+   - how a site gets designed and built - and fall back to recency only when
+   nothing scores. Tags and slug both count, so a post stays relevant after
+   its title gets rewritten in the admin. */
+const SITES_TOPICS = [
+  'website', 'websites', 'web', 'design', 'branding', 'brand', 'seo',
+  'performance', 'free', 'build', 'process', 'template', 'copywriting'
+];
+
+function relevance(post){
+  const hay = [...(post.tags || []), post.slug || '', post.title || '']
+    .join(' ').toLowerCase();
+  let score = SITES_TOPICS.reduce((n, t) => n + (hay.includes(t) ? 1 : 0), 0);
+  if(pillarOf(post) === 'build')  score += 2;
+  if(pillarOf(post) === 'create') score += 1;
+  return score;
+}
+
 function injectExplore(posts){
-  const picks = posts.slice(0, 3);
+  const ranked = posts
+    .map((p, i) => ({ p, score: relevance(p), i }))
+    /* recency breaks ties, so the block still turns over as he publishes */
+    .sort((a, b) => b.score - a.score || a.i - b.i);
+
+  const scored = ranked.filter(r => r.score > 0);
+  const picks = (scored.length ? scored : ranked).slice(0, 3).map(r => r.p);
+
   const html = picks.length
-    ? `    <div class="feed-grid">\n${picks.map(postCard).join('\n')}\n    </div>`
+    ? `    <p class="eyebrow">Related reading</p>
+    <h2>How the work actually gets done</h2>
+    <div class="feed-grid" style="margin-top:2.2rem;">\n${picks.map(postCard).join('\n')}\n    </div>
+    <p style="margin-top:2.2rem;"><a class="link-go" href="/feed/">Everything in the Feed</a></p>`
     : '';
   injectBetween('sites/index.html', 'EXPLORE', html);
 }
@@ -695,6 +755,7 @@ writeFileSync('blog/index.html', redirectStub('/feed/'));
 writeFileSync('sitemap.xml', sitemap(posts));
 
 injectPillarMedia(posts);
+injectSpotlight(posts);
 injectPillarRows(posts);
 injectExplore(posts);
 

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>WBA Admin</title>
 <meta name="robots" content="noindex, nofollow"/>
-<link rel="icon" type="image/png" sizes="512x512" href="https://res.cloudinary.com/du3psvz2u/image/upload/v1780318702/android-chrome-512x512_nzg5wu.png"/>
+<link rel="icon" type="image/png" sizes="512x512" href="/img/wba-icon.png"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <meta name="theme-color" content="#0b1220"/>
@@ -18,7 +18,7 @@
 <!-- NAV -->
 <nav class="nav">
   <div class="nav-inner">
-    <a href="/" class="nav-logo" aria-label="WBA home"><img src="https://res.cloudinary.com/du3psvz2u/image/upload/v1776177977/Logo_4_zfjgwh.png" alt="WBA"/></a>
+    <a href="/" class="nav-logo" aria-label="WBA home"><img src="/img/wba-logo.png" alt="WBA" width="500" height="255"/></a>
     <div class="nav-links" id="navLinks" style="max-height:none;">
       <a href="/feed/">View the Feed</a>
       <a href="#" id="signOutLink" style="display:none;" onclick="wbaSignOut();return false;">Sign out</a>
@@ -58,6 +58,7 @@
         <button class="admin-tab on" id="tabPosts" onclick="wbaTab('posts')">Feed</button>
         <button class="admin-tab" id="tabSubs" onclick="wbaTab('subs')">Inbox <span class="count" id="subCount"></span></button>
         <button class="admin-tab" id="tabClients" onclick="wbaTab('clients')">Clients <span class="count" id="clCount"></span></button>
+        <button class="admin-tab" id="tabMedia" onclick="wbaTab('media')">Photos <span class="count" id="mdCount"></span></button>
       </div>
 
       <!-- ============================ FEED ============================ -->
@@ -197,12 +198,40 @@
 
         <div class="admin-list" id="clientList"></div>
       </div>
+
+      <!-- =========================== PHOTOS =========================== -->
+      <div id="panelMedia" style="display:none;">
+        <div class="admin-card" style="margin-bottom:1rem;">
+          <div class="drop-zone" id="dropZone"
+               onclick="el('fileMedia').click()"
+               ondragover="wbaDragOver(event)"
+               ondragleave="wbaDragOff(event)"
+               ondrop="wbaDrop(event)">
+            <strong>Drop photos here</strong>
+            <span>or click to choose &mdash; you can pick as many as you like</span>
+            <span class="muted-note">Resized to 1920px and re-compressed in your browser before upload, so a 9&nbsp;MB camera file lands at a few hundred KB.</span>
+          </div>
+          <input type="file" id="fileMedia" accept="image/*" multiple hidden onchange="wbaMediaPicked(this.files); this.value='';"/>
+          <div class="upload-bar" id="uploadBar" style="display:none;"><span id="uploadFill"></span></div>
+          <span class="send-status" id="mediaStatus"></span>
+        </div>
+
+        <div class="admin-card">
+          <div class="media-head">
+            <input type="search" id="mediaFilter" placeholder="Filter by name" oninput="wbaRenderMedia()"/>
+            <button type="button" class="admin-btn" onclick="wbaLoadMedia()">Refresh</button>
+          </div>
+          <div class="media-grid" id="mediaGrid"></div>
+          <p class="muted-note" id="mediaEmpty" style="display:none;">No photos uploaded yet.</p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="/js/media.js"></script>
 <script src="/js/db.js"></script>
 <script src="/js/blocks.js"></script>
 <script>
@@ -238,8 +267,10 @@ function wbaSignIn(){
 function wbaSignOut(){ WBAdb.signOut().then(function(){ location.reload(); }); }
 
 function wbaTab(which){
-  var tabs = { posts:'tabPosts', subs:'tabSubs', clients:'tabClients' };
-  var panels = { posts:'panelPosts', subs:'panelSubs', clients:'panelClients' };
+  var tabs = { posts:'tabPosts', subs:'tabSubs', clients:'tabClients', media:'tabMedia' };
+  var panels = { posts:'panelPosts', subs:'panelSubs', clients:'panelClients', media:'panelMedia' };
+  /* the library is only fetched when you actually open it */
+  if(which === 'media' && !window.wbaMediaLoaded) wbaLoadMedia();
   Object.keys(tabs).forEach(function(k){
     var t = el(tabs[k]); if(t) t.classList.toggle('on', k === which);
     var p = el(panels[k]); if(p) p.style.display = (k === which) ? 'block' : 'none';
@@ -402,6 +433,136 @@ function wbaUpload(file, cb){
   WBAdb.uploadImage(file)
     .then(function(url){ cb(url); setStatus('postStatus', 'Uploaded', true); })
     .catch(function(e){ setStatus('postStatus', 'Upload failed: ' + ((e && e.message) || e)); });
+}
+
+/* ---------------------------------------------------- media library ------- */
+window.wbaMedia = [];
+window.wbaMediaLoaded = false;
+
+function wbaDragOver(e){ e.preventDefault(); el('dropZone').classList.add('over'); }
+function wbaDragOff(e){ e.preventDefault(); el('dropZone').classList.remove('over'); }
+function wbaDrop(e){
+  e.preventDefault();
+  el('dropZone').classList.remove('over');
+  var files = [].slice.call((e.dataTransfer && e.dataTransfer.files) || []);
+  wbaMediaPicked(files.filter(function(f){ return /^image\//.test(f.type); }));
+}
+
+/* Uploads run one at a time. Firing twenty parallel requests at Supabase from
+   a phone on 4G is how you get half of them timing out. */
+function wbaMediaPicked(fileList){
+  var files = [].slice.call(fileList || []);
+  if(!files.length) return;
+  if(!window.WBAdb || !WBAdb.uploadImage){ setStatus('mediaStatus', 'Storage is not set up yet.'); return; }
+
+  var bar = el('uploadBar'), fill = el('uploadFill');
+  bar.style.display = 'block';
+  var done = 0, failed = 0, saved = 0;
+
+  function step(){
+    fill.style.width = Math.round((done / files.length) * 100) + '%';
+    setStatus('mediaStatus', 'Uploading ' + Math.min(done + 1, files.length) + ' of ' + files.length + '…', true);
+  }
+  step();
+
+  files.reduce(function(chain, file){
+    return chain.then(function(){
+      var before = file.size;
+      return WBAdb.uploadImage(file).then(function(){
+        done++; saved += before; step();
+      }).catch(function(err){
+        done++; failed++; step();
+        console.warn('Upload failed:', file.name, err);
+      });
+    });
+  }, Promise.resolve()).then(function(){
+    fill.style.width = '100%';
+    setTimeout(function(){ bar.style.display = 'none'; fill.style.width = '0'; }, 600);
+    setStatus('mediaStatus',
+      failed
+        ? (files.length - failed) + ' uploaded, ' + failed + ' failed — see the console.'
+        : files.length + ' photo' + (files.length === 1 ? '' : 's') + ' uploaded.',
+      !failed);
+    wbaLoadMedia();
+  });
+}
+
+function wbaLoadMedia(){
+  if(!window.WBAdb || !WBAdb.listMedia) return;
+  window.wbaMediaLoaded = true;
+  WBAdb.listMedia(200, 0).then(function(r){
+    if(r.error){ setStatus('mediaStatus', 'Could not list photos: ' + r.error.message); return; }
+    /* Supabase emits a hidden .emptyFolderPlaceholder row for empty prefixes. */
+    window.wbaMedia = (r.data || []).filter(function(o){ return o.name && o.name.charAt(0) !== '.'; });
+    var c = el('mdCount'); if(c) c.textContent = wbaMedia.length || '';
+    wbaRenderMedia();
+  });
+}
+
+function wbaRenderMedia(){
+  var grid = el('mediaGrid'), empty = el('mediaEmpty');
+  if(!grid) return;
+  var q = (val('mediaFilter') || '').toLowerCase();
+  var list = wbaMedia.filter(function(o){ return !q || o.name.toLowerCase().indexOf(q) > -1; });
+
+  empty.style.display = list.length ? 'none' : 'block';
+  empty.textContent = wbaMedia.length ? 'Nothing matches that filter.' : 'No photos uploaded yet.';
+
+  grid.innerHTML = list.map(function(o){
+    var url  = WBAdb.mediaUrl(o.name);
+    var size = (o.metadata && o.metadata.size) ? WBAmedia.fmtSize(o.metadata.size) : '';
+    var n    = wbaEsc(o.name);
+    return '<figure class="media-item">' +
+availableThumb(url, n) +
+      '<figcaption>' +
+        '<span class="media-name" title="' + n + '">' + n + '</span>' +
+        '<span class="muted-note">' + size + '</span>' +
+      '</figcaption>' +
+      '<div class="media-acts">' +
+        '<button type="button" class="admin-btn" onclick="wbaUseAsCover(\'' + n + '\')">Cover</button>' +
+        '<button type="button" class="admin-btn" onclick="wbaCopyUrl(\'' + n + '\')">Copy URL</button>' +
+        '<button type="button" class="admin-btn danger" onclick="wbaDeleteMedia(\'' + n + '\')">Delete</button>' +
+      '</div>' +
+    '</figure>';
+  }).join('');
+}
+
+function availableThumb(url, name){
+  return '<a href="' + url + '" target="_blank" rel="noopener" class="media-thumb">' +
+         '<img src="' + url + '" alt="' + name + '" loading="lazy"/></a>';
+}
+
+/* Attribute-safe: these names go straight into an onclick string. */
+function wbaEsc(s){
+  return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function wbaUseAsCover(name){
+  var url = WBAdb.mediaUrl(name);
+  el('pCover').value = url;
+  if(typeof wbaCoverPreview === 'function') wbaCoverPreview();
+  wbaTab('posts');
+  setStatus('postStatus', 'Cover image set.', true);
+}
+
+function wbaCopyUrl(name){
+  var url = WBAdb.mediaUrl(name);
+  var done = function(){ setStatus('mediaStatus', 'URL copied.', true); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(done, function(){ window.prompt('Copy this URL:', url); });
+  } else {
+    window.prompt('Copy this URL:', url);
+  }
+}
+
+function wbaDeleteMedia(name){
+  if(!confirm('Delete ' + name + ' permanently?\n\nAny post still using it will show a broken image.')) return;
+  WBAdb.deleteMedia(name).then(function(r){
+    if(r.error){ setStatus('mediaStatus', 'Delete failed: ' + r.error.message); return; }
+    setStatus('mediaStatus', 'Deleted.', true);
+    wbaLoadMedia();
+  });
 }
 
 /* --------------------------------------------------- featured awareness --- */
