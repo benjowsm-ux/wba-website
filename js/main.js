@@ -9,6 +9,8 @@
      5  Feed: search, pillar filter
      6  Article widgets: helpful vote, suggest/report/copy
      7  Page polish: skip link, lazy images, WhatsApp button
+     8  Hero depth: pointer light + parallax
+     9  View transitions: card-to-hero morph
    ========================================================================== */
 
 /* ==========================================================================
@@ -483,4 +485,173 @@ async function submitForm(){
   };
   showAfter();
   window.addEventListener('scroll', showAfter, { passive: true });
+})();
+
+/* ==========================================================================
+   8  HERO DEPTH — pointer light and parallax
+
+   Two effects, one listener, no layout reads after the first frame.
+
+     --px / --py   where the pointer is, as a percentage of the hero. The
+                   scrim's ::after paints a soft radial light there, so the
+                   photograph appears to be lit by the cursor.
+     --mx / --my   the same position remapped to -1..1. CSS multiplies it by
+                   a handful of pixels and translates the photograph against
+                   the pointer while the panels on top stay put, which is
+                   what reads as depth.
+
+   Why it is written this way:
+
+   - getBoundingClientRect() is called on pointerenter and on resize, never
+     on pointermove. Reading layout during a move handler is the classic way
+     to turn a smooth effect into a stuttering one.
+   - Writes are batched into one requestAnimationFrame callback. Several
+     pointermove events can fire between frames; only the last one matters.
+   - Custom properties are set on the hero, not on the moving layers, so the
+     browser only has to recompute a transform — no style recalc cascade.
+   - Touch devices never get it. A finger is not a hover, and firing this on
+     tap would make the photo jump.
+   ========================================================================== */
+(function(){
+  var hero = document.querySelector('.hero, .page-hero');
+  if (!hero) return;
+
+  /* Coarse pointer means touch. Reduced motion means the user asked for
+     none of this. Either way, leave the defaults in the stylesheet alone. */
+  if (!window.matchMedia) return;
+  if (window.matchMedia('(pointer: coarse)').matches) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var box = null, frame = 0, px = 22, py = 32, mx = 0, my = 0;
+
+  function measure(){ box = hero.getBoundingClientRect(); }
+
+  function paint(){
+    frame = 0;
+    hero.style.setProperty('--px', px.toFixed(2) + '%');
+    hero.style.setProperty('--py', py.toFixed(2) + '%');
+    hero.style.setProperty('--mx', mx.toFixed(3));
+    hero.style.setProperty('--my', my.toFixed(3));
+  }
+
+  hero.addEventListener('pointerenter', function(){
+    measure();
+    hero.style.setProperty('--torch', '1');
+  });
+
+  hero.addEventListener('pointermove', function(e){
+    if (!box) measure();
+    var x = (e.clientX - box.left) / box.width;
+    var y = (e.clientY - box.top) / box.height;
+    px = x * 100; py = y * 100;
+    mx = x * 2 - 1; my = y * 2 - 1;
+    if (!frame) frame = requestAnimationFrame(paint);
+  }, { passive: true });
+
+  hero.addEventListener('pointerleave', function(){
+    hero.style.setProperty('--torch', '0');
+    /* Ease the parallax back to centre rather than snapping it. The CSS has
+       no transition on transform (it would fight the pointer), so the return
+       is done here over a few frames. */
+    var sx = mx, sy = my, t0 = performance.now();
+    (function ease(now){
+      var k = Math.min(1, (now - t0) / 420);
+      var e2 = 1 - Math.pow(1 - k, 3);
+      mx = sx * (1 - e2); my = sy * (1 - e2);
+      paint();
+      if (k < 1) requestAnimationFrame(ease);
+    })(t0);
+  });
+
+  window.addEventListener('resize', function(){ box = null; }, { passive: true });
+  window.addEventListener('scroll', function(){ box = null; }, { passive: true });
+})();
+
+/* ==========================================================================
+   9  VIEW TRANSITIONS — the two things CSS cannot know
+
+   The transition itself is pure CSS: @view-transition in the stylesheet, and
+   three named elements. Nothing here is required for it to work. What this
+   adds is the part that depends on WHERE you are going, which a stylesheet
+   has no way to ask about.
+
+   1. Tidy the outgoing page.
+      If the mobile menu is open when you tap a link, the old snapshot has an
+      open menu and the new one does not, so the browser dutifully animates a
+      menu closing during a page change. Close it before the snapshot.
+
+   2. Expand the card you clicked into the article you opened.
+      This is the one worth having. A Feed card and an article hero are the
+      same photograph at two sizes, so if both carry the same
+      view-transition-name the browser tweens one into the other: the card
+      grows out of the grid and becomes the top of the article.
+
+      The mechanics, because they are easy to get wrong:
+
+      · Only ONE element per document may hold a given name. The Feed index
+        already puts `wba-hero-photo` on its own hero photograph, so that has
+        to be released before the card can take it — two elements sharing a
+        name makes the browser skip the whole transition, silently.
+
+      · The name goes on at `pageswap` time, which fires after the click and
+        before the snapshot. Naming every card upfront would be wrong: the
+        browser would try to match fifteen cards against one hero.
+
+      · Names are removed again once the transition finishes, so a page
+        restored from the back/forward cache does not come back holding a
+        name that no longer means anything.
+
+   `pagereveal` — the incoming half — is deliberately not used. It has to be
+   registered in a parser-blocking script in the <head> to be reliable, and
+   this file is deferred. Forward navigation gets the morph; going back gets
+   the standard crossfade, which is correct anyway: you are returning to a
+   grid, not opening one thing.
+   ========================================================================== */
+(function(){
+  if (!('onpageswap' in window)) return;
+
+  var NAME = 'wba-hero-photo';
+
+  function tidyNav(){
+    var links = document.getElementById('navLinks');
+    var btn = document.querySelector('.nav-toggle');
+    if (links) links.classList.remove('open');
+    if (btn) { btn.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+  }
+
+  /* The card whose href is where we are going, if there is one. */
+  function cardFor(url){
+    var path;
+    try { path = new URL(url, location.href).pathname; } catch (e) { return null; }
+    var cards = document.querySelectorAll('.post-card[href], .work-card[href]');
+    for (var i = 0; i < cards.length; i++) {
+      var href = cards[i].getAttribute('href');
+      try {
+        if (new URL(href, location.href).pathname === path) return cards[i];
+      } catch (e) { /* skip a malformed href rather than failing the click */ }
+    }
+    return null;
+  }
+
+  window.addEventListener('pageswap', function(e){
+    tidyNav();
+    if (!e.viewTransition || !e.activation || !e.activation.entry) return;
+
+    var card = cardFor(e.activation.entry.url);
+    if (!card) return;
+
+    /* Prefer the card's photograph — matching photo to photo is what makes
+       the morph read as the same object rather than a box turning into a
+       picture. Fall back to the card itself when it has no image. */
+    var from = card.querySelector('.post-card-media, img') || card;
+    var hero = document.querySelector('.hero-media');
+
+    if (hero) hero.style.viewTransitionName = 'none';
+    from.style.viewTransitionName = NAME;
+
+    e.viewTransition.finished.then(function(){
+      from.style.viewTransitionName = '';
+      if (hero) hero.style.viewTransitionName = '';
+    });
+  });
 })();

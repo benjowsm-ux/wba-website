@@ -16,7 +16,7 @@
 <link rel="manifest" href="/site.webmanifest"/>
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/styles.css?v=86eae07eca"/>
+<link rel="stylesheet" href="/css/styles.css?v=eb0b3ae48f"/>
 <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
 </head>
 <body>
@@ -37,10 +37,17 @@
 </nav>
 
 <header class="page-hero">
+  <div class="hero-media"><img src="/photos/beach-wide.jpg" width="1800" height="810" alt="" fetchpriority="high"/></div>
+  <div class="hero-scrim"></div>
   <div class="inner">
     <p data-edit="hero.body" data-edit-kind="rich" class="crumb"><a href="/">Home</a> &middot; Privacy</p>
-    <h1 data-edit="hero.h1" class="h-lg">Privacy notice.</h1>
-    <p data-edit="hero.lede" data-edit-kind="rich" class="lede">Plain English. We only collect what we need in order to help, and we never sell your data.</p>
+    <div class="hero-copy">
+      <div class="hero-lead">
+        <span class="beacon" aria-hidden="true"></span>
+        <h1 data-edit="hero.h1" class="h-lg">Privacy notice.</h1>
+      </div>
+      <p data-edit="hero.lede" data-edit-kind="rich" class="lede">Plain English. We only collect what we need in order to help, and we never sell your data.</p>
+    </div>
   </div>
 </header>
 
@@ -115,8 +122,9 @@
   </div>
 </footer>
 
-<script src="/js/main.js?v=7280f781d4" defer></script>
+<script src="/js/main.js?v=cc44960de5" defer></script>
 <script src="/js/analytics.js?v=6ee0188b0b" defer></script>
+<script src="/js/palette.js?v=bb3801caea" defer></script>
 <script src="/js/edit-boot.js?v=d3c391a5f7" defer></script>
 </body>
 </html>

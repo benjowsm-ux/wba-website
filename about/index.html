@@ -18,7 +18,7 @@
 <link rel="manifest" href="/site.webmanifest"/>
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/styles.css?v=86eae07eca"/>
+<link rel="stylesheet" href="/css/styles.css?v=eb0b3ae48f"/>
 <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
 </head>
 <body>
@@ -40,10 +40,44 @@
 </nav>
 
 <header class="page-hero">
+  <div class="hero-media"><img src="/photos/promenade-town.jpg" width="1800" height="810" alt="Weston-super-Mare promenade" fetchpriority="high"/></div>
+  <div class="hero-scrim"></div>
   <div class="inner">
     <p data-edit="hero.body" data-edit-kind="rich" class="crumb"><a href="/">Home</a> · About</p>
-    <h1 data-edit="hero.h1" data-edit-kind="rich" class="h-lg">A design &amp; tech agency,<br><em class="accent">based here.</em></h1>
-    <p data-edit="hero.lede" data-edit-kind="rich" class="lede">Small team, local clients, and work priced so getting started isn't the hard part.</p>
+    <div class="hero-copy">
+      <div class="hero-lead">
+        <span class="beacon" aria-hidden="true"></span>
+        <h1 data-edit="hero.h1" data-edit-kind="rich" class="h-lg">A design &amp; tech agency,<br><em class="accent">based here.</em></h1>
+      </div>
+      <p data-edit="hero.lede" data-edit-kind="rich" class="lede">Small team, local clients, and work priced so getting started isn't the hard part.</p>
+    </div>
+    <aside class="win hero-panel" aria-label="Studio">
+      <div class="win-bar">
+        <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="win-title" data-edit="panel.title">Studio</span>
+        <span class="hp-live"><i aria-hidden="true"></i><span data-edit="panel.live">Open</span></span>
+      </div>
+      <div class="win-body">
+        <div class="hp-rows">
+        <div class="hp-row">
+          <span class="hp-k" data-edit="panel.k1">Based</span>
+          <span class="hp-v"><span data-edit="panel.v1" data-edit-kind="rich">Weston-super-Mare</span><span class="sub" data-edit="panel.s1">BS22 · Somerset</span></span>
+        </div>
+        <div class="hp-row">
+          <span class="hp-k" data-edit="panel.k2">Covering</span>
+          <span class="hp-v"><span data-edit="panel.v2" data-edit-kind="rich">Weston, Worle</span><span class="sub" data-edit="panel.s2">Clevedon &amp; Nailsea</span></span>
+        </div>
+        <div class="hp-row">
+          <span class="hp-k" data-edit="panel.k3">Founded</span>
+          <span class="hp-v"><span data-edit="panel.v3" data-edit-kind="rich">2024</span></span>
+        </div>
+        <div class="hp-row">
+          <span class="hp-k" data-edit="panel.k4">Answer in</span>
+          <span class="hp-v"><span data-edit="panel.v4" data-edit-kind="rich">&lt; 24 hours</span><span class="sub" data-edit="panel.s4">Weekdays</span></span>
+        </div>
+        </div>
+      </div>
+    </aside>
   </div>
 </header>
 
@@ -65,8 +99,114 @@
 <section class="section section-mist reveal">
   <div class="inner">
     <div class="split reverse">
-      <div class="split-media">
-        <img data-edit-img="img.1" src="/photos/promenade-town.jpg" alt="Weston-super-Mare seafront looking back towards the town" width="1800" height="810"/>
+      <div class="split-media map-media">
+<figure class="win map-win" aria-labelledby="mapCap">
+  <div class="win-bar">
+    <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="win-title">Service area</span>
+    <span class="hp-live"><i aria-hidden="true"></i><span data-edit="map.live">On the road</span></span>
+  </div>
+  <div class="win-body map-body">
+    <!-- Drawn by hand from coordinates, not a tile service: no API key, no
+         third-party script, no cookie banner, and it works offline. Positions
+         are real latitude and longitude projected linearly — over thirty
+         kilometres the error from ignoring the curve is smaller than the
+         pins. -->
+    <svg class="map-svg" viewBox="0 0 700 620" role="img" aria-labelledby="mapTitle mapDesc">
+      <title id="mapTitle">Where WBA works</title>
+      <desc id="mapDesc">Weston-super-Mare and the towns around it: Worle, Clevedon and Nailsea, with Bristol to the north-east.</desc>
+
+      <defs>
+        <linearGradient id="mapSea" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"  stop-color="#0a53c7" stop-opacity=".38"/>
+          <stop offset="100%" stop-color="#0a53c7" stop-opacity=".14"/>
+        </linearGradient>
+        <radialGradient id="mapGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%"  stop-color="#f5c416" stop-opacity=".22"/>
+          <stop offset="70%" stop-color="#f5c416" stop-opacity=".05"/>
+          <stop offset="100%" stop-color="#f5c416" stop-opacity="0"/>
+        </radialGradient>
+        <pattern id="mapGrid" width="70" height="62" patternUnits="userSpaceOnUse">
+          <path d="M70 0H0V62" fill="none" stroke="rgba(255,255,255,.055)" stroke-width="1"/>
+        </pattern>
+      </defs>
+
+      <rect width="700" height="620" fill="var(--ink-soft)"/>
+
+      <!-- The Bristol Channel. The coast runs south-west to north-east; the
+           water is everything to the north-west of it. -->
+      <path class="map-sea" d="M60 620 L72 541 L85 430 L95 380 L102 318 L92 290 L98 207
+                               L160 175 L230 145 L273 128 L340 80 L400 30 L440 0
+                               L0 0 L0 620 Z" fill="url(#mapSea)"/>
+      <path class="map-coast" d="M60 620 L72 541 L85 430 L95 380 L102 318 L92 290 L98 207
+                                 L160 175 L230 145 L273 128 L340 80 L400 30 L440 0"
+            fill="none" stroke="rgba(140,195,255,.55)" stroke-width="1.8"/>
+
+      <rect width="700" height="620" fill="url(#mapGrid)"/>
+
+      <!-- The M5, which is how most of this actually gets reached. -->
+      <path class="map-road" d="M240 620 L262 480 L270 360 L285 270 L310 170 L345 70 L370 0"
+            fill="none" stroke="rgba(255,255,255,.14)" stroke-width="2"
+            stroke-dasharray="10 7" stroke-linecap="round"/>
+      <text class="map-road-label" x="252" y="560" transform="rotate(-8 252 560)">M5</text>
+
+      <!-- Range rings around Weston, 5 and 10 miles. Ellipses, not circles:
+           a degree of longitude is shorter than a degree of latitude at 51°N,
+           so a true circle on the ground is an ellipse on this projection. -->
+      <ellipse class="map-ring" cx="102" cy="318" rx="325" ry="300"/>
+      <ellipse class="map-ring" cx="102" cy="318" rx="162" ry="150"/>
+      <text class="map-ring-label" x="272" y="308">5 mi</text>
+      <text class="map-ring-label" x="435" y="308">10 mi</text>
+
+      <circle cx="102" cy="318" r="150" fill="url(#mapGlow)"/>
+
+      <!-- Places. The base is home and gets the pulse; the rest are marks. -->
+      <g role="list" aria-label="Towns we cover">
+      <g class="map-pin is-home" tabindex="0" role="listitem">
+        <title>Weston-super-Mare — the studio</title>
+        <circle class="map-pulse" cx="102" cy="318" r="9"/>
+        <circle class="map-dot" cx="102" cy="318" r="7"/>
+        <text class="map-label" x="96" y="356">Weston-super-Mare</text>
+        <text class="map-sub" x="96" y="375">The studio</text>
+      </g>
+
+      <g class="map-pin" tabindex="0" role="listitem">
+        <title>Worle</title>
+        <circle class="map-dot" cx="168" cy="314" r="5"/>
+        <text class="map-label" x="181" y="309">Worle</text>
+      </g>
+
+      <g class="map-pin" tabindex="0" role="listitem">
+        <title>Clevedon</title>
+        <circle class="map-dot" cx="273" cy="128" r="5"/>
+        <text class="map-label" x="286" y="124">Clevedon</text>
+      </g>
+
+      <g class="map-pin" tabindex="0" role="listitem">
+        <title>Nailsea</title>
+        <circle class="map-dot" cx="406" cy="139" r="5"/>
+        <text class="map-label" x="419" y="135">Nailsea</text>
+      </g>
+
+      <g class="map-pin is-faint" tabindex="0" role="listitem">
+        <title>Bristol</title>
+        <circle class="map-dot" cx="647" cy="95" r="4"/>
+        <text class="map-label" x="640" y="80" text-anchor="end">Bristol</text>
+      </g>
+
+      <g class="map-pin is-faint" tabindex="0" role="listitem">
+        <title>Burnham-on-Sea</title>
+        <circle class="map-dot" cx="73" cy="541" r="4"/>
+        <text class="map-label" x="88" y="546">Burnham-on-Sea</text>
+      </g>
+
+      </g>
+
+      <text class="map-compass" x="655" y="588">N &#8593;</text>
+    </svg>
+  </div>
+  <figcaption id="mapCap" class="map-cap" data-edit="map.cap">Close enough to come and look at the premises before we design anything for it.</figcaption>
+</figure>
       </div>
       <div>
         <p data-edit="hero.eyebrow" data-edit-kind="rich" class="eyebrow">Where we work</p>
@@ -163,8 +303,9 @@
   </div>
 </footer>
 
-<script src="/js/main.js?v=7280f781d4" defer></script>
+<script src="/js/main.js?v=cc44960de5" defer></script>
 <script src="/js/analytics.js?v=6ee0188b0b" defer></script>
+<script src="/js/palette.js?v=bb3801caea" defer></script>
 <script src="/js/edit-boot.js?v=d3c391a5f7" defer></script>
 </body>
 </html>

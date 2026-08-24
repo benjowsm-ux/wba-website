@@ -51,3 +51,13 @@
 #   [headers.values]
 #     Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://lynzhiyvggqyplssrapi.supabase.co; connect-src 'self' https://lynzhiyvggqyplssrapi.supabase.co https://formspree.io; frame-ancestors 'self'"
 # --------------------------------------------------------------------------
+
+# The command palette's index. It changes whenever a Feed post is published,
+# and unlike CSS and JS its URL has no content hash to bust — palette.js asks
+# for a fixed path. Ten minutes is long enough that repeat visitors in one
+# session never re-fetch it, and short enough that a new article is findable
+# almost immediately.
+[[headers]]
+  for = "/search-index.json"
+  [headers.values]
+    Cache-Control = "public, max-age=600"

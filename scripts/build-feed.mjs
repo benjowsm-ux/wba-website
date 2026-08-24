@@ -296,6 +296,7 @@ const FOOTER = `<footer>
 
 const SCRIPTS = `<script src="/js/main.js" defer></script>
 <script src="/js/analytics.js" defer></script>
+<script src="/js/palette.js" defer></script>
 <script src="/js/edit-boot.js" defer></script>`;
 
 function head(opts){
@@ -356,6 +357,33 @@ function pillarMedia(p, fallbackImage){
 /* ==========================================================================
    Page builders
    ========================================================================== */
+/* Article heroes get a photograph like every other page. The post's own
+   cover image is the obvious choice; failing that, one of the town shots
+   picked by the post's slug so a given article always gets the same one
+   rather than shuffling on every build. */
+const HERO_POOL = [
+  '/photos/marine-lake-reeds.jpg',
+  '/photos/promenade-town.jpg',
+  '/photos/seafront-terraces.jpg',
+  '/photos/town-fountains.jpg',
+  '/photos/high-street.jpg',
+  '/photos/marine-lake-monument.jpg'
+];
+function heroPhoto(p){
+  /* The SAME image the post's card shows on the Feed index, deliberately:
+     clicking a card runs a view transition that grows the card's photograph
+     into this hero, and two different photographs would turn a morph into a
+     dissolve. postImages() is what the card uses, so ask it. */
+  const own = postImages(p, 1)[0];
+  if (own) return own;
+
+  /* Nothing in the post to use. Pick a town shot from the slug so a given
+     article always gets the same one rather than shuffling every build. */
+  let n = 0;
+  for (const ch of String(p.slug || '')) n = (n * 31 + ch.charCodeAt(0)) >>> 0;
+  return HERO_POOL[n % HERO_POOL.length];
+}
+
 function postPage(p, all){
   const url = `${SITE}/feed/${p.slug}/`;
   const pillar = pillarOf(p);
@@ -384,10 +412,17 @@ ${head({ title: `${p.title} | WBA Weston-super-Mare`, desc, url, image: ogImg, t
 ${nav('feed')}
 
 <header class="page-hero">
+  <div class="hero-media"><img src="${heroPhoto(p)}" alt=""${dimAttrs(heroPhoto(p))} fetchpriority="high"/></div>
+  <div class="hero-scrim"></div>
   <div class="inner">
     <p class="crumb"><a href="/">Home</a> · <a href="/feed/">Feed</a>${pillar ? ` · <a href="/feed/?pillar=${pillar}">${esc(cap(pillar))}</a>` : ''}</p>
-    <h1 class="h-lg">${esc(p.title)}</h1>
-    ${p.excerpt ? `<p class="lede">${esc(p.excerpt)}</p>` : ''}
+    <div class="hero-copy">
+      <div class="hero-lead">
+        <span class="beacon" aria-hidden="true"></span>
+        <h1 class="h-lg">${esc(p.title)}</h1>
+      </div>
+      ${p.excerpt ? `<p class="lede">${esc(p.excerpt)}</p>` : ''}
+    </div>
   </div>
 </header>
 
@@ -490,10 +525,31 @@ ${head({
 ${nav('feed')}
 
 <header class="page-hero">
+  <div class="hero-media"><img src="/photos/mural-weston-letters.jpg" width="1600" height="720" alt="Weston lettering mural" fetchpriority="high"/></div>
+  <div class="hero-scrim"></div>
   <div class="inner">
     <p class="crumb"><a href="/">Home</a> · Feed</p>
-    <h1 class="h-lg">The Feed.</h1>
-    <p class="lede">Work we've finished, and what we learned doing it.</p>
+    <div class="hero-copy">
+      <div class="hero-lead">
+        <span class="beacon" aria-hidden="true"></span>
+        <h1 class="h-lg">The Feed.</h1>
+      </div>
+      <p class="lede">Work we've finished, and what we learned doing it.</p>
+    </div>
+    <aside class="win hero-panel" aria-label="The Feed">
+      <div class="win-bar">
+        <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="win-title" data-edit="panel.title">The Feed</span>
+        <span class="hp-live"><i aria-hidden="true"></i><span data-edit="panel.live">Updated</span></span>
+      </div>
+      <div class="win-body">
+        <div class="hp-rows">
+          <div class="hp-row"><span class="hp-k" data-edit="panel.k1">Pieces</span><span class="hp-v"><span data-edit="panel.v1" data-edit-kind="rich">${posts.length}</span><span class="sub" data-edit="panel.s1">Build · Create · Grow</span></span></div>
+          <div class="hp-row"><span class="hp-k" data-edit="panel.k2">Cadence</span><span class="hp-v"><span data-edit="panel.v2" data-edit-kind="rich">When there is something</span><span class="sub" data-edit="panel.s2">Not on a schedule</span></span></div>
+          <div class="hp-row"><span class="hp-k" data-edit="panel.k3">Written by</span><span class="hp-v"><span data-edit="panel.v3" data-edit-kind="rich">The people building it</span></span></div>
+        </div>
+      </div>
+    </aside>
   </div>
 </header>
 
@@ -764,6 +820,17 @@ writeFileSync('blog/index.html', redirectStub('/feed/'));
 
 writeFileSync('sitemap.xml', sitemap(posts));
 
+/* The command palette's index. Written here rather than kept in palette.js so
+   a new article is searchable the moment the Feed rebuilds, without anyone
+   touching a script file. It is fetched once, on first open, so it costs a
+   visitor who never presses Ctrl+K precisely nothing. */
+writeFileSync('search-index.json', JSON.stringify(posts.map(p => ({
+  title: p.title,
+  excerpt: p.excerpt || '',
+  url: `/feed/${p.slug}/`,
+  tags: p.tags || []
+}))));
+
 injectPillarMedia(posts);
 injectSpotlight(posts);
 injectPillarRows(posts);
@@ -989,6 +1056,39 @@ writePhotoManifest();
    Appending a content hash to the URL means a changed file is a changed URL,
    so the browser is obliged to fetch it, while unchanged files stay cached.
    ========================================================================== */
+/* Decoration that is supplied later — currently the messaging-window frame
+   over the homepage photograph. Referencing it from CSS before the file lands
+   means a 404 on every page load; deleting the reference by hand means
+   remembering to put it back. So the build decides: the class that carries
+   the background exists exactly when the file does. Drop the PNG into img/
+   and the next build switches it on with nothing else to do. */
+function toggleOptionalAssets(){
+  const OPTIONAL = [{ file: 'img/ws-frame.png', cls: 'has-frame', on: 'ws-chrome' }];
+
+  const pages = [];
+  (function scan(dir){
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const full = dir === '.' ? e.name : dir + '/' + e.name;
+      if (e.isDirectory()) {
+        if (['node_modules','.git','.github','scripts','supabase','photos','img','css','js','.claude'].includes(e.name)) continue;
+        scan(full);
+      } else if (/\.html?$/i.test(e.name)) pages.push(full);
+    }
+  })('.');
+
+  for (const { file, cls, on } of OPTIONAL) {
+    const present = existsSync(file);
+    for (const page of pages) {
+      const html = readFileSync(page, 'utf8');
+      const out = present
+        ? html.split('class="' + on + '"').join('class="' + on + ' ' + cls + '"')
+        : html.split('class="' + on + ' ' + cls + '"').join('class="' + on + '"');
+      if (out !== html) writeFileSync(page, out);
+    }
+    console.log('Optional: ' + file + (present ? ' present — .' + cls + ' on.' : ' missing — .' + cls + ' off.'));
+  }
+}
+
 function stampAssets(){
   const hashOf = file => {
     try { return createHash('sha1').update(readFileSync(file)).digest('hex').slice(0, 10); }
@@ -1037,5 +1137,6 @@ function stampAssets(){
 }
 
 stampAssets();
+toggleOptionalAssets();
 
 await bakePageContent();

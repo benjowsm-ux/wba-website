@@ -18,7 +18,7 @@
 <link rel="manifest" href="/site.webmanifest"/>
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/styles.css?v=86eae07eca"/>
+<link rel="stylesheet" href="/css/styles.css?v=eb0b3ae48f"/>
 <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
 </head>
 <body>
@@ -50,13 +50,47 @@
 
 
 <header class="page-hero">
+  <div class="hero-media"><img src="/photos/seafront-terraces.jpg" width="1600" height="720" alt="Seafront terraces, Weston-super-Mare" fetchpriority="high"/></div>
+  <div class="hero-scrim"></div>
   <div class="inner">
     <p data-edit="hero.body" data-edit-kind="rich" class="crumb"><a href="/">Home</a> · Sites</p>
-    <h1 data-edit="hero.h1" data-edit-kind="rich" class="h-lg">Free sites.<br><em class="accent">No build fee.</em></h1>
-    <p data-edit="hero.lede" data-edit-kind="rich" class="lede">We design it, write it and build it at no cost. £30 a month covers hosting, changes and support.</p>
-    <div class="cta-actions" style="justify-content:flex-start;margin-top:2rem;">
+    <div class="hero-copy">
+      <div class="hero-lead">
+        <span class="beacon" aria-hidden="true"></span>
+        <h1 data-edit="hero.h1" data-edit-kind="rich" class="h-lg">Free sites.<br><em class="accent">No build fee.</em></h1>
+      </div>
+      <p data-edit="hero.lede" data-edit-kind="rich" class="lede">We design it, write it and build it at no cost. £30 a month covers hosting, changes and support.</p>
+      <div class="cta-actions" style="justify-content:flex-start;margin-top:2rem;">
       <a data-edit-href="link.1" href="#start" class="btn btn-gold" data-track="sites-hero-start">Get Started</a>
+      </div>
     </div>
+    <aside class="win hero-panel" aria-label="What it costs">
+      <div class="win-bar">
+        <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="win-title" data-edit="panel.title">What it costs</span>
+        <span class="hp-live"><i aria-hidden="true"></i><span data-edit="panel.live">Taking work</span></span>
+      </div>
+      <div class="win-body">
+        <div class="hp-rows">
+        <div class="hp-row">
+          <span class="hp-k" data-edit="panel.k1">Design &amp; build</span>
+          <span class="hp-v"><span data-edit="panel.v1" data-edit-kind="rich"><em>£0</em></span><span class="sub" data-edit="panel.s1">No setup fee</span></span>
+        </div>
+        <div class="hp-row">
+          <span class="hp-k" data-edit="panel.k2">Monthly</span>
+          <span class="hp-v"><span data-edit="panel.v2" data-edit-kind="rich">£30</span><span class="sub" data-edit="panel.s2">Hosting, changes, support</span></span>
+        </div>
+        <div class="hp-row">
+          <span class="hp-k" data-edit="panel.k3">Contract</span>
+          <span class="hp-v"><span data-edit="panel.v3" data-edit-kind="rich">None</span><span class="sub" data-edit="panel.s3">Leave whenever</span></span>
+        </div>
+        <div class="hp-row">
+          <span class="hp-k" data-edit="panel.k4">You own</span>
+          <span class="hp-v"><span data-edit="panel.v4" data-edit-kind="rich">Everything</span><span class="sub" data-edit="panel.s4">Domain, content, site</span></span>
+        </div>
+        </div>
+      </div>
+    </aside>
   </div>
 </header>
 
@@ -292,8 +326,9 @@
   </div>
 </footer>
 
-<script src="/js/main.js?v=7280f781d4" defer></script>
+<script src="/js/main.js?v=cc44960de5" defer></script>
 <script src="/js/analytics.js?v=6ee0188b0b" defer></script>
+<script src="/js/palette.js?v=bb3801caea" defer></script>
 <script src="/js/sites.js?v=e92779fd60" defer></script>
 <script src="/js/edit-boot.js?v=d3c391a5f7" defer></script>
 </body>

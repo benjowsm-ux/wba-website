@@ -935,7 +935,7 @@ textarea{min-height:110px;resize:vertical;line-height:1.6;}
     transition:max-height .3s ease,padding .3s ease;
     border-top:1px solid rgba(255,255,255,.08);box-shadow:0 20px 40px rgba(0,0,0,.4);
   }
-  .nav-links.open{max-height:460px;padding:.5rem var(--gutter) 1.4rem;}
+  .nav-links.open{max-height:560px;padding:.5rem var(--gutter) 1.4rem;}
   .nav-links a{padding:.95rem 0;font-size:1.02rem;border-bottom:1px solid rgba(255,255,255,.07);}
   .nav-links a::after{display:none;}
   .nav-cta{text-align:center;justify-content:center;margin-top:1rem;border-bottom:none!important;}
@@ -1843,9 +1843,15 @@ body.wba-editing [data-edit-href][data-edit-target][data-edit-pending]{outline-c
    the page is correct both before and after the asset lands. */
 .ws-chrome{
   position:absolute;inset:0;pointer-events:none;z-index:3;
-  background-image:url('/img/ws-frame.png');
   background-size:100% 100%;background-repeat:no-repeat;
 }
+/* And the URL is only attached when the file is actually on disk. The build
+   adds `has-frame` to this element when img/ws-frame.png exists and takes it
+   away when it does not, so there is no request for a missing file — a
+   404 on every homepage load is the kind of thing a client's developer
+   notices, and we sell websites. Nothing to remember when the PNG lands:
+   drop it in img/ and the next build turns it on. */
+.ws-chrome.has-frame{ background-image:url('/img/ws-frame.png'); }
 
 /* ---- the review tab ---- */
 .rv-tab{
@@ -2018,3 +2024,574 @@ body.wba-editing .ws-quote{
 body.wba-editing .ws-chrome{display:none;}
 body.wba-editing .rv-tab{position:relative;right:auto;top:auto;width:100%;margin-top:1rem;opacity:1;}
 body.wba-editing .perk-rail{height:auto;-webkit-mask-image:none;mask-image:none;}
+
+/* ==========================================================================
+   12  THE INSTRUMENT LAYER
+
+   Everything below exists to make the site feel like one continuous surface
+   you are moving around inside, rather than a stack of separate documents
+   that blink when you click a link.
+
+   Four ideas, in order of how much they change the feel:
+
+     1. Cross-document view transitions. The browser snapshots the old page,
+        snapshots the new one, and animates between them. The nav and the
+        footer are named, so they hold still while the middle changes —
+        which is the single thing that stops a multi-page site reading as a
+        multi-page site.
+
+     2. One hero, everywhere. Home had a photograph, a scrim and a pulse.
+        Every other page had a flat navy rectangle. Now every page uses the
+        same three layers and the same grid overlay, so moving between them
+        is a change of content, not a change of design.
+
+     3. Scroll-driven animation, done by the compositor. animation-timeline
+        ties progress to scroll position instead of to a clock, so reveals
+        track the wheel exactly and cost no main-thread work. Guarded by
+        @supports: browsers without it keep the IntersectionObserver path.
+
+     4. The pointer is an input, not just a clicker. The hero carries a soft
+        light that follows the cursor and a few pixels of parallax between
+        the photograph and the panels on top of it.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   12.1  Cross-document view transitions
+
+   navigation:auto covers every same-origin navigation in the site. There is
+   no JavaScript involved and nothing to maintain: a page that does not know
+   about this still transitions correctly, because the browser is comparing
+   rendered output, not markup.
+   -------------------------------------------------------------------------- */
+@view-transition{ navigation:auto; }
+
+/* Named elements are captured separately and animated as themselves. The nav
+   and footer are pixel-identical between pages, so naming them means the
+   browser tweens nothing and they simply persist — no crossfade, no flicker.
+   The hero photograph IS different between pages, so it dissolves in place
+   while its frame morphs to the new hero height. */
+.nav{ view-transition-name:wba-nav; }
+footer{ view-transition-name:wba-foot; }
+.hero-media{ view-transition-name:wba-hero-photo; }
+
+/* Everything not named animates as one group called root. The default is a
+   straight crossfade; a little vertical travel on the incoming side reads as
+   arriving rather than merely appearing. Keep the distance small — a big
+   translate exposes the page background at the edges. */
+::view-transition-group(root){ animation-duration:var(--t3); }
+::view-transition-old(root){ animation:wba-vt-out var(--t2) var(--m-exit) both; }
+::view-transition-new(root){ animation:wba-vt-in var(--t3) var(--m-enter) both; }
+@keyframes wba-vt-out{ to{ opacity:0; transform:translateY(-6px); } }
+@keyframes wba-vt-in{ from{ opacity:0; transform:translateY(12px); } }
+
+/* The hero photo gets a longer, softer dissolve than the copy over it, so
+   the picture feels like it is settling while the text is already readable. */
+::view-transition-old(wba-hero-photo),
+::view-transition-new(wba-hero-photo){
+  animation-duration:var(--t4);
+  animation-timing-function:var(--m-enter);
+  /* Hero heights differ from page to page, so the group animates its box.
+     The UA default is object-fit:fill, which stretches the outgoing photo as
+     the box changes shape. cover crops instead, which is what the live
+     element does anyway. */
+  object-fit:cover;
+}
+
+/* html paints behind the snapshots. If it is the default white, every
+   transition flashes. */
+html{ background:var(--ink); }
+
+@media (prefers-reduced-motion:reduce){
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*){ animation:none!important; }
+}
+
+/* --------------------------------------------------------------------------
+   12.2  Scroll position, read off the nav
+
+   A 2px rule along the bottom edge of the sticky nav, scaled by how far down
+   the document you are. It is the cheapest possible progress indicator: one
+   pseudo-element, no markup, no JavaScript, and the animation runs off the
+   scroll timeline so it cannot fall behind the scroll itself.
+   -------------------------------------------------------------------------- */
+.nav::after{
+  content:'';position:absolute;left:0;bottom:-1px;height:2px;width:100%;
+  transform:scaleX(0);transform-origin:0 50%;
+  background:linear-gradient(90deg,var(--gold) 0%,var(--gold-hi) 55%,#fff 100%);
+  pointer-events:none;
+}
+@supports (animation-timeline:scroll()){
+  .nav::after{
+    animation:wba-progress linear both;
+    animation-timeline:scroll(root block);
+  }
+}
+@keyframes wba-progress{ from{ transform:scaleX(0); } to{ transform:scaleX(1); } }
+@media (prefers-reduced-motion:reduce){ .nav::after{ display:none; } }
+
+/* --------------------------------------------------------------------------
+   12.3  Reveals, tied to the scroll wheel
+
+   The JS path adds .in when a section crosses into view and a transition
+   plays on a clock — so a fast scroll leaves sections still fading in below
+   the fold. A view() timeline maps the animation to the section own position
+   in the scrollport instead, which means it is always exactly as far along as
+   it should be, at any scroll speed, including backwards.
+
+   CSS animations outrank the plain declarations on .reveal.in, so this
+   quietly takes over wherever it is supported and the JS becomes harmless.
+   -------------------------------------------------------------------------- */
+@supports (animation-timeline:view()){
+  @media (prefers-reduced-motion:no-preference){
+    /* The range is given in PIXELS, not percentages, and this matters.
+
+       A percentage range is a percentage of the element's own extent, so a
+       300px card would finish its fade in 300px of scrolling while a 2000px
+       section would still be at half opacity six hundred pixels later. The
+       page ends up with tall sections that look broken and short ones that
+       snap. A pixel range decouples the two: everything fades over the same
+       360px of wheel travel, whatever size it is.
+
+       `cover 0px` is the moment the element's top edge touches the bottom of
+       the viewport, so the fade starts exactly as it appears and is finished
+       well before it reaches the middle of the screen. */
+    .reveal{
+      animation:wba-rise linear both;
+      animation-timeline:view();
+      animation-range:cover 0px cover 360px;
+    }
+
+    /* Children arriving a beat apart, with no transition-delay anywhere:
+       each one starts its own range a little further along the scroll, so
+       the stagger is a function of wheel position rather than a timer. Scroll
+       back up and it un-staggers in the same order. */
+    .pillars > *,.icon-steps > *,.feed-grid > *,.card-grid > *{
+      animation:wba-rise-sm linear both;
+      animation-timeline:view();
+      animation-range:cover 0px cover 300px;
+    }
+    .pillars > :nth-child(2),.icon-steps > :nth-child(2),
+    .feed-grid > :nth-child(2),.card-grid > :nth-child(2){
+      animation-range:cover 70px cover 370px;
+    }
+    .pillars > :nth-child(3),.icon-steps > :nth-child(3),
+    .feed-grid > :nth-child(3),.card-grid > :nth-child(3){
+      animation-range:cover 140px cover 440px;
+    }
+    .feed-grid > :nth-child(4),.card-grid > :nth-child(4){
+      animation-range:cover 200px cover 500px;
+    }
+  }
+}
+@keyframes wba-rise{ from{ opacity:0; transform:translateY(26px); } }
+@keyframes wba-rise-sm{ from{ opacity:0; transform:translateY(16px); } }
+
+/* --------------------------------------------------------------------------
+   12.4  One hero for every page
+
+   .page-hero used to be a navy block with a blue blob floating behind it. It
+   now takes the same .hero-media / .hero-scrim pair the homepage uses, which
+   is why the rules below are mostly deletions.
+   -------------------------------------------------------------------------- */
+.page-hero{
+  background:var(--ink);position:relative;overflow:hidden;
+  padding:clamp(3.25rem,6vw,4.75rem) var(--gutter) clamp(3.25rem,6vw,4.75rem);
+  display:flex;align-items:center;
+}
+.page-hero::after{ display:none; }          /* the old blue blob */
+.page-hero .hero-media{position:absolute;inset:0;}
+.page-hero .hero-media img{width:100%;height:100%;object-fit:cover;opacity:.42;}
+.page-hero .inner{position:relative;z-index:2;width:100%;}
+.page-hero h1{color:#fff;max-width:16ch;}
+.page-hero h1 em,.page-hero h1 em.accent{font-style:normal;color:var(--gold);}
+.page-hero .lede{color:rgba(255,255,255,.72);margin-top:var(--s-3);max-width:52ch;}
+
+/* The crumb, re-cut as an instrument readout: mono, tracked out, with a
+   hairline that runs off toward the edge of the page. */
+.crumb{
+  font-family:var(--font-mono);font-size:.7rem;font-weight:500;
+  letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(255,255,255,.5);
+  display:flex;align-items:center;gap:.7rem;
+}
+.crumb::after{
+  content:'';flex:1 1 auto;height:1px;max-width:180px;
+  background:linear-gradient(90deg,rgba(255,255,255,.22),transparent);
+}
+/* Vertical padding so the links clear WCAG 2.2's 24px target minimum. As a
+   flex item a crumb link no longer counts as inline text in a sentence, so
+   the exception that covers ordinary body links does not apply here. */
+.crumb a{
+  color:rgba(255,255,255,.42);transition:color var(--t1);
+  padding:.4rem 0;display:inline-block;
+}
+.crumb a:hover{color:var(--gold);}
+
+/* The beacon needs clearance below the crumb, or it lands on top of it. */
+.page-hero .hero-lead{position:relative;}
+.page-hero .beacon{top:-1.35rem;}
+
+/* --------------------------------------------------------------------------
+   12.5  The map layer
+
+   Two overlays on the scrim, both pseudo-elements so no page needs new markup
+   for them.
+
+   ::before  a coordinate grid, masked so it is only legible in the top-left
+             quadrant behind the headline and dissolves before it reaches the
+             photograph.
+   ::after   a soft light that follows the pointer. --px/--py are written by
+             main.js; the defaults mean it sits sensibly if JS never runs.
+   -------------------------------------------------------------------------- */
+.hero-scrim{ position:absolute;inset:0;z-index:1;pointer-events:none; }
+.hero-scrim::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(to right,rgba(255,255,255,.05) 1px,transparent 1px),
+    linear-gradient(to bottom,rgba(255,255,255,.05) 1px,transparent 1px);
+  background-size:72px 72px;
+  -webkit-mask-image:radial-gradient(115% 95% at 6% 18%,#000 0%,rgba(0,0,0,.55) 42%,transparent 76%);
+  mask-image:radial-gradient(115% 95% at 6% 18%,#000 0%,rgba(0,0,0,.55) 42%,transparent 76%);
+}
+.hero-scrim::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(420px 420px at var(--px,22%) var(--py,32%),
+             rgba(255,255,255,.085),rgba(255,255,255,.03) 42%,transparent 72%);
+  opacity:var(--torch,0);transition:opacity var(--t4) var(--ease);
+}
+@media (prefers-reduced-motion:reduce){ .hero-scrim::after{ display:none; } }
+
+/* Parallax. The photograph moves against the pointer and the panels on top of
+   it move with it — a few pixels either way is all it takes to separate them
+   into layers. Written as a variable so JS only ever touches --mx/--my and the
+   compositor does the rest. */
+.hero-media{
+  transform:translate3d(calc(var(--mx,0) * -14px),calc(var(--my,0) * -10px),0) scale(1.045);
+  will-change:transform;
+}
+@media (prefers-reduced-motion:reduce){
+  .hero-media{ transform:none; }
+}
+
+/* --------------------------------------------------------------------------
+   12.6  The hero panel
+
+   A .win sitting to the right of the headline on wide screens, carrying
+   whatever that page one useful fact is. Same chrome as the homepage stage
+   and the Sites price card, so the three read as the same object class rather
+   than three separate design decisions.
+   -------------------------------------------------------------------------- */
+/* One column by default — a legal page or an article has no panel, and an
+   empty right-hand track would just push the headline off centre. The second
+   track only appears when there is something to put in it. */
+.page-hero .inner{
+  display:grid;grid-template-columns:minmax(0,1fr);
+  gap:clamp(1.5rem,4vw,2.5rem) clamp(2rem,5vw,4.5rem);align-items:center;
+}
+.page-hero .inner:has(.hero-panel){
+  grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);
+}
+.page-hero .hero-copy{grid-column:1;}
+.page-hero .crumb{grid-column:1 / -1;margin-bottom:1.9rem;}
+.hero-panel{grid-column:2;justify-self:end;width:min(100%,380px);}
+.hero-panel .win-body{padding:1.15rem 1.25rem 1.3rem;}
+
+/* Rows of label / value, hairline-separated. Deliberately plain: the panel
+   earns its place by being legible at a glance, not by being decorated. */
+.hp-rows{display:grid;gap:.1rem;}
+.hp-row{
+  display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
+  padding:.62rem 0;border-bottom:1px solid var(--edge);
+}
+.hp-row:last-child{border-bottom:0;padding-bottom:0;}
+.hp-row:first-child{padding-top:0;}
+/* 12px is the floor for anything anyone is expected to read. Tracked-out
+   uppercase mono is already hard work; below 12 it stops being a label and
+   becomes texture. */
+.hp-k{
+  font-family:var(--font-mono);font-size:.76rem;letter-spacing:.13em;
+  text-transform:uppercase;color:rgba(255,255,255,.5);white-space:nowrap;
+}
+.hp-v{
+  font-family:var(--font-display);font-size:1rem;font-weight:600;
+  color:#fff;text-align:right;
+}
+.hp-v .sub{
+  display:block;font-family:var(--font-body);font-size:.76rem;
+  font-weight:400;color:rgba(255,255,255,.5);margin-top:.12rem;
+}
+.hp-v em{font-style:normal;color:var(--gold);}
+
+/* A live dot in the window bar. Same pulse language as the beacon, quarter
+   the size, so it reads as "this is current" and not as decoration. */
+.hp-live{
+  margin-left:auto;display:inline-flex;align-items:center;gap:.45rem;
+  font-family:var(--font-mono);font-size:.76rem;letter-spacing:.11em;
+  text-transform:uppercase;color:rgba(255,255,255,.52);
+}
+.hp-live i{
+  width:6px;height:6px;border-radius:50%;background:#4ade80;
+  box-shadow:0 0 0 0 rgba(74,222,128,.55);animation:wba-live 2.4s ease-out infinite;
+}
+@keyframes wba-live{
+  0%{box-shadow:0 0 0 0 rgba(74,222,128,.5);}
+  70%{box-shadow:0 0 0 7px rgba(74,222,128,0);}
+  100%{box-shadow:0 0 0 0 rgba(74,222,128,0);}
+}
+@media (prefers-reduced-motion:reduce){ .hp-live i{animation:none;} }
+
+@media (max-width:900px){
+  /* Both selectors, and the :has() one is the important half: it out-specifies
+     the two-column rule above, so writing only `.page-hero .inner` here leaves
+     every hero that HAS a panel still in two columns on a phone — which is
+     exactly the 190px-wide squashed card this replaced. */
+  .page-hero .inner,
+  .page-hero .inner:has(.hero-panel){grid-template-columns:minmax(0,1fr);gap:2rem;}
+  .page-hero .hero-copy,.hero-panel{grid-column:1;}
+  .hero-panel{justify-self:stretch;width:auto;max-width:none;}
+  .page-hero h1{max-width:none;}
+}
+@media (max-width:460px){
+  /* Label above value once the row is too narrow to hold both on one line.
+     A right-aligned value that wraps to three lines is worse than no panel. */
+  .hp-row{display:block;padding:.7rem 0;}
+  .hp-k{display:block;margin-bottom:.2rem;}
+  .hp-v{text-align:left;}
+  .hp-v .sub{display:inline;margin-left:.4rem;color:rgba(255,255,255,.45);}
+}
+@media (max-width:560px){
+  .page-hero .crumb{margin-bottom:1.5rem;}
+  .hero-scrim::before{background-size:52px 52px;}
+}
+
+/* --------------------------------------------------------------------------
+   12.7  Command palette
+
+   Ctrl+K / Cmd+K. Built on the same .win chrome as the hero panels and the
+   Sites price card, so it arrives looking like part of the site rather than a
+   widget bolted on: same bar, same dots, same radii, same shadow scale.
+   -------------------------------------------------------------------------- */
+
+/* The nav affordance. It has to advertise a keyboard shortcut without
+   competing with Contact, so it is a quiet outline that only lights up on
+   hover — the kbd chip does the explaining. */
+.nav-find{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.4rem .55rem .4rem .6rem;border-radius:var(--rp);
+  background:var(--sf-2);border:1px solid var(--edge);
+  color:rgba(255,255,255,.62);cursor:pointer;
+  font-family:var(--font-display);font-size:.86rem;
+  transition:background var(--t2),border-color var(--t2),color var(--t2);
+}
+.nav-find:hover{background:var(--sf-3);border-color:var(--edge-strong);color:#fff;}
+.nav-find svg{width:15px;height:15px;flex:none;}
+.nav-find-label{display:none;}
+.nav-find kbd{
+  font-family:var(--font-mono);font-size:.66rem;line-height:1;
+  padding:.24rem .38rem;border-radius:5px;
+  background:rgba(255,255,255,.09);border:1px solid var(--edge);
+  color:rgba(255,255,255,.55);
+}
+@media (min-width:1080px){ .nav-find-label{display:inline;} }
+
+/* In the mobile menu it is a row like the others, not a chip floating in the
+   middle of a list. */
+@media (max-width:760px){
+  .nav-find{
+    width:100%;justify-content:flex-start;gap:.65rem;
+    padding:.85rem .9rem;margin-top:.6rem;border-radius:var(--rc);
+    font-size:1.02rem;
+  }
+  .nav-find-label{display:inline;}
+}
+
+/* A touch device has no Ctrl key and no Command key. Advertising a keyboard
+   shortcut to a thumb is just a puzzle. */
+@media (pointer:coarse){
+  .nav-find kbd{display:none;}
+  .nav-find-label{display:inline;}
+}
+
+.cp{position:fixed;inset:0;z-index:900;}
+.cp[hidden]{display:none;}
+.cp-veil{
+  position:absolute;inset:0;background:rgba(6,10,20,.62);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  opacity:0;transition:opacity var(--t2) var(--m-enter);
+}
+.cp.is-in .cp-veil{opacity:1;}
+
+/* Sat slightly above centre: a list that grows downward from a fixed top edge
+   does not shift under the cursor as results change, which a vertically
+   centred one does on every keystroke. */
+.cp-win{
+  position:absolute;left:50%;top:min(14vh,110px);transform:translateX(-50%);
+  width:min(620px,calc(100vw - 2rem));
+  background:rgba(17,26,44,.86);
+  box-shadow:var(--depth-4),var(--sheen);
+  opacity:0;transition:opacity var(--t2) var(--m-enter),transform var(--t3) var(--m-settle);
+}
+.cp-win{transform:translateX(-50%) translateY(-10px) scale(.985);}
+.cp.is-in .cp-win{opacity:1;transform:translateX(-50%) translateY(0) scale(1);}
+.cp-hint{
+  margin-left:auto;font-family:var(--font-mono);font-size:.62rem;letter-spacing:.12em;
+  text-transform:uppercase;color:rgba(255,255,255,.4);
+}
+
+.cp-field{display:flex;align-items:center;gap:.75rem;padding:1rem 1.15rem;border-bottom:1px solid var(--edge);}
+.cp-field .cp-ico{width:18px;height:18px;flex:none;color:rgba(255,255,255,.42);}
+/* The site's form inputs carry a border, a background, a radius and a blue
+   focus ring. None of that belongs here — the whole window is the field, and
+   a ring inside a ring looks like a mistake. The :focus half of the selector
+   is what actually does the work: input:focus in section 9 sets a box-shadow
+   that would otherwise draw straight through. */
+.cp-field input,
+.cp-field input:focus,
+.cp-field input:focus-visible{
+  flex:1 1 auto;min-width:0;color:#fff;
+  background:none;border:0;outline:none;box-shadow:none;
+  padding:0;border-radius:0;
+  font-family:var(--font-body);font-size:1.02rem;
+}
+.cp-field input::placeholder{color:rgba(255,255,255,.36);}
+
+.cp-list{list-style:none;margin:0;padding:.45rem;max-height:min(52vh,420px);overflow-y:auto;}
+.cp-group{
+  font-family:var(--font-mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(255,255,255,.36);padding:.75rem .7rem .35rem;
+}
+.cp-item{
+  display:flex;align-items:center;gap:.8rem;padding:.6rem .7rem;
+  border-radius:var(--rc);cursor:pointer;
+}
+.cp-item .cp-ico{width:17px;height:17px;flex:none;color:rgba(255,255,255,.4);}
+.cp-txt{min-width:0;flex:1 1 auto;}
+.cp-t{display:block;font-family:var(--font-display);font-size:.94rem;font-weight:500;color:rgba(255,255,255,.9);}
+.cp-s{
+  display:block;font-size:.78rem;color:rgba(255,255,255,.46);margin-top:.08rem;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.cp-go{font-size:.85rem;color:rgba(255,255,255,.3);opacity:0;}
+.cp-item.is-sel{background:var(--sf-3);}
+.cp-item.is-sel .cp-ico{color:var(--gold);}
+.cp-item.is-sel .cp-t{color:#fff;}
+.cp-item.is-sel .cp-go{opacity:1;}
+
+.cp-empty{padding:1.4rem 1.3rem;color:rgba(255,255,255,.5);font-size:.9rem;}
+.cp-foot{
+  display:flex;gap:1.1rem;padding:.65rem 1.15rem;border-top:1px solid var(--edge);
+  background:var(--sf-1);font-size:.72rem;color:rgba(255,255,255,.42);
+}
+.cp-foot span{display:inline-flex;align-items:center;gap:.35rem;}
+.cp-foot kbd{
+  font-family:var(--font-mono);font-size:.66rem;line-height:1;padding:.2rem .34rem;
+  border-radius:4px;background:rgba(255,255,255,.08);border:1px solid var(--edge);
+  color:rgba(255,255,255,.6);
+}
+@media (max-width:560px){
+  .cp-foot{display:none;}
+  .cp-win{top:1rem;}
+}
+
+/* Stop the page behind from scrolling while the palette owns the keyboard. */
+html.cp-on{overflow:hidden;}
+
+@media (prefers-reduced-motion:reduce){
+  .cp-veil,.cp-win{transition:none;}
+  .cp-win{transform:translateX(-50%);}
+}
+
+/* --------------------------------------------------------------------------
+   12.8  The service-area map
+
+   "Weston-super-Mare, Worle, Clevedon, Nailsea and the villages between" was
+   a sentence next to a stock photograph of the seafront. It is now a drawing
+   of the actual place, with the studio at the centre of it and range rings
+   showing how far that is.
+
+   Hand-drawn SVG, on purpose. A tile service would mean an API key, a
+   third-party script, a cookie banner and a request that fails when their
+   quota runs out — for a picture that never needs to pan or zoom. This is
+   4KB of markup that works offline, styles itself from the site's own
+   palette, and reads correctly in dark mode because it has no imagery to
+   fight with.
+   -------------------------------------------------------------------------- */
+.map-win{
+  background:var(--ink);
+  border-color:rgba(255,255,255,.1);
+  box-shadow:var(--depth-3);
+  backdrop-filter:none;-webkit-backdrop-filter:none;
+}
+.map-body{padding:0;}
+.map-svg{display:block;width:100%;height:auto;}
+
+.map-road-label{
+  font-family:var(--font-mono);font-size:15px;letter-spacing:.1em;
+  fill:rgba(255,255,255,.3);
+}
+.map-ring{
+  fill:none;stroke:rgba(245,196,22,.2);stroke-width:1.2;stroke-dasharray:5 7;
+}
+.map-ring-label{
+  font-family:var(--font-mono);font-size:13px;letter-spacing:.12em;
+  fill:rgba(245,196,22,.42);
+}
+.map-compass{
+  font-family:var(--font-mono);font-size:14px;letter-spacing:.14em;
+  fill:rgba(255,255,255,.28);
+}
+
+.map-pin{cursor:default;outline:none;}
+.map-dot{
+  fill:#fff;stroke:var(--ink);stroke-width:2;
+  transition:r var(--t2) var(--m-settle),fill var(--t2);
+}
+.map-pin.is-home .map-dot{fill:var(--gold);}
+.map-pin.is-faint .map-dot{fill:rgba(255,255,255,.4);}
+
+.map-label{
+  font-family:var(--font-display);font-size:17px;font-weight:600;
+  fill:rgba(255,255,255,.86);transition:fill var(--t2);
+}
+.map-pin.is-faint .map-label{font-weight:500;fill:rgba(255,255,255,.4);}
+.map-sub{
+  font-family:var(--font-mono);font-size:12px;letter-spacing:.13em;
+  text-transform:uppercase;fill:var(--gold);
+}
+
+/* Hover and keyboard focus do the same thing, which is the point: the map is
+   a list of places, and a place should light up whichever way you reach it. */
+.map-pin:hover .map-dot,
+.map-pin:focus-visible .map-dot{r:8;fill:var(--gold);}
+.map-pin:hover .map-label,
+.map-pin:focus-visible .map-label{fill:#fff;}
+.map-pin:focus-visible .map-label{text-decoration:underline;text-underline-offset:4px;}
+
+/* The studio's pulse. Same language as the hero beacon at a different size,
+   so the two read as the same idea rather than two animations. */
+.map-pulse{
+  fill:none;stroke:var(--gold);stroke-width:2;transform-origin:102px 318px;
+  animation:map-ping 2.6s var(--ease) infinite;
+}
+@keyframes map-ping{
+  0%   {transform:scale(1);   opacity:.7;}
+  70%  {transform:scale(3.2); opacity:0;}
+  100% {transform:scale(3.2); opacity:0;}
+}
+@media (prefers-reduced-motion:reduce){ .map-pulse{animation:none;opacity:.35;} }
+
+.map-cap{
+  padding:.9rem 1.15rem 1.05rem;border-top:1px solid var(--edge);
+  background:var(--sf-1);
+  font-size:.86rem;line-height:1.55;color:rgba(255,255,255,.56);
+}
+
+/* On a phone the type inside an SVG scales with the viewBox, so the labels
+   shrink below anything readable. Widening the viewBox is not an option —
+   the geography would be wrong — so the labels get bigger instead. */
+@media (max-width:760px){
+  .map-label{font-size:22px;}
+  .map-sub{font-size:15px;}
+  .map-ring-label,.map-road-label,.map-compass{font-size:17px;}
+}

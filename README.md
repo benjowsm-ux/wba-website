@@ -155,19 +155,68 @@ project write-up, short note. They're skeletons — headings and prompts, no cop
 ## Files
 
 ```
-css/styles.css        The whole design system. Tokens at the top.
-CNAME                 The custom domain. Deleting it breaks the domain.
-js/main.js            Reveal, nav, FAQ, forms, Feed search/filter, post widgets
-js/blocks.js          Block renderer (browser) + starter layouts
+css/styles.css        The whole design system. Tokens at the top, section 12 is
+                      the view transitions / scroll timelines / hero system.
+js/main.js            Reveal, nav, FAQ, forms, Feed search, hero depth,
+                      view-transition card-to-hero morph
+js/palette.js         Ctrl+K / Cmd+K command palette. Builds its own button.
+js/hero-stage.js      Homepage review tab: drag, carousel, wipe
+js/sites.js           Sites page: perk rail shuffle, button press
+js/edit-boot.js       ~1KB gate. Loads edit mode only for a signed-in browser.
+js/edit.js            Edit mode itself (pen -> outlines -> tick to save)
 js/db.js              Supabase client and data helpers
+js/blocks.js          Block renderer (browser) + starter layouts
 js/analytics.js       First-party, cookieless, no third party
-js/consent.js         Gate for third-party tools. Nothing configured = no banner.
+search-index.json     Written by the build. What the command palette searches.
+photos/               Town photography and client work
+
 scripts/build-feed.mjs   The generator. Contains a Node port of the block renderer —
                          if you add a block type, add it in both files.
-photos/               Town photography and client work
+scripts/stamp.mjs        Cache-bust CSS/JS without needing the database. Run this
+                         after any CSS or JS edit you want to see in a browser.
+scripts/sweep.mjs        Every page x four widths: console errors, failed
+                         requests, horizontal overflow, missing hero layers.
+scripts/audit.mjs        Type size, tap targets, contrast, iOS zoom.
+scripts/slices.mjs       Screenshot a page one screen at a time, at real size.
+scripts/state-shot.mjs   Screenshot a page after running some JS — the palette
+                         open, a menu down, a card hovered.
+scripts/test-editmode.mjs   End-to-end edit mode, headless.
+scripts/test-page-content.mjs  The sanitiser. CI refuses to publish if it fails.
+scripts/pentest.mjs      Tries to read what row-level security should refuse.
 ```
 
+There is no `CNAME` file and there should not be — see DEPLOY.md. Netlify holds
+the domain, not GitHub Pages.
+
 ---
+
+## The parts that make it feel built
+
+Four browser features do most of the work, and none of them is a library:
+
+- **Cross-document view transitions.** `@view-transition { navigation: auto }`
+  in the stylesheet, plus three named elements. The nav and footer are named so
+  they hold still between pages; the hero photograph is named so it dissolves in
+  place. Clicking a Feed card additionally hands that card's photograph the
+  hero's name at `pageswap` time, so the card grows into the article it opens.
+  Only one element per page may hold a given name — that is why the Feed index
+  releases its own hero's name first.
+
+- **Scroll-driven animations.** `animation-timeline: view()` ties the reveals to
+  scroll position rather than to a clock, so they cannot lag behind a fast
+  scroll and cost no main-thread work. The ranges are given in PIXELS
+  (`cover 0px cover 360px`) — a percentage range is a percentage of the
+  element's own height, which makes tall sections fade for hundreds of pixels
+  and short ones snap. The IntersectionObserver path in main.js still runs for
+  browsers without it.
+
+- **One hero, every page.** `.hero-media` + `.hero-scrim` + `.beacon`, with the
+  coordinate grid and the pointer light as pseudo-elements of the scrim, so no
+  page needs extra markup for them. `scripts/hero-unify.mjs` is the one-shot
+  migration that built them and is safe to re-run.
+
+- **The command palette.** Ctrl+K. It fetches `search-index.json` on first open
+  and never before, so a visitor who does not use it pays nothing.
 
 ## Things worth knowing
 

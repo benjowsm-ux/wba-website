@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/styles.css?v=86eae07eca"/>
+<link rel="stylesheet" href="/css/styles.css?v=eb0b3ae48f"/>
 <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
 </head>
 <body>
@@ -31,13 +31,20 @@
 </nav>
 
 <header class="page-hero">
+  <div class="hero-media"><img src="/photos/beach-wide.jpg" width="1800" height="810" alt="" fetchpriority="high"/></div>
+  <div class="hero-scrim"></div>
   <div class="inner">
     <p data-edit="hero.body" data-edit-kind="rich" class="crumb">404</p>
-    <h1 data-edit="hero.h1" data-edit-kind="rich" class="h-lg">That page<br><em class="accent">isn't here.</em></h1>
-    <p data-edit="hero.lede" data-edit-kind="rich" class="lede">Either it moved, or the link was wrong. Both are fixable — here's the way back.</p>
-    <div class="cta-actions" style="justify-content:flex-start;margin-top:2rem;">
+    <div class="hero-copy">
+      <div class="hero-lead">
+        <span class="beacon" aria-hidden="true"></span>
+        <h1 data-edit="hero.h1" data-edit-kind="rich" class="h-lg">That page<br><em class="accent">isn't here.</em></h1>
+      </div>
+      <p data-edit="hero.lede" data-edit-kind="rich" class="lede">Either it moved, or the link was wrong. Both are fixable — here's the way back.</p>
+      <div class="cta-actions" style="justify-content:flex-start;margin-top:2rem;">
       <a data-edit-href="link.1" href="/" class="btn btn-gold">Back to the home page</a>
       <a data-edit-href="link.2" href="/feed/" class="btn btn-line inverse">Browse the Feed</a>
+      </div>
     </div>
   </div>
 </header>
@@ -94,6 +101,7 @@
   </div>
 </footer>
 
-<script src="/js/main.js?v=7280f781d4" defer></script>
+<script src="/js/main.js?v=cc44960de5" defer></script>
+<script src="/js/palette.js?v=bb3801caea" defer></script>
 </body>
 </html>
