@@ -112,15 +112,12 @@
       </div>
 
       <div class="icon-step">
-        <svg class="ico wall" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M6 41h36"/>
-          <g fill="none">
-            <rect class="an-brick an-b1" x="9"  y="32.5" width="9.5"  height="7" rx="1.2"/>
-            <rect class="an-brick an-b2" x="20" y="32.5" width="9.5"  height="7" rx="1.2"/>
-            <rect class="an-brick an-b3" x="31" y="32.5" width="8"    height="7" rx="1.2"/>
-            <rect class="an-brick an-b4" x="14" y="24"   width="9.5"  height="7" rx="1.2"/>
-            <rect class="an-brick an-b5" x="25" y="24"   width="9.5"  height="7" rx="1.2"/>
-            <rect class="an-brick an-b6" x="19.5" y="15.5" width="9.5" height="7" rx="1.2"/>
+        <svg class="ico mallet" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <g class="an-mallet">
+            <!-- head across the top, handle straight down; the whole group
+                 pivots at the grip so the head swings out to the left -->
+            <rect x="13" y="7" width="22" height="10" rx="2.2"/>
+            <path d="M24 17v24"/>
           </g>
         </svg>
         <h3 data-edit="step.h3-2">Building</h3>
@@ -137,6 +134,39 @@
         <p data-edit="step.body-3" data-edit-kind="rich">We keep your site happy, healthy and up to date.</p>
       </div>
 
+    </div>
+  </div>
+</section>
+
+<!-- TALK TO US -->
+<section class="section section-ink on-dark reveal talkto">
+  <div class="inner">
+    <div class="section-head centered">
+      <p class="eyebrow centered" data-edit="talk.eyebrow">How it starts</p>
+      <h2 data-edit="talk.h2" data-edit-kind="rich">A message, not a <em class="accent">meeting.</em></h2>
+      <p class="lede" data-edit="talk.lede" data-edit-kind="rich">Tell us what you need on WhatsApp. We'll come back with a plan, a date, and no invoice for the build.</p>
+    </div>
+
+    <!-- The panel: a chat backdrop with a booking card on the left and the
+         conversation running down the right. The messages cycle on a timer. -->
+    <div class="talk-panel">
+      <div class="talk-book">
+        <p class="tb-day" data-edit="talk.day">Next opening</p>
+        <p class="tb-date" id="tbDate">&mdash;</p>
+        <p class="tb-meta" data-edit="talk.meta">First look at your site, 20 minutes.</p>
+        <a class="btn btn-gold tb-cta" data-edit-href="talk.cta" href="#start">Book me in!</a>
+      </div>
+
+      <div class="talk-thread" id="talkThread" aria-label="What people ask us">
+        <ul class="tt-list">
+          <li><span class="tt-ico" aria-hidden="true">&#128241;</span><span data-edit="talk.msg1">"Can you make it work on phones properly?"</span></li>
+          <li><span class="tt-ico" aria-hidden="true">&#128200;</span><span data-edit="talk.msg2">"Will anyone actually find us on Google?"</span></li>
+          <li><span class="tt-ico" aria-hidden="true">&#9997;</span><span data-edit="talk.msg3">"We haven't written any of the words yet."</span></li>
+          <li><span class="tt-ico" aria-hidden="true">&#128176;</span><span data-edit="talk.msg4">"What's the catch with it being free?"</span></li>
+          <li><span class="tt-ico" aria-hidden="true">&#128260;</span><span data-edit="talk.msg5">"Can we change things ourselves later?"</span></li>
+          <li><span class="tt-ico" aria-hidden="true">&#128444;</span><span data-edit="talk.msg6">"Our photos are all a bit old."</span></li>
+        </ul>
+      </div>
     </div>
   </div>
 </section>
@@ -227,7 +257,7 @@
   <div class="footer-grid">
     <div class="footer-brand">
       <img src="/img/wba-logo.png" alt="WBA" width="438" height="248"/>
-      <p data-edit-scope="shared" data-edit="footer.body" data-edit-kind="rich">A design &amp; technology agency in Weston-super-Mare. We build, create and grow for local business.</p>
+      <p data-edit-scope="shared" data-edit="footer.body" data-edit-kind="rich">Everyone needs a good tech guy.</p>
     </div>
     <div class="footer-col">
       <h4 data-edit-scope="shared" data-edit="footer.h4">Site</h4>
@@ -252,6 +282,7 @@
 
 <script src="/js/main.js" defer></script>
 <script src="/js/analytics.js" defer></script>
+<script src="/js/talk-panel.js" defer></script>
 <script src="/js/edit-boot.js" defer></script>
 </body>
 </html>

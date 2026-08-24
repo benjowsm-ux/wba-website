@@ -270,7 +270,7 @@ const FOOTER = `<footer>
   <div class="footer-grid">
     <div class="footer-brand">
       <img src="${LOGO}" alt="WBA" width="438" height="248"/>
-      <p data-edit="footer.body" data-edit-kind="rich" data-edit-scope="shared">A design &amp; technology agency in Weston-super-Mare. We build, create and grow for local business.</p>
+      <p data-edit="footer.body" data-edit-kind="rich" data-edit-scope="shared">Everyone needs a good tech guy.</p>
     </div>
     <div class="footer-col">
       <h4 data-edit="footer.h4" data-edit-scope="shared">Site</h4>
@@ -612,13 +612,14 @@ function injectSpotlight(posts){
     return;
   }
   const img = postImages(p, 1)[0];
+  /* One image with the words laid over it, rather than a photo bolted to a
+     column of text. Reads as a piece of work, not a database row. */
   const html = `    <a class="spotlight" href="/feed/${esc(p.slug)}/">
-      ${img ? `<div class="spotlight-media"><img src="${esc(img)}" alt=""${dimAttrs(img)} loading="lazy"/></div>` : ''}
-      <div>
-        <p class="eyebrow">${pillarOf(p) ? esc(cap(pillarOf(p))) : 'From the Feed'}</p>
+      ${img ? `<img class="spotlight-img" src="${esc(img)}" alt=""${dimAttrs(img)} loading="lazy"/>` : ''}
+      <div class="spotlight-body">
+        <p class="spotlight-kicker">${pillarOf(p) ? esc(cap(pillarOf(p))) : 'From the Feed'} &middot; ${readMins(p.body)} min read</p>
         <h3>${esc(p.title)}</h3>
-        <p>${esc(p.excerpt || '')}</p>
-        <span class="link-go">Read more</span>
+        <span class="spotlight-go">Read more <span aria-hidden="true">&rarr;</span></span>
       </div>
     </a>`;
   injectBetween('index.html', 'SPOTLIGHT', html);

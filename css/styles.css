@@ -205,7 +205,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.55);padding:4.5rem var(--gu
   grid-template-columns:1.6fr 1fr 1fr 1.2fr;gap:3rem;
   padding-bottom:2.5rem;border-bottom:1px solid rgba(255,255,255,.08);
 }
-.footer-brand img{height:30px;margin-bottom:1.1rem;}
+.footer-brand img{height:34px;margin-bottom:1.1rem;}
 .footer-brand p{font-size:.9rem;line-height:1.75;color:rgba(255,255,255,.45);max-width:32ch;}
 .footer-col h4{
   font-family:var(--font-display);font-size:.72rem;font-weight:600;
@@ -267,7 +267,7 @@ footer{background:var(--ink);color:rgba(255,255,255,.55);padding:4.5rem var(--gu
 
 /* ---- Hero ---- */
 .hero{
-  position:relative;min-height:min(88vh,760px);display:flex;align-items:flex-end;
+  position:relative;display:flex;align-items:flex-start;
   background:var(--ink);overflow:hidden;
 }
 .hero-media{position:absolute;inset:0;}
@@ -280,13 +280,15 @@ footer{background:var(--ink);color:rgba(255,255,255,.55);padding:4.5rem var(--gu
 .hero-inner{
   position:relative;z-index:1;max-width:calc(var(--maxw) + var(--gutter) * 2);
   margin:0 auto;width:100%;
-  padding:clamp(6rem,12vw,9rem) var(--gutter) clamp(3.5rem,7vw,5.5rem);
+  /* Tighter than it was: the copy starts near the top and the showcase fills
+     the space the empty sky used to. */
+  padding:clamp(3.5rem,6.5vw,5.25rem) var(--gutter) clamp(2.75rem,5vw,4rem);
 }
 .hero-lead{position:relative;}
 .hero h1{color:#fff;max-width:15ch;}
 .hero h1 em{font-style:normal;color:var(--gold);}
-.hero-sub{font-size:clamp(1.05rem,1.5vw,1.22rem);line-height:1.7;color:rgba(255,255,255,.72);max-width:48ch;margin-top:1.6rem;}
-.hero-actions{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:2.4rem;}
+.hero-sub{font-size:clamp(1rem,1.35vw,1.14rem);line-height:1.65;color:rgba(255,255,255,.72);max-width:46ch;margin-top:1.15rem;}
+.hero-actions{display:flex;flex-wrap:wrap;gap:.8rem;margin-top:1.75rem;}
 
 /* Beacon — a white pulse sitting off the top-left corner of the headline.
    No pill, no label; the motion is the whole message. */
@@ -1017,7 +1019,7 @@ h1,h2,h3,h4,p,li,.pm-label{overflow-wrap:break-word;}
 /* ---- Hero: let the photograph be a photograph ----
    The old scrim was a flat 95% wash that killed the image. This keeps the
    text side readable and lets the right-hand third actually breathe. */
-.hero{min-height:min(92vh,880px);}
+.hero{min-height:0;}
 .hero-media img{opacity:.5;transform:scale(1.06);animation:hero-drift 26s var(--ease) forwards;}
 @keyframes hero-drift{to{transform:scale(1);}}
 .hero-scrim{
@@ -1134,13 +1136,14 @@ h1,h2,h3,h4,.intro-statement{text-wrap:balance;}
 /* ---- The marks move ---- */
 .icon-step .ico [class^="an-"]{transform-box:view-box;}
 
-/* Build: a wall goes up, one brick at a time, bottom row first. The wall is
-   always shown; hovering replays the build — a literal, unambiguous
-   "building" with no fake-physics impact to get wrong. */
-@keyframes ico-lay{
-  0%  {opacity:0;transform:translateY(-5px);}
-  55% {opacity:1;transform:translateY(0);}
-  100%{opacity:1;transform:translateY(0);}
+/* Build: a mallet stands almost upright, drops to the left, and swings back
+   to exactly where it started. One hit, no impact marks — the arc does the
+   talking. Per-keyframe easing is what makes it read as weight: it
+   accelerates into the swing and decelerates on the way back up. */
+@keyframes ico-mallet{
+  0%   {transform:rotate(6deg);   animation-timing-function:cubic-bezier(.5,0,.9,.35);}
+  46%  {transform:rotate(-58deg); animation-timing-function:cubic-bezier(.18,.72,.35,1);}
+  100% {transform:rotate(6deg);}
 }
 
 @media (hover: none),(prefers-reduced-motion: reduce){
@@ -1153,19 +1156,49 @@ h1,h2,h3,h4,.intro-statement{text-wrap:balance;}
 /* ==========================================================================
    16  SPOTLIGHT — one article, laid out sideways
    ========================================================================== */
+/* A single image with the headline laid over it. Fills the width, keeps a
+   generous aspect on desktop and gets taller on a phone so the words never
+   crowd the picture. */
 .spotlight{
-  display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);
-  gap:clamp(1.75rem,4vw,3.5rem);align-items:center;
-  margin-top:clamp(3rem,6vw,5rem);padding-top:clamp(2.5rem,5vw,4rem);
-  border-top:1px solid var(--line);
+  position:relative;display:block;overflow:hidden;
+  border-radius:var(--r-lg);
+  margin-top:clamp(3rem,6vw,5rem);
+  aspect-ratio:16/7;min-height:280px;
+  background:var(--ink);
+  isolation:isolate;
 }
-.spotlight-media{border-radius:var(--r);overflow:hidden;background:var(--mist);}
-.spotlight-media img{width:100%;aspect-ratio:16/10;object-fit:cover;transition:transform var(--t-slow) var(--ease);}
-.spotlight:hover .spotlight-media img{transform:scale(1.03);}
-.spotlight h3{font-size:clamp(1.35rem,2.4vw,1.9rem);line-height:1.2;margin:.55rem 0 .7rem;}
-.spotlight:hover h3{color:var(--blue);}
-.spotlight p{font-size:1rem;line-height:1.7;color:var(--slate);margin-bottom:1.1rem;max-width:52ch;}
-@media(max-width:760px){.spotlight{grid-template-columns:1fr;}}
+.spotlight-img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  transition:transform var(--t-slow) var(--ease);
+}
+.spotlight::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(8,13,26,.9) 6%,rgba(8,13,26,.5) 48%,rgba(8,13,26,.2) 100%);
+}
+.spotlight:hover .spotlight-img{transform:scale(1.035);}
+.spotlight-body{
+  position:relative;z-index:1;height:100%;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:clamp(1.5rem,4vw,2.75rem);
+}
+.spotlight-kicker{
+  font:600 .78rem/1 var(--font-display);letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(255,255,255,.72);margin:0 0 .75rem;
+}
+.spotlight h3{
+  font-size:clamp(1.5rem,3.2vw,2.4rem);line-height:1.15;color:#fff;
+  margin:0;max-width:22ch;text-wrap:balance;
+}
+.spotlight-go{
+  display:inline-flex;align-items:center;gap:.4rem;margin-top:1.1rem;
+  font-family:var(--font-display);font-weight:600;font-size:.95rem;color:var(--gold);
+}
+.spotlight-go span{transition:transform var(--t-fast) var(--ease);}
+.spotlight:hover .spotlight-go span{transform:translateX(4px);}
+@media (max-width:700px){
+  .spotlight{aspect-ratio:4/5;min-height:0;}
+  .spotlight h3{max-width:none;}
+}
 
 /* Get Started with the domain caveat sitting beside it, not buried in the
    price card. Clicking it drops you at the form, same as the button. */
@@ -1179,15 +1212,12 @@ h1,h2,h3,h4,.intro-statement{text-wrap:balance;}
 .offer .cta-aside{color:rgba(255,255,255,.66);text-decoration-color:rgba(255,255,255,.35);}
 .offer .cta-aside:hover{color:#fff;text-decoration-color:var(--gold);}
 
-/* The Building step: the wall is always built; hovering re-lays it bottom-up. */
-.icon-step .ico .an-brick{transform-box:view-box;transform-origin:center;}
-.icon-step:hover .an-b1{animation:ico-lay .5s var(--ease) both;animation-delay:0s;}
-.icon-step:hover .an-b2{animation:ico-lay .5s var(--ease) both;animation-delay:.12s;}
-.icon-step:hover .an-b3{animation:ico-lay .5s var(--ease) both;animation-delay:.24s;}
-.icon-step:hover .an-b4{animation:ico-lay .5s var(--ease) both;animation-delay:.42s;}
-.icon-step:hover .an-b5{animation:ico-lay .5s var(--ease) both;animation-delay:.54s;}
-.icon-step:hover .an-b6{animation:ico-lay .5s var(--ease) both;animation-delay:.74s;}
-@media (prefers-reduced-motion: reduce){ .icon-step:hover .an-brick{animation:none;} }
+/* The Building step: the mallet pivots at the grip (bottom of the handle),
+   so the HEAD is what swings — 24,41 in the 48x48 viewBox. */
+.icon-step .ico .an-mallet{transform-box:view-box;transform-origin:24px 41px;}
+.icon-step .ico.mallet .an-mallet{transform:rotate(6deg);}
+.icon-step:hover .an-mallet{animation:ico-mallet 1s both;}
+@media (prefers-reduced-motion: reduce){ .icon-step:hover .an-mallet{animation:none;} }
 
 /* ==========================================================================
    17. ADMIN — PHOTO LIBRARY
@@ -1659,3 +1689,219 @@ body.wba-editing [data-edit-href][data-edit-target][data-edit-pending]{outline-c
   /* The domain caveat beside Get Started is a link, so it needs the height. */
   .cta-aside{padding:.35rem 0;}
 }
+
+/* ==========================================================================
+   21. HERO SHOWCASE
+   Two cards under the hero copy: the work on the left, and a glass panel on
+   the right that genuinely blurs the photograph behind it (backdrop-filter,
+   not a flat translucent fill) so the hero image reads through it.
+   ========================================================================== */
+.hero-showcase{
+  position:relative;margin-top:clamp(2.25rem,4vw,3.25rem);
+  display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);
+  align-items:end;gap:clamp(1rem,2.5vw,2rem);
+  max-width:52rem;
+}
+
+/* ---- the work card ---- */
+.hs-photo{
+  margin:0;position:relative;border-radius:var(--r);overflow:hidden;z-index:1;
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 26px 60px rgba(4,9,20,.55);
+  background:var(--ink-soft);
+}
+.hs-photo img{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;}
+/* One clean label over the photograph — no pill, no chrome. */
+.hs-photo figcaption{
+  position:absolute;left:0;right:0;bottom:0;
+  padding:3rem 1.3rem 1.1rem;
+  font-family:var(--font-display);font-weight:600;
+  font-size:clamp(1.05rem,1.7vw,1.35rem);line-height:1.3;
+  letter-spacing:-.01em;color:#fff;
+  background:linear-gradient(to top,rgba(8,13,26,.88) 10%,rgba(8,13,26,0) 100%);
+}
+
+/* ---- the glass panel ---- */
+.hs-glass{
+  position:relative;border-radius:var(--r);overflow:hidden;
+  padding:1.15rem 1.25rem 1.2rem;
+  /* The blur is the point: it samples the hero photograph underneath. */
+  background:rgba(10,16,30,.52);
+  backdrop-filter:blur(16px) saturate(120%);
+  -webkit-backdrop-filter:blur(16px) saturate(120%);
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 22px 50px rgba(4,9,20,.5);
+  /* Squarer than wide, dropped down so it laps the photo's lower-left.
+     No negative LEFT margin: the panel clips its overflow, and a card pushed
+     past the left edge simply loses its first characters. */
+  min-height:clamp(11rem,17vw,14.5rem);
+  display:flex;flex-direction:column;justify-content:center;
+  margin-top:clamp(2rem,4vw,3.5rem);
+  margin-right:clamp(-4.5rem,-5vw,-2rem);
+  z-index:2;
+}
+.hs-glass{margin-block:0;}
+.hs-stars{display:flex;gap:.18rem;margin-bottom:.85rem;color:#fff;}
+.hs-stars svg{width:17px;height:17px;flex:0 0 auto;}
+.hs-glass blockquote{
+  margin:0;font-family:var(--font-display);font-weight:500;
+  font-size:clamp(1rem,1.5vw,1.18rem);line-height:1.5;color:#fff;
+  letter-spacing:-.005em;
+}
+
+/* On a phone the two cards stack, and the overlap would just look broken. */
+@media (max-width:820px){
+  .hero-showcase{grid-template-columns:1fr;max-width:26rem;gap:.9rem;}
+  .hs-glass{margin-left:0;margin-bottom:0;}
+}
+/* Safari/Firefox without backdrop-filter get a solid panel rather than a
+   washed-out one you cannot read. */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .hs-glass{background:rgba(9,14,26,.92);}
+}
+
+/* ---- carousel mechanics -------------------------------------------------
+   The showcase is a viewport; .hs-track is the strip that slides. Overflow
+   has to be visible vertically (the glass card laps below the photo) but
+   clipped horizontally, which is what the padding + negative margin trick
+   below buys us. */
+.hero-showcase{overflow:hidden;padding-bottom:2.5rem;margin-bottom:-2.5rem;display:block;max-width:58rem;}
+.hs-track{
+  display:flex;width:100%;
+  transition:transform .62s cubic-bezier(.22,.61,.36,1);
+  will-change:transform;touch-action:pan-y;cursor:grab;
+}
+.hs-track.is-dragging{transition:none;cursor:grabbing;}
+.hs-slide{flex:0 0 100%;min-width:0;padding:.4rem;}
+
+/* The panel everything sits in: blurred, softly outlined, rounded. This is
+   the foundation for the WhatsApp-style conversation backdrop — decorate the
+   inside later; the frame itself is what gives the hero its depth. */
+.hs-frame{
+  position:relative;border-radius:var(--r-lg);
+  padding:clamp(1rem,2.2vw,1.75rem);
+  background:rgba(255,255,255,.07);
+  backdrop-filter:blur(18px) saturate(115%);
+  -webkit-backdrop-filter:blur(18px) saturate(115%);
+  border:1px solid rgba(255,255,255,.24);
+  box-shadow:0 30px 70px rgba(4,9,20,.45), inset 0 1px 0 rgba(255,255,255,.14);
+  /* Review card on the left, photograph on the right and lifted slightly, so
+     the two overlap on the diagonal rather than sitting in a neat row. */
+  display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);
+  align-items:start;gap:clamp(1rem,2.5vw,2rem);
+}
+/* Nothing on an off-screen slide should be clickable or focusable. */
+.hs-slide[aria-hidden="true"]{pointer-events:none;}
+
+.hs-dots{display:flex;gap:.45rem;margin-top:1.1rem;padding-left:.15rem;}
+.hs-dot{
+  width:26px;height:4px;border-radius:2px;cursor:pointer;padding:0;
+  border:0;background:rgba(255,255,255,.26);
+  transition:background var(--t-fast) var(--ease),width var(--t-fast) var(--ease);
+}
+.hs-dot:hover{background:rgba(255,255,255,.5);}
+.hs-dot.on{background:var(--gold);width:34px;}
+.hs-dot:focus-visible{outline:2px solid var(--gold);outline-offset:3px;}
+
+@media (max-width:820px){
+  .hs-frame{grid-template-columns:1fr;gap:.9rem;}
+  .hs-glass{margin:0;order:2;min-height:0;}
+  .hs-photo{order:1;}
+}
+
+/* ==========================================================================
+   22. SITES — "A message, not a meeting"
+   A chat backdrop with a booking card on one side and the questions people
+   actually ask running down the other, cycling on a timer.
+   ========================================================================== */
+.talk-panel{
+  position:relative;margin-top:clamp(2.5rem,5vw,4rem);
+  display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);
+  gap:clamp(1rem,3vw,2.25rem);align-items:center;
+  padding:clamp(1.1rem,2.5vw,2rem);
+  border-radius:var(--r-lg);
+  /* Same treatment as the hero frame: blurred, softly outlined, rounded. */
+  background:rgba(255,255,255,.06);
+  backdrop-filter:blur(18px) saturate(115%);
+  -webkit-backdrop-filter:blur(18px) saturate(115%);
+  border:1px solid rgba(255,255,255,.2);
+  box-shadow:0 30px 70px rgba(4,9,20,.4), inset 0 1px 0 rgba(255,255,255,.12);
+  overflow:hidden;
+}
+/* A faint WhatsApp-ish tile behind everything — replace the gradient with a
+   real pattern later; the geometry is already in place for it. */
+.talk-panel::before{
+  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(circle at 18% 22%,rgba(37,211,102,.10),transparent 42%),
+    radial-gradient(circle at 82% 78%,rgba(10,83,199,.14),transparent 46%);
+}
+.talk-panel > *{position:relative;z-index:1;}
+
+/* ---- the booking card ---- */
+.talk-book{
+  background:rgba(9,14,26,.62);
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:var(--r);padding:clamp(1.1rem,2.2vw,1.6rem);
+  box-shadow:0 18px 40px rgba(4,9,20,.4);
+}
+.tb-day{
+  font:600 .78rem/1 var(--font-display);letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(255,255,255,.62);margin:0 0 .5rem;
+}
+.tb-date{
+  font-family:var(--font-display);font-weight:700;line-height:1.1;
+  font-size:clamp(1.35rem,2.6vw,1.85rem);color:#fff;margin:0 0 .55rem;
+}
+.tb-meta{font-size:.86rem;line-height:1.55;color:rgba(255,255,255,.66);margin:0 0 1.1rem;max-width:24ch;}
+.tb-cta{width:100%;justify-content:center;}
+
+/* ---- the thread ---- */
+.talk-thread{
+  position:relative;height:clamp(13rem,22vw,16.5rem);overflow:hidden;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 16%,#000 84%,transparent 100%);
+          mask-image:linear-gradient(to bottom,transparent 0,#000 16%,#000 84%,transparent 100%);
+}
+.tt-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.65rem;}
+.tt-list li{
+  display:flex;align-items:flex-start;gap:.7rem;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:var(--r-sm);
+  padding:.7rem .9rem;
+  font-size:.92rem;line-height:1.5;color:#fff;
+  /* Each message eases in as it rises into place. */
+  transition:transform .6s var(--ease),opacity .6s var(--ease);
+}
+.tt-ico{font-size:1.05rem;line-height:1.35;flex:0 0 auto;}
+.tt-list li.is-out{opacity:0;transform:translateY(-14px) scale(.96);}
+.tt-list li.is-in {opacity:0;transform:translateY(18px) scale(.98);}
+
+@media (max-width:820px){
+  .talk-panel{grid-template-columns:1fr;}
+  .talk-thread{height:clamp(11rem,40vw,13rem);}
+  .tb-meta{max-width:none;}
+}
+@media (prefers-reduced-motion:reduce){
+  .tt-list li{transition:none;}
+}
+
+/* In edit mode the carousel stops being a carousel: every slide stacks so all
+   of them can be reached and edited, not just the one that happens to be
+   showing. The dots and the drag cursor go away with it. */
+body.wba-editing .hs-track{
+  flex-direction:column;gap:1.25rem;transform:none !important;
+  transition:none;cursor:default;
+}
+body.wba-editing .hs-slide,
+body.wba-editing .hs-slide[aria-hidden="true"]{flex:0 0 auto;pointer-events:auto;}
+body.wba-editing .hs-dots{display:none;}
+body.wba-editing .hero-showcase{overflow:visible;}
+
+/* The Sites thread holds still while you edit it, too. */
+body.wba-editing .talk-thread{height:auto;-webkit-mask-image:none;mask-image:none;}
+body.wba-editing .tt-list li{transition:none;}
+
+/* The new Sites section centres its heading block. */
+.talkto .section-head.centered{text-align:center;margin-inline:auto;}
+.talkto .section-head.centered .lede{margin-inline:auto;}
