@@ -1682,339 +1682,6 @@ body.wba-editing [data-edit-href][data-edit-target][data-edit-pending]{outline-c
   .cta-aside{padding:.35rem 0;}
 }
 
-/* ==========================================================================
-   22. SITES — "A message, not a meeting"
-   A chat backdrop with a booking card on one side and the questions people
-   actually ask running down the other, cycling on a timer.
-   ========================================================================== */
-.talk-panel{
-  position:relative;margin-top:clamp(2.5rem,5vw,4rem);
-  display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);
-  gap:clamp(1rem,3vw,2.25rem);align-items:center;
-  padding:clamp(1.1rem,2.5vw,2rem);
-  border-radius:var(--r-lg);
-  /* Same treatment as the hero frame: blurred, softly outlined, rounded. */
-  background:rgba(255,255,255,.06);
-  backdrop-filter:blur(18px) saturate(115%);
-  -webkit-backdrop-filter:blur(18px) saturate(115%);
-  border:1px solid rgba(255,255,255,.2);
-  box-shadow:0 30px 70px rgba(4,9,20,.4), inset 0 1px 0 rgba(255,255,255,.12);
-  overflow:hidden;
-}
-/* A faint WhatsApp-ish tile behind everything — replace the gradient with a
-   real pattern later; the geometry is already in place for it. */
-.talk-panel::before{
-  content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
-  background:
-    radial-gradient(circle at 18% 22%,rgba(37,211,102,.10),transparent 42%),
-    radial-gradient(circle at 82% 78%,rgba(10,83,199,.14),transparent 46%);
-}
-.talk-panel > *{position:relative;z-index:1;}
-
-/* ---- the booking card ---- */
-.talk-book{
-  background:rgba(9,14,26,.62);
-  border:1px solid rgba(255,255,255,.16);
-  border-radius:var(--r);padding:clamp(1.1rem,2.2vw,1.6rem);
-  box-shadow:0 18px 40px rgba(4,9,20,.4);
-}
-.tb-day{
-  font:600 .78rem/1 var(--font-display);letter-spacing:.14em;text-transform:uppercase;
-  color:rgba(255,255,255,.62);margin:0 0 .5rem;
-}
-.tb-date{
-  font-family:var(--font-display);font-weight:700;line-height:1.1;
-  font-size:clamp(1.35rem,2.6vw,1.85rem);color:#fff;margin:0 0 .55rem;
-}
-.tb-meta{font-size:.86rem;line-height:1.55;color:rgba(255,255,255,.66);margin:0 0 1.1rem;max-width:24ch;}
-.tb-cta{width:100%;justify-content:center;}
-
-/* ---- the thread ---- */
-.talk-thread{
-  position:relative;height:clamp(13rem,22vw,16.5rem);overflow:hidden;
-  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 16%,#000 84%,transparent 100%);
-          mask-image:linear-gradient(to bottom,transparent 0,#000 16%,#000 84%,transparent 100%);
-}
-.tt-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.65rem;}
-.tt-list li{
-  display:flex;align-items:flex-start;gap:.7rem;
-  background:rgba(255,255,255,.1);
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:var(--r-sm);
-  padding:.7rem .9rem;
-  font-size:.92rem;line-height:1.5;color:#fff;
-  /* Each message eases in as it rises into place. */
-  transition:transform .6s var(--ease),opacity .6s var(--ease);
-}
-.tt-ico{font-size:1.05rem;line-height:1.35;flex:0 0 auto;}
-.tt-list li.is-out{opacity:0;transform:translateY(-14px) scale(.96);}
-.tt-list li.is-in {opacity:0;transform:translateY(18px) scale(.98);}
-
-@media (max-width:820px){
-  .talk-panel{grid-template-columns:1fr;}
-  .talk-thread{height:clamp(11rem,40vw,13rem);}
-  .tb-meta{max-width:none;}
-}
-@media (prefers-reduced-motion:reduce){
-  .tt-list li{transition:none;}
-}
-
-/* In edit mode the carousel stops being a carousel: every slide stacks so all
-   of them can be reached and edited, not just the one that happens to be
-   showing. The dots and the drag cursor go away with it. */
-body.wba-editing body.wba-editing body.wba-editing body.wba-editing 
-/* The Sites thread holds still while you edit it, too. */
-body.wba-editing .talk-thread{height:auto;-webkit-mask-image:none;mask-image:none;}
-body.wba-editing .tt-list li{transition:none;}
-
-/* The new Sites section centres its heading block. */
-.talkto .section-head.centered{text-align:center;margin-inline:auto;}
-.talkto .section-head.centered .lede{margin-inline:auto;}
-
-/* ==========================================================================
-   21. HERO STAGE — messaging window + draggable review tab
-
-   Anatomy, so the asset hand-off stays obvious:
-     .ws-frame    the window chrome. /img/ws-frame.png overlays everything when
-                  it exists; the CSS below draws the same shape until it does,
-                  so nothing breaks while the asset is being made.
-     .ws-shot     the client's work, sitting in the window's content area.
-     .rv-tab      the review card. Draggable, semi-transparent until you touch
-                  it, arrows on hover, a white wipe between reviews.
-   ========================================================================== */
-.hero-stage{
-  position:relative;margin-top:clamp(2.25rem,4vw,3.25rem);
-  width:100%;max-width:57rem;
-  /* Room for the tab to overhang and be dragged without clipping. */
-  padding:0 0 3.5rem;
-}
-
-/* ---- the window ---- */
-.ws-frame{
-  position:relative;border-radius:var(--r-lg);overflow:hidden;
-  aspect-ratio:16/10;
-  background:rgba(255,255,255,.07);
-  backdrop-filter:blur(18px) saturate(115%);
-  -webkit-backdrop-filter:blur(18px) saturate(115%);
-  border:1px solid rgba(255,255,255,.22);
-  box-shadow:0 34px 80px rgba(4,9,20,.5), inset 0 1px 0 rgba(255,255,255,.14);
-}
-/* The supplied chrome sits over the work image. If the file is missing the
-   browser hides a broken <img>, and the CSS frame above still reads correctly. */
-.ws-chrome{
-  position:absolute;inset:0;width:100%;height:100%;
-  object-fit:fill;pointer-events:none;z-index:3;
-}
-.ws-chrome:not([src]),.ws-chrome[src=""]{display:none;}
-
-.ws-shots{position:absolute;inset:0;}
-.ws-shot{
-  position:absolute;inset:0;margin:0;
-  opacity:0;transition:opacity .5s var(--ease);
-  pointer-events:none;
-}
-.ws-shot.is-active{opacity:1;}
-.ws-shot img{width:100%;height:100%;object-fit:cover;display:block;}
-.ws-shot figcaption{
-  position:absolute;left:0;right:0;bottom:0;z-index:2;
-  padding:3.5rem 1.5rem 1.25rem;
-  font-family:var(--font-display);font-weight:600;
-  font-size:clamp(1.05rem,1.7vw,1.4rem);line-height:1.25;color:#fff;
-  background:linear-gradient(to top,rgba(8,13,26,.9) 8%,rgba(8,13,26,0) 100%);
-}
-/* The quote lives with its image so edit mode can reach it in context; the
-   review tab reads it from here rather than duplicating the copy. */
-.ws-quote{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
-
-/* ---- the review tab ---- */
-.rv-tab{
-  /* Sits over the window's right edge and hangs slightly outside it, the way
-     a floating panel would — and clear of the company name bottom-left. */
-  position:absolute;z-index:6;right:-3%;top:46%;
-  width:min(21rem,54%);
-  border-radius:var(--r);overflow:hidden;
-  padding:1.1rem 1.25rem 1.2rem;
-  color:#fff;cursor:grab;touch-action:none;
-  background:rgba(10,16,30,.38);
-  backdrop-filter:blur(14px) saturate(125%);
-  -webkit-backdrop-filter:blur(14px) saturate(125%);
-  border:1px solid rgba(255,255,255,.16);
-  box-shadow:0 20px 46px rgba(4,9,20,.42);
-  opacity:.72;
-  transition:opacity .45s var(--ease),background .45s var(--ease),
-             border-color .45s var(--ease),box-shadow .45s var(--ease);
-}
-/* Wakes up on approach, settles back when left alone. */
-.rv-tab.is-awake{
-  opacity:1;background:rgba(10,16,30,.62);
-  border-color:rgba(255,255,255,.3);
-  box-shadow:0 26px 60px rgba(4,9,20,.5);
-}
-.rv-tab.is-dragging{cursor:grabbing;transition:none;}
-.rv-inner{position:relative;z-index:1;}
-
-/* stars: hollow outlines with a filled layer clipped to the rating */
-.rv-stars{position:relative;height:18px;width:106px;margin-bottom:.8rem;}
-.rv-stars::before,.rv-stars-fill::before{
-  content:'';position:absolute;inset:0;
-  background-repeat:repeat-x;background-size:21.2px 18px;
-}
-/* outline star */
-.rv-stars::before{
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='18' viewBox='0 0 24 24'><path d='m12 3 2.7 5.5 6 .9-4.35 4.24L17.4 20 12 17.15 6.6 20l1.05-6.36L3.3 9.4l6-.9L12 3Z' fill='none' stroke='white' stroke-width='1.6' stroke-linejoin='round'/></svg>");
-}
-/* filled star, revealed by width */
-.rv-stars-fill{
-  position:absolute;inset:0;width:0;overflow:hidden;
-  transition:width .9s cubic-bezier(.22,.61,.36,1);
-}
-.rv-stars-fill::before{
-  width:106px;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='18' viewBox='0 0 24 24'><path d='m12 3 2.7 5.5 6 .9-4.35 4.24L17.4 20 12 17.15 6.6 20l1.05-6.36L3.3 9.4l6-.9L12 3Z' fill='white' stroke='white' stroke-width='1.6' stroke-linejoin='round'/></svg>");
-}
-
-.rv-quote{
-  margin:0 0 .6rem;font-family:var(--font-display);font-weight:500;
-  font-size:clamp(.95rem,1.35vw,1.08rem);line-height:1.5;letter-spacing:-.005em;
-  transition:opacity .28s var(--ease),transform .28s var(--ease);
-}
-.rv-who{
-  margin:0;font-size:.8rem;color:rgba(255,255,255,.62);
-  transition:opacity .28s var(--ease),transform .28s var(--ease);
-}
-.rv-tab.is-swapping .rv-quote,
-.rv-tab.is-swapping .rv-who{opacity:0;transform:translateY(6px);}
-
-/* the white wipe */
-.rv-wipe{
-  position:absolute;inset:0;z-index:2;pointer-events:none;
-  background:#fff;opacity:0;transform:translateX(-101%);
-}
-.rv-tab.wipe-next .rv-wipe{animation:rv-wipe-l 620ms cubic-bezier(.7,0,.25,1);}
-.rv-tab.wipe-prev .rv-wipe{animation:rv-wipe-r 620ms cubic-bezier(.7,0,.25,1);}
-@keyframes rv-wipe-l{
-  0%  {opacity:.9;transform:translateX(-101%);}
-  48% {opacity:.9;transform:translateX(0);}
-  100%{opacity:.9;transform:translateX(101%);}
-}
-@keyframes rv-wipe-r{
-  0%  {opacity:.9;transform:translateX(101%);}
-  48% {opacity:.9;transform:translateX(0);}
-  100%{opacity:.9;transform:translateX(-101%);}
-}
-
-/* arrows: only on approach, never in the way */
-.rv-arrow{
-  position:absolute;top:50%;z-index:4;
-  width:34px;height:34px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;
-  background:rgba(255,255,255,.14);color:#fff;
-  border:1px solid rgba(255,255,255,.3);
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  opacity:0;transform:translateY(-50%) scale(.9);
-  transition:opacity .3s var(--ease),transform .3s var(--ease),background .2s var(--ease);
-}
-.rv-arrow svg{width:17px;height:17px;}
-.rv-prev{left:.5rem;}
-.rv-next{right:.5rem;}
-.rv-tab.is-awake .rv-arrow{opacity:1;transform:translateY(-50%) scale(1);}
-.rv-arrow:hover{background:rgba(255,255,255,.28);}
-.rv-arrow:focus-visible{opacity:1;outline:2px solid var(--gold);outline-offset:2px;}
-
-@media (max-width:820px){
-  .hero-stage{max-width:none;padding-bottom:0;}
-  .ws-frame{aspect-ratio:4/3;}
-  /* Dragging fights the scroll on a phone, so the tab sits still underneath. */
-  .rv-tab{
-    position:relative;left:auto;bottom:auto;width:100%;margin-top:.9rem;
-    opacity:1;cursor:default;background:rgba(10,16,30,.62);
-  }
-  .rv-arrow{opacity:1;transform:translateY(-50%) scale(1);}
-}
-@media (prefers-reduced-motion:reduce){
-  .rv-wipe{display:none;}
-  .rv-stars-fill,.rv-quote,.rv-who,.rv-tab,.rv-arrow{transition:none;}
-}
-
-/* Edit mode stacks the window's shots so every one can be reached, not just
-   the one showing, and the review tab stops floating over the top of them. */
-body.wba-editing .ws-frame{aspect-ratio:auto;overflow:visible;}
-body.wba-editing .ws-shots{position:static;display:grid;gap:1rem;}
-body.wba-editing .ws-shot{position:relative;inset:auto;opacity:1;pointer-events:auto;}
-body.wba-editing .ws-shot img{aspect-ratio:16/10;}
-body.wba-editing .ws-quote{
-  position:static;width:auto;height:auto;clip:auto;overflow:visible;
-  margin:.6rem 0 0;padding:.6rem .8rem;border-radius:var(--r-sm);
-  background:rgba(255,255,255,.08);color:#fff;font-size:.9rem;line-height:1.5;
-}
-body.wba-editing .ws-chrome{display:none;}
-body.wba-editing .rv-tab{position:relative;left:auto;bottom:auto;width:100%;margin-top:1rem;opacity:1;}
-
-/* ==========================================================================
-   23. SITES — "How we design"
-   Price card left, the work in the middle, the perks cycling on the right.
-   ========================================================================== */
-.design-stage{
-  display:grid;gap:clamp(1rem,2.5vw,1.75rem);align-items:center;
-  grid-template-columns:minmax(0,.82fr) minmax(0,1.3fr) minmax(0,.88fr);
-  margin-top:clamp(2.5rem,5vw,4rem);
-}
-
-/* ---- the middle: a site we made, in a soft frame ---- */
-.design-shot{
-  margin:0;border-radius:var(--r-lg);overflow:hidden;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.2);
-  box-shadow:0 30px 70px rgba(4,9,20,.45), inset 0 1px 0 rgba(255,255,255,.12);
-  padding:clamp(.5rem,1vw,.8rem);
-}
-.design-shot img{
-  width:100%;aspect-ratio:16/10;object-fit:cover;display:block;
-  border-radius:calc(var(--r-lg) - .5rem);
-}
-
-/* ---- the perk rail: exactly four on screen, cycling upward ----
-   A fixed window height and a masked top/bottom edge, so an item entering or
-   leaving fades at the boundary rather than popping. */
-.perk-rail{
-  --pk-h:3.6rem;                /* one row, including its gap */
-  position:relative;height:calc(var(--pk-h) * 4);overflow:hidden;
-  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 14%,#000 86%,transparent 100%);
-          mask-image:linear-gradient(to bottom,transparent 0,#000 14%,#000 86%,transparent 100%);
-}
-.pk-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;}
-.pk{
-  display:flex;align-items:center;gap:.7rem;
-  height:3.1rem;margin-bottom:.5rem;flex:0 0 auto;
-  padding:0 .9rem;border-radius:var(--r-sm);
-  background:rgba(255,255,255,.09);
-  border:1px solid rgba(255,255,255,.14);
-  font-size:.9rem;line-height:1.35;color:#fff;
-  transition:transform .55s cubic-bezier(.22,.61,.36,1),opacity .55s var(--ease);
-}
-.pk-ico{
-  width:30px;height:30px;flex:0 0 auto;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  background:rgba(255,255,255,.12);color:var(--gold);
-}
-.pk-ico svg{width:16px;height:16px;}
-/* Leaving: slides right and fades, as asked. */
-.pk.is-out{transform:translateX(120%);opacity:0;}
-/* Arriving from underneath. */
-.pk.is-in{transform:translateY(18px);opacity:0;}
-
-@media (max-width:1000px){
-  .design-stage{grid-template-columns:1fr 1fr;}
-  .design-shot{grid-column:1 / -1;order:-1;}
-}
-@media (max-width:700px){
-  .design-stage{grid-template-columns:1fr;}
-  .perk-rail{--pk-h:3.6rem;}
-}
-@media (prefers-reduced-motion:reduce){
-  .pk{transition:none;}
-}
-
 /* ---- a button that feels pressed ---- */
 .btn.press{
   transition:transform .12s cubic-bezier(.2,.8,.3,1), box-shadow .18s var(--ease),
@@ -2035,12 +1702,319 @@ body.wba-editing .rv-tab{position:relative;left:auto;bottom:auto;width:100%;marg
 .btn.press{position:relative;}
 
 /* The price card now carries the call to action. */
-.design-stage .price-card{display:flex;flex-direction:column;align-items:flex-start;}
-.design-stage .price-card .btn{margin-top:1.1rem;width:100%;justify-content:center;}
-.design-stage .price-card .cta-aside{
-  margin-top:.7rem;
-  /* Measured 3.13:1 against the price card. This clears AA for small text. */
-  color:rgba(255,255,255,.82);
-  text-decoration-color:rgba(255,255,255,.45);
+
+/* ==========================================================================
+   SURFACE SYSTEM — the rule that replaces every improvised rgba() panel
+
+   Why this exists. The dark sections had been built from one-off fills —
+   .06, .07, .08, .09, .12 — each invented at the point of use. That is what
+   makes a page look patchy and modular rather than designed, and it is the
+   single biggest reason the old panels read as generic.
+
+   The rule, taken from how dark themes are actually built: on a dark ground a
+   drop shadow has nothing to contrast against, so ELEVATION IS EXPRESSED AS
+   LIGHTNESS. A surface that sits higher is lighter by a FIXED step, never an
+   improvised one. Material's dark theme does this with semi-transparent white
+   elevation overlays; Atlassian's system pairs a named surface with a named
+   shadow and warns against loose one-offs. Four levels is the entire
+   vocabulary — if something wants a fifth, the layout is wrong, not the
+   palette.
+
+     --sf-1  sunken   a well that content sits inside
+     --sf-2  resting  a card on the page
+     --sf-3  raised   a window or tab: something you could pick up
+     --sf-4  overlay  lifted off the page — dragged, focused, floating
+
+   Two borders. One highlight. Radii are concentric: an inner radius equals
+   the outer radius minus its padding, so nested corners stay parallel rather
+   than drifting apart — which is what makes stacked boxes look accidental.
+   -------------------------------------------------------------------------- */
+:root{
+  --sf-1:rgba(255,255,255,.035);
+  --sf-2:rgba(255,255,255,.06);
+  --sf-3:rgba(255,255,255,.10);
+  --sf-4:rgba(255,255,255,.145);
+
+  --edge:rgba(255,255,255,.12);
+  --edge-strong:rgba(255,255,255,.24);
+
+  /* The top highlight. One line of light is what separates a panel that
+     reads as an object from a flat rectangle. */
+  --sheen:inset 0 1px 0 rgba(255,255,255,.16);
+
+  /* On dark, depth is a dark halo rather than a grey shadow. */
+  --depth-2:0 10px 26px rgba(3,7,16,.42);
+  --depth-3:0 26px 64px rgba(3,7,16,.55);
+  --depth-4:0 40px 90px rgba(3,7,16,.62);
+
+  /* Decisive radii. Nothing sits vaguely in between. */
+  --rw:20px;   /* window / tab */
+  --rc:10px;   /* control, chip, a row inside a window */
+  --rp:999px;  /* pill */
+
+  /* One curve to enter, one to settle, one to leave. */
+  --m-enter:cubic-bezier(.16,1,.3,1);
+  --m-settle:cubic-bezier(.34,1.16,.64,1);
+  --m-exit:cubic-bezier(.4,0,1,1);
+  --t1:120ms; --t2:220ms; --t3:340ms; --t4:520ms;
 }
-.design-stage .price-card .cta-aside:hover{color:#fff;text-decoration-color:var(--gold);}
+
+/* ==========================================================================
+   .win — the window / tab
+
+   ONE component, used everywhere something should read as an object you could
+   pick up: the hero's message window, the review tab, the pricing tab, the
+   screenshot of a site we built. Consistency across pages comes from there
+   being exactly one of these — not three things that happen to resemble each
+   other.
+
+   Anatomy: a title bar carrying three dots and a label, then the body. The
+   dots are ours — gold, then two neutrals — rather than a copy of anyone
+   else's window controls.
+   ========================================================================== */
+.win{
+  position:relative;
+  border-radius:var(--rw);
+  background:var(--sf-3);
+  border:1px solid var(--edge);
+  box-shadow:var(--depth-3),var(--sheen);
+  backdrop-filter:blur(20px) saturate(140%);
+  -webkit-backdrop-filter:blur(20px) saturate(140%);
+  overflow:hidden;
+  isolation:isolate;
+}
+.win-bar{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.6rem .85rem;
+  background:var(--sf-1);
+  border-bottom:1px solid var(--edge);
+}
+.win-dots{display:flex;gap:.34rem;flex:0 0 auto;}
+.win-dots i{width:9px;height:9px;border-radius:50%;display:block;background:rgba(255,255,255,.2);}
+.win-dots i:first-child{background:var(--gold);}
+.win-title{
+  font:600 .8rem/1 var(--font-display);letter-spacing:.01em;
+  color:rgba(255,255,255,.72);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;
+}
+/* Concentric corners for anything sitting inside a window. */
+.win .inset{border-radius:calc(var(--rw) - 12px);overflow:hidden;display:block;}
+
+/* A window that has been lifted — dragged, or focused. */
+.win.is-lifted{
+  background:var(--sf-4);
+  border-color:var(--edge-strong);
+  box-shadow:var(--depth-4),var(--sheen);
+}
+
+/* ==========================================================================
+   HERO STAGE — the message window and the review tab
+   ========================================================================== */
+.hero-stage{
+  position:relative;width:100%;max-width:56rem;
+  margin-top:clamp(2.25rem,4vw,3.25rem);
+  padding-bottom:2.5rem;   /* room for the tab to overhang */
+}
+
+.ws-win{width:100%;}
+.ws-body{position:relative;aspect-ratio:16/9;}
+.ws-shots{position:absolute;inset:0;}
+.ws-shot{
+  position:absolute;inset:0;margin:0;opacity:0;pointer-events:none;
+  transition:opacity var(--t4) var(--m-enter);
+}
+.ws-shot.is-active{opacity:1;}
+.ws-shot img{width:100%;height:100%;object-fit:cover;display:block;}
+.ws-shot figcaption{
+  position:absolute;left:0;right:0;bottom:0;z-index:2;
+  padding:3.25rem 1.4rem 1.15rem;
+  font-family:var(--font-display);font-weight:600;
+  font-size:clamp(1rem,1.6vw,1.3rem);line-height:1.25;color:#fff;
+  background:linear-gradient(to top,rgba(6,11,22,.9) 8%,rgba(6,11,22,0) 100%);
+}
+/* The quote lives with its image so edit mode reaches it in context; the tab
+   reads it from here rather than the copy being written twice. */
+.ws-quote{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+/* Your window PNG, when it exists, sits over everything.
+
+   A background-image, deliberately, not an <img>: a missing <img> renders the
+   browser's broken-file icon in the corner of the photograph — which is
+   exactly what was showing. A background that 404s simply paints nothing, so
+   the page is correct both before and after the asset lands. */
+.ws-chrome{
+  position:absolute;inset:0;pointer-events:none;z-index:3;
+  background-image:url('/img/ws-frame.png');
+  background-size:100% 100%;background-repeat:no-repeat;
+}
+
+/* ---- the review tab ---- */
+.rv-tab{
+  position:absolute;z-index:6;right:-2.5%;top:44%;
+  width:min(20rem,52%);
+  color:#fff;
+  /* Resting: quieter than the window it sits on, so it reads as a separate
+     object rather than part of the same panel. */
+  opacity:.82;
+  transition:opacity var(--t3) var(--m-enter),
+             background var(--t3) var(--m-enter),
+             border-color var(--t3) var(--m-enter),
+             box-shadow var(--t3) var(--m-enter);
+}
+.rv-tab.is-awake{opacity:1;}
+/* The title bar is the drag handle — as it would be on a real window. */
+#rvGrip{cursor:grab;user-select:none;touch-action:none;}
+.rv-tab.is-dragging #rvGrip{cursor:grabbing;}
+.rv-tab.is-dragging{transition:none;}
+.rv-inner{padding:1rem 1.1rem 1.15rem;position:relative;z-index:1;}
+
+/* stars: hollow outlines with a filled layer that glides to the rating */
+.rv-stars{position:relative;height:18px;width:106px;margin-bottom:.75rem;}
+.rv-stars::before,.rv-stars-fill::before{
+  content:'';position:absolute;inset:0;background-repeat:repeat-x;background-size:21.2px 18px;
+}
+.rv-stars::before{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='18' viewBox='0 0 24 24'><path d='m12 3 2.7 5.5 6 .9-4.35 4.24L17.4 20 12 17.15 6.6 20l1.05-6.36L3.3 9.4l6-.9L12 3Z' fill='none' stroke='white' stroke-width='1.6' stroke-linejoin='round'/></svg>");
+}
+.rv-stars-fill{position:absolute;inset:0;width:0;overflow:hidden;transition:width 900ms var(--m-enter);}
+.rv-stars-fill::before{
+  width:106px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='18' viewBox='0 0 24 24'><path d='m12 3 2.7 5.5 6 .9-4.35 4.24L17.4 20 12 17.15 6.6 20l1.05-6.36L3.3 9.4l6-.9L12 3Z' fill='white' stroke='white' stroke-width='1.6' stroke-linejoin='round'/></svg>");
+}
+
+.rv-quote{
+  margin:0 0 .55rem;font-family:var(--font-display);font-weight:500;
+  font-size:clamp(.92rem,1.3vw,1.04rem);line-height:1.5;letter-spacing:-.005em;
+  transition:opacity var(--t2) var(--m-enter),transform var(--t2) var(--m-enter);
+}
+.rv-who{
+  margin:0;font-size:.78rem;color:rgba(255,255,255,.6);
+  transition:opacity var(--t2) var(--m-enter),transform var(--t2) var(--m-enter);
+}
+.rv-tab.is-swapping .rv-quote,.rv-tab.is-swapping .rv-who{opacity:0;transform:translateY(5px);}
+
+.rv-wipe{position:absolute;inset:0;z-index:4;pointer-events:none;background:#fff;opacity:0;transform:translateX(-101%);}
+.rv-tab.wipe-next .rv-wipe{animation:rv-wipe-l 600ms var(--m-exit);}
+.rv-tab.wipe-prev .rv-wipe{animation:rv-wipe-r 600ms var(--m-exit);}
+@keyframes rv-wipe-l{
+  0%{opacity:.92;transform:translateX(-101%);}
+  48%{opacity:.92;transform:translateX(0);}
+  100%{opacity:.92;transform:translateX(101%);}
+}
+@keyframes rv-wipe-r{
+  0%{opacity:.92;transform:translateX(101%);}
+  48%{opacity:.92;transform:translateX(0);}
+  100%{opacity:.92;transform:translateX(-101%);}
+}
+
+.rv-arrow{
+  position:absolute;top:58%;z-index:5;
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  background:var(--sf-4);color:#fff;border:1px solid var(--edge-strong);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  opacity:0;transform:translateY(-50%) scale(.86);
+  transition:opacity var(--t2) var(--m-enter),transform var(--t2) var(--m-settle),background var(--t1) linear;
+}
+.rv-arrow svg{width:16px;height:16px;}
+.rv-prev{left:.45rem;}
+.rv-next{right:.45rem;}
+.rv-tab.is-awake .rv-arrow{opacity:1;transform:translateY(-50%) scale(1);}
+.rv-arrow:hover{background:rgba(255,255,255,.26);}
+.rv-arrow:focus-visible{opacity:1;transform:translateY(-50%) scale(1);outline:2px solid var(--gold);outline-offset:2px;}
+
+/* ==========================================================================
+   SITES — "How we design"
+   Pricing tab left, the site we built in the middle, the perks on the right.
+   Three columns, one visual language.
+   ========================================================================== */
+.design-stage{
+  display:grid;gap:clamp(1rem,2.4vw,1.75rem);align-items:center;
+  grid-template-columns:minmax(0,.78fr) minmax(0,1.34fr) minmax(0,.88fr);
+  margin-top:clamp(2.5rem,5vw,4rem);
+}
+.price-body{padding:1.4rem 1.3rem 1.4rem;display:flex;flex-direction:column;align-items:flex-start;}
+.price-body .btn{margin-top:1.15rem;width:100%;justify-content:center;}
+.price-body .cta-aside{
+  margin-top:.7rem;color:rgba(255,255,255,.82);
+  text-decoration-color:rgba(255,255,255,.4);
+}
+.price-body .cta-aside:hover{color:#fff;text-decoration-color:var(--gold);}
+
+/* The screenshot reads as a browser window, which is the point — it is a
+   site we built, so show it in the thing that shows sites. */
+.shot-win{margin:0;}
+.shot-win .win-body{padding:.55rem;}
+.shot-win img{width:100%;aspect-ratio:16/9;object-fit:cover;}
+
+/* ---- the perk rail: four on screen, cycling upward ---- */
+.perk-rail{
+  --pk-h:3.55rem;                    /* one row plus its gap */
+  position:relative;overflow:hidden;
+  /* Four rows fully visible, plus the padding, plus a sliver of the fifth so
+     the fade reads as "there is more" rather than as a clipped row. */
+  height:calc(var(--pk-h) * 4 + 1.6rem);
+  padding:.5rem;border-radius:var(--rw);
+  background:var(--sf-1);            /* a sunken well, per the surface scale */
+  border:1px solid var(--edge);
+  /* Gentle enough that the first and last rows stay legible. */
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 9%,#000 84%,transparent 100%);
+          mask-image:linear-gradient(to bottom,transparent 0,#000 9%,#000 84%,transparent 100%);
+}
+.pk-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;}
+.pk{
+  display:flex;align-items:center;gap:.7rem;
+  height:3.05rem;margin-bottom:.5rem;flex:0 0 auto;
+  padding:0 .85rem;border-radius:var(--rc);
+  background:var(--sf-2);border:1px solid var(--edge);
+  font-size:.9rem;line-height:1.35;color:#fff;
+  transition:transform var(--t4) var(--m-enter),opacity var(--t4) var(--m-enter);
+}
+.pk-ico{
+  width:28px;height:28px;flex:0 0 auto;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--sf-3);color:var(--gold);
+}
+.pk-ico svg{width:15px;height:15px;}
+.pk.is-out{transform:translateX(115%);opacity:0;}
+.pk.is-in{transform:translateY(16px);opacity:0;}
+
+@media (max-width:1000px){
+  .design-stage{grid-template-columns:1fr 1fr;}
+  .shot-win{grid-column:1 / -1;order:-1;}
+}
+@media (max-width:820px){
+  .hero-stage{max-width:none;padding-bottom:0;}
+  .ws-body{aspect-ratio:4/3;}
+  .rv-tab{position:relative;right:auto;top:auto;width:100%;margin-top:.9rem;opacity:1;}
+  /* On a phone the arrows sit in the title bar. Centred over the card they
+     land on top of the quote, which is unreadable and un-tappable. */
+  .rv-arrow{
+    opacity:1;top:.42rem;transform:none;width:30px;height:30px;
+  }
+  .rv-prev{left:auto;right:2.9rem;}
+  .rv-next{right:.55rem;}
+  .rv-tab .win-title{padding-right:4.5rem;}
+  #rvGrip{cursor:default;}
+}
+@media (max-width:700px){
+  .design-stage{grid-template-columns:1fr;}
+}
+@media (prefers-reduced-motion:reduce){
+  .rv-wipe{display:none;}
+  .pk,.rv-quote,.rv-who,.rv-stars-fill,.rv-tab,.rv-arrow,.ws-shot{transition:none;}
+}
+
+/* Edit mode: stack every shot so all of them can be reached, and stop the
+   tab floating over the top of the thing being edited. */
+body.wba-editing .ws-body{aspect-ratio:auto;}
+body.wba-editing .ws-shots{position:static;display:grid;gap:1rem;padding:1rem;}
+body.wba-editing .ws-shot{position:relative;inset:auto;opacity:1;pointer-events:auto;}
+body.wba-editing .ws-shot img{aspect-ratio:16/9;border-radius:var(--rc);}
+body.wba-editing .ws-quote{
+  position:static;width:auto;height:auto;clip:auto;overflow:visible;
+  margin:.6rem 0 0;padding:.6rem .8rem;border-radius:var(--rc);
+  background:var(--sf-2);color:#fff;font-size:.9rem;line-height:1.5;
+}
+body.wba-editing .ws-chrome{display:none;}
+body.wba-editing .rv-tab{position:relative;right:auto;top:auto;width:100%;margin-top:1rem;opacity:1;}
+body.wba-editing .perk-rail{height:auto;-webkit-mask-image:none;mask-image:none;}

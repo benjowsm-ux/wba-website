@@ -18,7 +18,7 @@
 <link rel="manifest" href="/site.webmanifest"/>
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/styles.css?v=bef5edff80"/>
+<link rel="stylesheet" href="/css/styles.css?v=86eae07eca"/>
 <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
 </head>
 <body>
@@ -72,7 +72,12 @@
     <!-- Price card left, the work in the middle, the perks cycling on the
          right — the three-column arrangement from the reference. -->
     <div class="design-stage">
-      <div class="price-card">
+      <div class="win price-win">
+        <div class="win-bar">
+          <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="win-title">Design &amp; build</span>
+        </div>
+        <div class="win-body price-body">
         <div class="price-big">&pound;0</div>
         <div class="price-lbl">Design &amp; build</div>
         <div class="price-rule"></div>
@@ -81,11 +86,18 @@
         <p class="price-note" data-edit="offer.body-2" data-edit-kind="rich">You're billed once your site goes live, and only once you're happy with it. Billed monthly from then on.</p>
         <a class="btn btn-gold press" data-edit-href="link.2" href="#start">Get Started</a>
         <a href="#start" class="cta-aside">You'll need to own your domain name. Not sure how? We can help.</a>
+        </div>
       </div>
 
-      <figure class="design-shot">
-        <img data-edit-img="design.shot" src="/photos/pivaz-menu.jpg" width="1920" height="1080"
-             alt="A site we designed and built" loading="lazy"/>
+      <figure class="win shot-win">
+        <div class="win-bar">
+          <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="win-title" data-edit="design.url">pivazcafe.co.uk</span>
+        </div>
+        <div class="win-body">
+          <img class="inset" data-edit-img="design.shot" src="/photos/pivaz-menu.jpg"
+               width="1920" height="1080" alt="A site we designed and built" loading="lazy"/>
+        </div>
       </figure>
 
       <div class="perk-rail" id="perkRail" aria-label="What is included">
@@ -167,39 +179,6 @@
         <p data-edit="step.body-3" data-edit-kind="rich">We keep your site happy, healthy and up to date.</p>
       </div>
 
-    </div>
-  </div>
-</section>
-
-<!-- TALK TO US -->
-<section class="section section-ink on-dark reveal talkto">
-  <div class="inner">
-    <div class="section-head centered">
-      <p class="eyebrow centered" data-edit="talk.eyebrow">How it starts</p>
-      <h2 data-edit="talk.h2" data-edit-kind="rich">A message, not a <em class="accent">meeting.</em></h2>
-      <p class="lede" data-edit="talk.lede" data-edit-kind="rich">Tell us what you need on WhatsApp. We'll come back with a plan, a date, and no invoice for the build.</p>
-    </div>
-
-    <!-- The panel: a chat backdrop with a booking card on the left and the
-         conversation running down the right. The messages cycle on a timer. -->
-    <div class="talk-panel">
-      <div class="talk-book">
-        <p class="tb-day" data-edit="talk.day">Next opening</p>
-        <p class="tb-date" id="tbDate">&mdash;</p>
-        <p class="tb-meta" data-edit="talk.meta">First look at your site, 20 minutes.</p>
-        <a class="btn btn-gold tb-cta" data-edit-href="talk.cta" href="#start">Book me in!</a>
-      </div>
-
-      <div class="talk-thread" id="talkThread" aria-label="What people ask us">
-        <ul class="tt-list">
-          <li><span class="tt-ico" aria-hidden="true">&#128241;</span><span data-edit="talk.msg1">"Can you make it work on phones properly?"</span></li>
-          <li><span class="tt-ico" aria-hidden="true">&#128200;</span><span data-edit="talk.msg2">"Will anyone actually find us on Google?"</span></li>
-          <li><span class="tt-ico" aria-hidden="true">&#9997;</span><span data-edit="talk.msg3">"We haven't written any of the words yet."</span></li>
-          <li><span class="tt-ico" aria-hidden="true">&#128176;</span><span data-edit="talk.msg4">"What's the catch with it being free?"</span></li>
-          <li><span class="tt-ico" aria-hidden="true">&#128260;</span><span data-edit="talk.msg5">"Can we change things ourselves later?"</span></li>
-          <li><span class="tt-ico" aria-hidden="true">&#128444;</span><span data-edit="talk.msg6">"Our photos are all a bit old."</span></li>
-        </ul>
-      </div>
     </div>
   </div>
 </section>

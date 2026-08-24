@@ -22,7 +22,7 @@
 <link rel="manifest" href="/site.webmanifest"/>
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/styles.css?v=bef5edff80"/>
+<link rel="stylesheet" href="/css/styles.css?v=86eae07eca"/>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfessionalService","name":"Weston Business Authority","alternateName":"WBA","description":"Design and technology agency in Weston-super-Mare. Websites, apps, systems and automations; branding, graphic design, print and media; SEO, PPC, email and analytics.","url":"https://westonbusinessauthority.co.uk","telephone":"+447902376369","email":"info@westonbusinessauthority.co.uk","address":{"@type":"PostalAddress","addressLocality":"Weston-super-Mare","addressRegion":"Somerset","postalCode":"BS22","addressCountry":"GB"},"geo":{"@type":"GeoCoordinates","latitude":51.346,"longitude":-2.977},"areaServed":[{"@type":"City","name":"Weston-super-Mare"},{"@type":"Place","name":"Worle"},{"@type":"Place","name":"Clevedon"},{"@type":"Place","name":"Nailsea"}],"priceRange":"££"}</script>
 <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
 </head>
@@ -77,7 +77,12 @@
          .rv-tab     a separate, draggable review card. The only interactive
                      piece: arrows on hover, white wipe between reviews. -->
     <div class="hero-stage" id="heroStage">
-      <div class="ws-frame">
+      <div class="win ws-win">
+        <div class="win-bar">
+          <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="win-title">Messages &middot; WBA</span>
+        </div>
+        <div class="win-body ws-body">
         <div class="ws-shots">
           <figure class="ws-shot is-active" data-rating="5">
             <img data-edit-img="hero.img1" src="/photos/pivaz-menu.jpg" width="1920" height="1080"
@@ -98,12 +103,17 @@
             <blockquote class="ws-quote" data-edit="hero.quote3" data-edit-kind="rich">Quick, local, and they explain things without making you feel daft.</blockquote>
           </figure>
         </div>
-        <img class="ws-chrome" src="/img/ws-frame.png" alt="" aria-hidden="true"/>
+        <div class="ws-chrome" aria-hidden="true"></div>
+        </div>
       </div>
 
-      <div class="rv-tab" id="rvTab" role="group" aria-label="Client reviews">
+      <div class="win rv-tab" id="rvTab" role="group" aria-label="Client reviews">
+        <div class="win-bar" id="rvGrip">
+          <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="win-title">Reviews</span>
+        </div>
         <span class="rv-wipe" aria-hidden="true"></span>
-        <div class="rv-inner">
+        <div class="win-body rv-inner">
           <div class="rv-stars" id="rvStars" aria-hidden="true">
             <span class="rv-stars-fill" id="rvStarsFill"></span>
           </div>
@@ -298,7 +308,7 @@
 
 <script src="/js/main.js?v=7280f781d4" defer></script>
 <script src="/js/analytics.js?v=6ee0188b0b" defer></script>
-<script src="/js/hero-stage.js?v=7c957b7f84" defer></script>
+<script src="/js/hero-stage.js?v=cd8be259ea" defer></script>
 <script src="/js/edit-boot.js?v=d3c391a5f7" defer></script>
 </body>
 </html>
