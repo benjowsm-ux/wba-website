@@ -37,10 +37,21 @@
 
   if (!hasSession()) return;
 
+  /* Carry this file's own cache-busting stamp onto the files it pulls in.
+     Without it, db.js and edit.js would be served from a week-old cache while
+     the page around them is new — the exact mismatch the stamp exists to
+     prevent. document.currentScript is null inside a deferred callback, so
+     read it while the script is still executing. */
+  var VER = (function () {
+    var me = document.currentScript && document.currentScript.src;
+    var m = me && me.match(/[?&]v=([a-f0-9]+)/);
+    return m ? '?v=' + m[1] : '';
+  })();
+
   var CHAIN = [
     'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
-    '/js/db.js',
-    '/js/edit.js'
+    '/js/db.js' + VER,
+    '/js/edit.js' + VER
   ];
 
   /* In order: db.js needs the library, edit.js needs db.js. */

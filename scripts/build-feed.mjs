@@ -27,6 +27,7 @@
      WBA_POSTS_FILE=scripts/seed-posts.json node scripts/build-feed.mjs
    ========================================================================== */
 
+import { createHash } from 'crypto';
 import { marked } from 'marked';
 import { writeFileSync, readFileSync, mkdirSync, rmSync, existsSync, readdirSync } from 'fs';
 import { replaceEditable, renderValue, declaredKeys, pagePathFor,
@@ -968,5 +969,68 @@ function writePhotoManifest(){
 }
 
 writePhotoManifest();
+
+/* ==========================================================================
+   Cache-busting for CSS and JS.
+
+   THE BUG THIS FIXES, so nobody removes it:
+   netlify.toml caches /css/* and /js/* for a week. The HTML is served with
+   max-age=0, so a returning visitor gets BRAND NEW MARKUP against a SEVEN DAY
+   OLD STYLESHEET. Every new component renders unstyled — unsized SVGs blowing
+   up to full width, bare <li> bullets where a card should be, images stretched
+   because the rule that fixed them is not in the copy their browser kept. It
+   looks exactly like the deploy failed, and no amount of re-deploying helps.
+
+   Appending a content hash to the URL means a changed file is a changed URL,
+   so the browser is obliged to fetch it, while unchanged files stay cached.
+   ========================================================================== */
+function stampAssets(){
+  const hashOf = file => {
+    try { return createHash('sha1').update(readFileSync(file)).digest('hex').slice(0, 10); }
+    catch (e) { return null; }
+  };
+
+  /* Every asset the pages reference, with its current content hash. */
+  const versions = new Map();
+  const add = f => { const h = hashOf(f); if (h) versions.set('/' + f, h); };
+  add('css/styles.css');
+  if (existsSync('js')) {
+    for (const e of readdirSync('js', { withFileTypes: true })) {
+      if (e.isFile() && e.name.endsWith('.js')) add('js/' + e.name);
+    }
+  }
+  if (!versions.size) return;
+
+  const files = [];
+  (function scan(dir){
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const full = dir === '.' ? e.name : dir + '/' + e.name;
+      if (e.isDirectory()) {
+        if (['node_modules','.git','.github','scripts','supabase','photos','img','css','js','.claude'].includes(e.name)) continue;
+        scan(full);
+      } else if (/\.html?$/i.test(e.name)) {
+        files.push(full);
+      }
+    }
+  })('.');
+
+  const escapeRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  let touched = 0;
+  for (const file of files) {
+    let html = readFileSync(file, 'utf8');
+    const before = html;
+    for (const [path, hash] of versions) {
+      /* Match the path with or without an existing ?v=, so re-running the
+         build replaces the stamp rather than stacking another one on. */
+      const re = new RegExp('(["\'(])' + escapeRe(path) + '(?:\\?v=[a-f0-9]+)?(["\')])', 'g');
+      html = html.replace(re, '$1' + path + '?v=' + hash + '$2');
+    }
+    if (html !== before) { writeFileSync(file, html); touched++; }
+  }
+  console.log('Assets: stamped ' + versions.size + ' file version(s) across ' + touched + ' page(s).');
+}
+
+stampAssets();
 
 await bakePageContent();
