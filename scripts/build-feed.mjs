@@ -613,15 +613,20 @@ function injectSpotlight(posts){
     return;
   }
   const img = postImages(p, 1)[0];
-  /* One image with the words laid over it, rather than a photo bolted to a
-     column of text. Reads as a piece of work, not a database row. */
+  /* A compact, centred card: cover image, then the byline every post already
+     carries (author, date, reading time). Which post appears here is the one
+     ticked "Featured" in Admin -> Feed. */
+  const when = p.published_at ? fmtDate(p.published_at) : '';
   const html = `    <a class="spotlight" href="/feed/${esc(p.slug)}/">
-      ${img ? `<img class="spotlight-img" src="${esc(img)}" alt=""${dimAttrs(img)} loading="lazy"/>` : ''}
-      <div class="spotlight-body">
-        <p class="spotlight-kicker">${pillarOf(p) ? esc(cap(pillarOf(p))) : 'From the Feed'} &middot; ${readMins(p.body)} min read</p>
-        <h3>${esc(p.title)}</h3>
-        <span class="spotlight-go">Read more <span aria-hidden="true">&rarr;</span></span>
-      </div>
+      ${img ? `<span class="spotlight-media"><img src="${esc(img)}" alt=""${dimAttrs(img)} loading="lazy"/></span>` : ''}
+      <span class="spotlight-body">
+        <span class="spotlight-kicker">${pillarOf(p) ? esc(cap(pillarOf(p))) : 'From the Feed'}</span>
+        <span class="spotlight-title">${esc(p.title)}</span>
+        <span class="spotlight-by">
+          <span class="sb-ico" aria-hidden="true">${esc((p.author || 'WBA').trim().charAt(0).toUpperCase())}</span>
+          <span class="sb-meta"><b>${esc(p.author || 'WBA')}</b><span>${esc(when)}${when ? ' &middot; ' : ''}${readMins(p.body)} min read</span></span>
+        </span>
+      </span>
     </a>`;
   injectBetween('index.html', 'SPOTLIGHT', html);
   console.log(`Home: spotlight -> ${p.slug}`);

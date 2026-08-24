@@ -18,7 +18,7 @@
 <link rel="manifest" href="/site.webmanifest"/>
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/styles.css?v=0983620b6d"/>
+<link rel="stylesheet" href="/css/styles.css?v=bef5edff80"/>
 <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
 </head>
 <body>
@@ -60,36 +60,69 @@
   </div>
 </header>
 
-<!-- THE DEAL -->
-<section class="section section-white reveal">
+<!-- HOW WE DESIGN -->
+<section class="section section-ink on-dark reveal design-sec">
   <div class="inner">
-    <div class="offer">
-      <div>
-        <p data-edit="offer.eyebrow" data-edit-kind="rich" class="eyebrow">How we design</p>
-        <h2 data-edit="offer.h2" data-edit-kind="rich" class="h-md">Pen and paper first.<br><em class="accent">Then the build.</em></h2>
-        <p data-edit="offer.body" data-edit-kind="rich" style="margin-top:1rem;">We play around with designs the old-fashioned way. Using pen and paper, we map out your website, branding and tone before touching any code.</p>
-        <div class="checks">
-          <div>Human design, creative touch</div>
-          <div>Hand-written content</div>
-          <div>Mobile optimised</div>
-          <div>Indexed by Google</div>
-          <div>SEO built in, not bolted on</div>
-          <div>Google Business profile</div>
-          <div>Forms &amp; booking systems</div>
-          <div>Progressive updates</div>
-        </div>
-        <div class="cta-row">
-          <a data-edit-href="link.2" href="#start" class="btn btn-gold">Get Started</a>
-          <a href="#start" class="cta-aside">You'll need to own your domain name. Not sure how? We can help.</a>
-        </div>
-      </div>
+    <div class="section-head centered">
+      <p class="eyebrow centered" data-edit="offer.eyebrow" data-edit-kind="rich">How we design</p>
+      <h2 class="h-md" data-edit="offer.h2" data-edit-kind="rich">Pen and paper first.<br><em class="accent">Then the build.</em></h2>
+      <p class="lede" data-edit="offer.body" data-edit-kind="rich">We play around with designs the old-fashioned way. Using pen and paper, we map out your website, branding and tone before touching any code.</p>
+    </div>
+
+    <!-- Price card left, the work in the middle, the perks cycling on the
+         right — the three-column arrangement from the reference. -->
+    <div class="design-stage">
       <div class="price-card">
-        <div class="price-big">£0</div>
+        <div class="price-big">&pound;0</div>
         <div class="price-lbl">Design &amp; build</div>
         <div class="price-rule"></div>
-        <div class="price-then">£30<span>/month</span></div>
+        <div class="price-then">&pound;30<span>/month</span></div>
         <div class="price-lbl">Hosting, updates &amp; support</div>
-        <p data-edit="offer.body-2" data-edit-kind="rich" class="price-note">You're billed once your site goes live, and only once you're happy with it. Billed monthly from then on.</p>
+        <p class="price-note" data-edit="offer.body-2" data-edit-kind="rich">You're billed once your site goes live, and only once you're happy with it. Billed monthly from then on.</p>
+        <a class="btn btn-gold press" data-edit-href="link.2" href="#start">Get Started</a>
+        <a href="#start" class="cta-aside">You'll need to own your domain name. Not sure how? We can help.</a>
+      </div>
+
+      <figure class="design-shot">
+        <img data-edit-img="design.shot" src="/photos/pivaz-menu.jpg" width="1920" height="1080"
+             alt="A site we designed and built" loading="lazy"/>
+      </figure>
+
+      <div class="perk-rail" id="perkRail" aria-label="What is included">
+        <ul class="pk-list">
+            <li class="pk">
+              <span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h7"/></svg></span>
+              <span data-edit="perk.1">Human design, creative touch</span>
+            </li>
+            <li class="pk">
+              <span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
+              <span data-edit="perk.2">Hand-written content</span>
+            </li>
+            <li class="pk">
+              <span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1ZM11 19h2"/></svg></span>
+              <span data-edit="perk.3">Mobile optimised</span>
+            </li>
+            <li class="pk">
+              <span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9M12 3v9l6.5 3.8M12 3a9 9 0 0 1 9 9"/></svg></span>
+              <span data-edit="perk.4">Indexed by Google</span>
+            </li>
+            <li class="pk">
+              <span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 5-5 4 3 8-8M14 7h7v7"/></svg></span>
+              <span data-edit="perk.5">SEO built in, not bolted on</span>
+            </li>
+            <li class="pk">
+              <span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.2 7-10.4A7 7 0 0 0 5 10.6C5 15.8 12 21 12 21ZM12 12.5a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4Z"/></svg></span>
+              <span data-edit="perk.6">Google Business profile</span>
+            </li>
+            <li class="pk">
+              <span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10a2 2 0 0 1 2 2v14l-7-3-7 3V6a2 2 0 0 1 2-2ZM9 9h6M9 13h4"/></svg></span>
+              <span data-edit="perk.7">Forms &amp; booking systems</span>
+            </li>
+            <li class="pk">
+              <span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 12a9 9 0 0 1-15 6.7L3 16M21 4v4h-4M3 20v-4h4"/></svg></span>
+              <span data-edit="perk.8">Progressive updates</span>
+            </li>
+        </ul>
       </div>
     </div>
   </div>
@@ -282,7 +315,7 @@
 
 <script src="/js/main.js?v=7280f781d4" defer></script>
 <script src="/js/analytics.js?v=6ee0188b0b" defer></script>
-<script src="/js/talk-panel.js?v=d6133cd259" defer></script>
+<script src="/js/sites.js?v=e92779fd60" defer></script>
 <script src="/js/edit-boot.js?v=d3c391a5f7" defer></script>
 </body>
 </html>

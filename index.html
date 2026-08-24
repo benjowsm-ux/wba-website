@@ -22,7 +22,7 @@
 <link rel="manifest" href="/site.webmanifest"/>
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/styles.css?v=0983620b6d"/>
+<link rel="stylesheet" href="/css/styles.css?v=bef5edff80"/>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfessionalService","name":"Weston Business Authority","alternateName":"WBA","description":"Design and technology agency in Weston-super-Mare. Websites, apps, systems and automations; branding, graphic design, print and media; SEO, PPC, email and analytics.","url":"https://westonbusinessauthority.co.uk","telephone":"+447902376369","email":"info@westonbusinessauthority.co.uk","address":{"@type":"PostalAddress","addressLocality":"Weston-super-Mare","addressRegion":"Somerset","postalCode":"BS22","addressCountry":"GB"},"geo":{"@type":"GeoCoordinates","latitude":51.346,"longitude":-2.977},"areaServed":[{"@type":"City","name":"Weston-super-Mare"},{"@type":"Place","name":"Worle"},{"@type":"Place","name":"Clevedon"},{"@type":"Place","name":"Nailsea"}],"priceRange":"££"}</script>
 <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
 </head>
@@ -68,47 +68,55 @@
       <a data-edit-href="link.2" href="/sites/" class="btn btn-line inverse" data-track="hero-learn-more">Learn More</a>
     </div>
 
-    <!-- The hero carousel. Slides come from Admin → Home; this markup is a
-         fallback so the page still works before anything is saved. -->
-    <div class="hero-showcase" data-autoplay="6000">
-      <!-- WBA:SHOWCASE:START -->
-      <div class="hs-track">
-        <div class="hs-slide">
-          <div class="hs-frame">          <figure class="hs-glass">
-            <div class="hs-stars" aria-label="Five out of five"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2Z" fill="currentColor"/></svg><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2Z" fill="currentColor"/></svg><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2Z" fill="currentColor"/></svg><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2Z" fill="currentColor"/></svg><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2Z" fill="currentColor"/></svg></div>
-            <blockquote data-edit="hero.quote1" data-edit-kind="rich">Told them what we needed, they just got on with it. Looks better than we asked for.</blockquote>
-          </figure>
-          <figure class="hs-photo">
-            <img data-edit-img="hero.img1" src="/photos/pivaz-menu.jpg" width="1920" height="1080" alt="Work for Pivaz Café" loading="eager"/>
+    <!-- The hero stage.
+
+         .ws-frame   the messaging-window chrome. /img/ws-frame.png is dropped
+                     on top when it exists; until then a CSS placeholder draws
+                     the same shape, so the layout never depends on the asset.
+         .ws-shot    the client's work, sitting inside the window.
+         .rv-tab     a separate, draggable review card. The only interactive
+                     piece: arrows on hover, white wipe between reviews. -->
+    <div class="hero-stage" id="heroStage">
+      <div class="ws-frame">
+        <div class="ws-shots">
+          <figure class="ws-shot is-active" data-rating="5">
+            <img data-edit-img="hero.img1" src="/photos/pivaz-menu.jpg" width="1920" height="1080"
+                 alt="Work for Pivaz Café" loading="eager"/>
             <figcaption data-edit="hero.name1">Pivaz Café</figcaption>
+            <blockquote class="ws-quote" data-edit="hero.quote1" data-edit-kind="rich">Told them what we needed, they just got on with it. Looks better than we asked for.</blockquote>
           </figure>
-          </div>
-        </div>
-        <div class="hs-slide" aria-hidden="true">
-          <div class="hs-frame">          <figure class="hs-glass">
-            <div class="hs-stars" aria-label="Five out of five"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2Z" fill="currentColor"/></svg><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2Z" fill="currentColor"/></svg><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2Z" fill="currentColor"/></svg><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2Z" fill="currentColor"/></svg><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2Z" fill="currentColor"/></svg></div>
-            <blockquote data-edit="hero.quote2" data-edit-kind="rich">Stock and changeovers used to live on a clipboard. Now it is one screen and nobody argues.</blockquote>
-          </figure>
-          <figure class="hs-photo">
-            <img data-edit-img="hero.img2" src="/photos/harmony-signage.jpg" width="1600" height="900" alt="Work for Harmony Apartments" loading="lazy"/>
+          <figure class="ws-shot" data-rating="5" aria-hidden="true">
+            <img data-edit-img="hero.img2" src="/photos/harmony-signage.jpg" width="1600" height="900"
+                 alt="Work for Harmony Apartments" loading="lazy"/>
             <figcaption data-edit="hero.name2">Harmony Apartments</figcaption>
+            <blockquote class="ws-quote" data-edit="hero.quote2" data-edit-kind="rich">Stock and changeovers used to live on a clipboard. Now it is one screen and nobody argues.</blockquote>
           </figure>
-          </div>
-        </div>
-        <div class="hs-slide" aria-hidden="true">
-          <div class="hs-frame">          <figure class="hs-glass">
-            <div class="hs-stars" aria-label="Five out of five"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2Z" fill="currentColor"/></svg><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2Z" fill="currentColor"/></svg><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2Z" fill="currentColor"/></svg><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2Z" fill="currentColor"/></svg><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1L12 2Z" fill="currentColor"/></svg></div>
-            <blockquote data-edit="hero.quote3" data-edit-kind="rich">Quick, local, and they explain things without making you feel daft.</blockquote>
-          </figure>
-          <figure class="hs-photo">
-            <img data-edit-img="hero.img3" src="/photos/full-basket-shopfront.jpg" width="1600" height="720" alt="Work for The Full Basket" loading="lazy"/>
+          <figure class="ws-shot" data-rating="5" aria-hidden="true">
+            <img data-edit-img="hero.img3" src="/photos/full-basket-shopfront.jpg" width="1600" height="720"
+                 alt="Work for The Full Basket" loading="lazy"/>
             <figcaption data-edit="hero.name3">The Full Basket</figcaption>
+            <blockquote class="ws-quote" data-edit="hero.quote3" data-edit-kind="rich">Quick, local, and they explain things without making you feel daft.</blockquote>
           </figure>
-          </div>
         </div>
+        <img class="ws-chrome" src="/img/ws-frame.png" alt="" aria-hidden="true"/>
       </div>
-      <!-- WBA:SHOWCASE:END -->
-      <div class="hs-dots" role="tablist" aria-label="Featured work"></div>
+
+      <div class="rv-tab" id="rvTab" role="group" aria-label="Client reviews">
+        <span class="rv-wipe" aria-hidden="true"></span>
+        <div class="rv-inner">
+          <div class="rv-stars" id="rvStars" aria-hidden="true">
+            <span class="rv-stars-fill" id="rvStarsFill"></span>
+          </div>
+          <p class="rv-quote" id="rvQuote"></p>
+          <p class="rv-who" id="rvWho"></p>
+        </div>
+        <button type="button" class="rv-arrow rv-prev" id="rvPrev" aria-label="Previous review">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <button type="button" class="rv-arrow rv-next" id="rvNext" aria-label="Next review">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
     </div>
   </div>
 </header>
@@ -128,13 +136,16 @@
     </div>
 
     <!-- WBA:SPOTLIGHT:START -->
-    <a class="spotlight" href="/feed/local-seo-four-things/">
-      <img class="spotlight-img" src="/photos/high-street.jpg" alt="" width="1600" height="720" loading="lazy"/>
-      <div class="spotlight-body">
-        <p class="spotlight-kicker">Grow &middot; 1 min read</p>
-        <h3>Local SEO: the four things that actually move the needle</h3>
-        <span class="spotlight-go">Read more <span aria-hidden="true">&rarr;</span></span>
-      </div>
+    <a class="spotlight" href="/feed/back-of-house-app-harmony/">
+      <span class="spotlight-media"><img src="/photos/harmony-signage.jpg" alt="" width="1600" height="900" loading="lazy"/></span>
+      <span class="spotlight-body">
+        <span class="spotlight-kicker">Build</span>
+        <span class="spotlight-title">The back-of-house app we built for an aparthotel</span>
+        <span class="spotlight-by">
+          <span class="sb-ico" aria-hidden="true">W</span>
+          <span class="sb-meta"><b>WBA</b><span>12 August 2026 &middot; 1 min read</span></span>
+        </span>
+      </span>
     </a>
     <!-- WBA:SPOTLIGHT:END -->
   </div>
@@ -287,7 +298,7 @@
 
 <script src="/js/main.js?v=7280f781d4" defer></script>
 <script src="/js/analytics.js?v=6ee0188b0b" defer></script>
-<script src="/js/hero-carousel.js?v=00af298125" defer></script>
+<script src="/js/hero-stage.js?v=7c957b7f84" defer></script>
 <script src="/js/edit-boot.js?v=d3c391a5f7" defer></script>
 </body>
 </html>

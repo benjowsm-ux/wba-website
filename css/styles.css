@@ -1156,49 +1156,41 @@ h1,h2,h3,h4,.intro-statement{text-wrap:balance;}
 /* ==========================================================================
    16  SPOTLIGHT — one article, laid out sideways
    ========================================================================== */
-/* A single image with the headline laid over it. Fills the width, keeps a
-   generous aspect on desktop and gets taller on a phone so the words never
-   crowd the picture. */
+/* The featured write-up: a compact, centred card rather than a full-bleed
+   banner. It was taking a whole screen for one link. */
 .spotlight{
-  position:relative;display:block;overflow:hidden;
-  border-radius:var(--r-lg);
-  margin-top:clamp(3rem,6vw,5rem);
-  aspect-ratio:16/7;min-height:280px;
-  background:var(--ink);
-  isolation:isolate;
+  display:block;max-width:34rem;margin:clamp(2.75rem,5vw,4rem) auto 0;
+  border-radius:var(--r);overflow:hidden;
+  border:1px solid var(--line);background:var(--paper);
+  box-shadow:var(--sh-1);
+  transition:transform var(--t) var(--ease),box-shadow var(--t) var(--ease),border-color var(--t) var(--ease);
 }
-.spotlight-img{
-  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-  transition:transform var(--t-slow) var(--ease);
-}
-.spotlight::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(to top,rgba(8,13,26,.9) 6%,rgba(8,13,26,.5) 48%,rgba(8,13,26,.2) 100%);
-}
-.spotlight:hover .spotlight-img{transform:scale(1.035);}
-.spotlight-body{
-  position:relative;z-index:1;height:100%;
-  display:flex;flex-direction:column;justify-content:flex-end;
-  padding:clamp(1.5rem,4vw,2.75rem);
-}
+.spotlight:hover{transform:translateY(-3px);box-shadow:var(--sh-2);border-color:#d6dde9;}
+.spotlight-media{display:block;overflow:hidden;background:var(--mist);}
+.spotlight-media img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;transition:transform var(--t-slow) var(--ease);}
+.spotlight:hover .spotlight-media img{transform:scale(1.03);}
+.spotlight-body{display:block;padding:1.15rem 1.3rem 1.25rem;}
 .spotlight-kicker{
-  font:600 .78rem/1 var(--font-display);letter-spacing:.16em;text-transform:uppercase;
-  color:rgba(255,255,255,.72);margin:0 0 .75rem;
+  display:block;font:600 .72rem/1 var(--font-display);letter-spacing:.15em;
+  text-transform:uppercase;color:var(--blue);margin-bottom:.55rem;
 }
-.spotlight h3{
-  font-size:clamp(1.5rem,3.2vw,2.4rem);line-height:1.15;color:#fff;
-  margin:0;max-width:22ch;text-wrap:balance;
+.spotlight-title{
+  display:block;font-family:var(--font-display);font-weight:600;
+  font-size:clamp(1.1rem,1.9vw,1.35rem);line-height:1.3;color:var(--ink);
+  letter-spacing:-.01em;text-wrap:balance;
 }
-.spotlight-go{
-  display:inline-flex;align-items:center;gap:.4rem;margin-top:1.1rem;
-  font-family:var(--font-display);font-weight:600;font-size:.95rem;color:var(--gold);
+/* The byline every post already carries. */
+.spotlight-by{display:flex;align-items:center;gap:.6rem;margin-top:.9rem;}
+.sb-ico{
+  width:30px;height:30px;flex:0 0 auto;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--ink);color:#fff;
+  font:700 .82rem/1 var(--font-display);
 }
-.spotlight-go span{transition:transform var(--t-fast) var(--ease);}
-.spotlight:hover .spotlight-go span{transform:translateX(4px);}
-@media (max-width:700px){
-  .spotlight{aspect-ratio:4/5;min-height:0;}
-  .spotlight h3{max-width:none;}
-}
+.sb-meta{display:flex;flex-direction:column;gap:.1rem;min-width:0;}
+.sb-meta b{font-size:.84rem;font-weight:600;color:var(--ink);}
+.sb-meta span{font-size:.78rem;color:var(--faint);}
+
 
 /* Get Started with the domain caveat sitting beside it, not buried in the
    price card. Clicking it drops you at the form, same as the button. */
@@ -1691,125 +1683,6 @@ body.wba-editing [data-edit-href][data-edit-target][data-edit-pending]{outline-c
 }
 
 /* ==========================================================================
-   21. HERO SHOWCASE
-   Two cards under the hero copy: the work on the left, and a glass panel on
-   the right that genuinely blurs the photograph behind it (backdrop-filter,
-   not a flat translucent fill) so the hero image reads through it.
-   ========================================================================== */
-.hero-showcase{
-  position:relative;margin-top:clamp(2.25rem,4vw,3.25rem);
-  display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);
-  align-items:end;gap:clamp(1rem,2.5vw,2rem);
-  max-width:52rem;
-}
-
-/* ---- the work card ---- */
-.hs-photo{
-  margin:0;position:relative;border-radius:var(--r);overflow:hidden;z-index:1;
-  border:1px solid rgba(255,255,255,.14);
-  box-shadow:0 26px 60px rgba(4,9,20,.55);
-  background:var(--ink-soft);
-}
-.hs-photo img{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;}
-/* One clean label over the photograph — no pill, no chrome. */
-.hs-photo figcaption{
-  position:absolute;left:0;right:0;bottom:0;
-  padding:3rem 1.3rem 1.1rem;
-  font-family:var(--font-display);font-weight:600;
-  font-size:clamp(1.05rem,1.7vw,1.35rem);line-height:1.3;
-  letter-spacing:-.01em;color:#fff;
-  background:linear-gradient(to top,rgba(8,13,26,.88) 10%,rgba(8,13,26,0) 100%);
-}
-
-/* ---- the glass panel ---- */
-.hs-glass{
-  position:relative;border-radius:var(--r);overflow:hidden;
-  padding:1.15rem 1.25rem 1.2rem;
-  /* The blur is the point: it samples the hero photograph underneath. */
-  background:rgba(10,16,30,.52);
-  backdrop-filter:blur(16px) saturate(120%);
-  -webkit-backdrop-filter:blur(16px) saturate(120%);
-  border:1px solid rgba(255,255,255,.16);
-  box-shadow:0 22px 50px rgba(4,9,20,.5);
-  /* Squarer than wide, dropped down so it laps the photo's lower-left.
-     No negative LEFT margin: the panel clips its overflow, and a card pushed
-     past the left edge simply loses its first characters. */
-  min-height:clamp(11rem,17vw,14.5rem);
-  display:flex;flex-direction:column;justify-content:center;
-  margin-top:clamp(2rem,4vw,3.5rem);
-  margin-right:clamp(-4.5rem,-5vw,-2rem);
-  z-index:2;
-}
-.hs-glass{margin-block:0;}
-.hs-stars{display:flex;gap:.18rem;margin-bottom:.85rem;color:#fff;}
-.hs-stars svg{width:17px;height:17px;flex:0 0 auto;}
-.hs-glass blockquote{
-  margin:0;font-family:var(--font-display);font-weight:500;
-  font-size:clamp(1rem,1.5vw,1.18rem);line-height:1.5;color:#fff;
-  letter-spacing:-.005em;
-}
-
-/* On a phone the two cards stack, and the overlap would just look broken. */
-@media (max-width:820px){
-  .hero-showcase{grid-template-columns:1fr;max-width:26rem;gap:.9rem;}
-  .hs-glass{margin-left:0;margin-bottom:0;}
-}
-/* Safari/Firefox without backdrop-filter get a solid panel rather than a
-   washed-out one you cannot read. */
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  .hs-glass{background:rgba(9,14,26,.92);}
-}
-
-/* ---- carousel mechanics -------------------------------------------------
-   The showcase is a viewport; .hs-track is the strip that slides. Overflow
-   has to be visible vertically (the glass card laps below the photo) but
-   clipped horizontally, which is what the padding + negative margin trick
-   below buys us. */
-.hero-showcase{overflow:hidden;padding-bottom:2.5rem;margin-bottom:-2.5rem;display:block;max-width:58rem;}
-.hs-track{
-  display:flex;width:100%;
-  transition:transform .62s cubic-bezier(.22,.61,.36,1);
-  will-change:transform;touch-action:pan-y;cursor:grab;
-}
-.hs-track.is-dragging{transition:none;cursor:grabbing;}
-.hs-slide{flex:0 0 100%;min-width:0;padding:.4rem;}
-
-/* The panel everything sits in: blurred, softly outlined, rounded. This is
-   the foundation for the WhatsApp-style conversation backdrop — decorate the
-   inside later; the frame itself is what gives the hero its depth. */
-.hs-frame{
-  position:relative;border-radius:var(--r-lg);
-  padding:clamp(1rem,2.2vw,1.75rem);
-  background:rgba(255,255,255,.07);
-  backdrop-filter:blur(18px) saturate(115%);
-  -webkit-backdrop-filter:blur(18px) saturate(115%);
-  border:1px solid rgba(255,255,255,.24);
-  box-shadow:0 30px 70px rgba(4,9,20,.45), inset 0 1px 0 rgba(255,255,255,.14);
-  /* Review card on the left, photograph on the right and lifted slightly, so
-     the two overlap on the diagonal rather than sitting in a neat row. */
-  display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);
-  align-items:start;gap:clamp(1rem,2.5vw,2rem);
-}
-/* Nothing on an off-screen slide should be clickable or focusable. */
-.hs-slide[aria-hidden="true"]{pointer-events:none;}
-
-.hs-dots{display:flex;gap:.45rem;margin-top:1.1rem;padding-left:.15rem;}
-.hs-dot{
-  width:26px;height:4px;border-radius:2px;cursor:pointer;padding:0;
-  border:0;background:rgba(255,255,255,.26);
-  transition:background var(--t-fast) var(--ease),width var(--t-fast) var(--ease);
-}
-.hs-dot:hover{background:rgba(255,255,255,.5);}
-.hs-dot.on{background:var(--gold);width:34px;}
-.hs-dot:focus-visible{outline:2px solid var(--gold);outline-offset:3px;}
-
-@media (max-width:820px){
-  .hs-frame{grid-template-columns:1fr;gap:.9rem;}
-  .hs-glass{margin:0;order:2;min-height:0;}
-  .hs-photo{order:1;}
-}
-
-/* ==========================================================================
    22. SITES — "A message, not a meeting"
    A chat backdrop with a booking card on one side and the questions people
    actually ask running down the other, cycling on a timer.
@@ -1889,15 +1762,7 @@ body.wba-editing [data-edit-href][data-edit-target][data-edit-pending]{outline-c
 /* In edit mode the carousel stops being a carousel: every slide stacks so all
    of them can be reached and edited, not just the one that happens to be
    showing. The dots and the drag cursor go away with it. */
-body.wba-editing .hs-track{
-  flex-direction:column;gap:1.25rem;transform:none !important;
-  transition:none;cursor:default;
-}
-body.wba-editing .hs-slide,
-body.wba-editing .hs-slide[aria-hidden="true"]{flex:0 0 auto;pointer-events:auto;}
-body.wba-editing .hs-dots{display:none;}
-body.wba-editing .hero-showcase{overflow:visible;}
-
+body.wba-editing body.wba-editing body.wba-editing body.wba-editing 
 /* The Sites thread holds still while you edit it, too. */
 body.wba-editing .talk-thread{height:auto;-webkit-mask-image:none;mask-image:none;}
 body.wba-editing .tt-list li{transition:none;}
@@ -1905,3 +1770,277 @@ body.wba-editing .tt-list li{transition:none;}
 /* The new Sites section centres its heading block. */
 .talkto .section-head.centered{text-align:center;margin-inline:auto;}
 .talkto .section-head.centered .lede{margin-inline:auto;}
+
+/* ==========================================================================
+   21. HERO STAGE — messaging window + draggable review tab
+
+   Anatomy, so the asset hand-off stays obvious:
+     .ws-frame    the window chrome. /img/ws-frame.png overlays everything when
+                  it exists; the CSS below draws the same shape until it does,
+                  so nothing breaks while the asset is being made.
+     .ws-shot     the client's work, sitting in the window's content area.
+     .rv-tab      the review card. Draggable, semi-transparent until you touch
+                  it, arrows on hover, a white wipe between reviews.
+   ========================================================================== */
+.hero-stage{
+  position:relative;margin-top:clamp(2.25rem,4vw,3.25rem);
+  width:100%;max-width:57rem;
+  /* Room for the tab to overhang and be dragged without clipping. */
+  padding:0 0 3.5rem;
+}
+
+/* ---- the window ---- */
+.ws-frame{
+  position:relative;border-radius:var(--r-lg);overflow:hidden;
+  aspect-ratio:16/10;
+  background:rgba(255,255,255,.07);
+  backdrop-filter:blur(18px) saturate(115%);
+  -webkit-backdrop-filter:blur(18px) saturate(115%);
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow:0 34px 80px rgba(4,9,20,.5), inset 0 1px 0 rgba(255,255,255,.14);
+}
+/* The supplied chrome sits over the work image. If the file is missing the
+   browser hides a broken <img>, and the CSS frame above still reads correctly. */
+.ws-chrome{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:fill;pointer-events:none;z-index:3;
+}
+.ws-chrome:not([src]),.ws-chrome[src=""]{display:none;}
+
+.ws-shots{position:absolute;inset:0;}
+.ws-shot{
+  position:absolute;inset:0;margin:0;
+  opacity:0;transition:opacity .5s var(--ease);
+  pointer-events:none;
+}
+.ws-shot.is-active{opacity:1;}
+.ws-shot img{width:100%;height:100%;object-fit:cover;display:block;}
+.ws-shot figcaption{
+  position:absolute;left:0;right:0;bottom:0;z-index:2;
+  padding:3.5rem 1.5rem 1.25rem;
+  font-family:var(--font-display);font-weight:600;
+  font-size:clamp(1.05rem,1.7vw,1.4rem);line-height:1.25;color:#fff;
+  background:linear-gradient(to top,rgba(8,13,26,.9) 8%,rgba(8,13,26,0) 100%);
+}
+/* The quote lives with its image so edit mode can reach it in context; the
+   review tab reads it from here rather than duplicating the copy. */
+.ws-quote{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+
+/* ---- the review tab ---- */
+.rv-tab{
+  /* Sits over the window's right edge and hangs slightly outside it, the way
+     a floating panel would — and clear of the company name bottom-left. */
+  position:absolute;z-index:6;right:-3%;top:46%;
+  width:min(21rem,54%);
+  border-radius:var(--r);overflow:hidden;
+  padding:1.1rem 1.25rem 1.2rem;
+  color:#fff;cursor:grab;touch-action:none;
+  background:rgba(10,16,30,.38);
+  backdrop-filter:blur(14px) saturate(125%);
+  -webkit-backdrop-filter:blur(14px) saturate(125%);
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 20px 46px rgba(4,9,20,.42);
+  opacity:.72;
+  transition:opacity .45s var(--ease),background .45s var(--ease),
+             border-color .45s var(--ease),box-shadow .45s var(--ease);
+}
+/* Wakes up on approach, settles back when left alone. */
+.rv-tab.is-awake{
+  opacity:1;background:rgba(10,16,30,.62);
+  border-color:rgba(255,255,255,.3);
+  box-shadow:0 26px 60px rgba(4,9,20,.5);
+}
+.rv-tab.is-dragging{cursor:grabbing;transition:none;}
+.rv-inner{position:relative;z-index:1;}
+
+/* stars: hollow outlines with a filled layer clipped to the rating */
+.rv-stars{position:relative;height:18px;width:106px;margin-bottom:.8rem;}
+.rv-stars::before,.rv-stars-fill::before{
+  content:'';position:absolute;inset:0;
+  background-repeat:repeat-x;background-size:21.2px 18px;
+}
+/* outline star */
+.rv-stars::before{
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='18' viewBox='0 0 24 24'><path d='m12 3 2.7 5.5 6 .9-4.35 4.24L17.4 20 12 17.15 6.6 20l1.05-6.36L3.3 9.4l6-.9L12 3Z' fill='none' stroke='white' stroke-width='1.6' stroke-linejoin='round'/></svg>");
+}
+/* filled star, revealed by width */
+.rv-stars-fill{
+  position:absolute;inset:0;width:0;overflow:hidden;
+  transition:width .9s cubic-bezier(.22,.61,.36,1);
+}
+.rv-stars-fill::before{
+  width:106px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='18' viewBox='0 0 24 24'><path d='m12 3 2.7 5.5 6 .9-4.35 4.24L17.4 20 12 17.15 6.6 20l1.05-6.36L3.3 9.4l6-.9L12 3Z' fill='white' stroke='white' stroke-width='1.6' stroke-linejoin='round'/></svg>");
+}
+
+.rv-quote{
+  margin:0 0 .6rem;font-family:var(--font-display);font-weight:500;
+  font-size:clamp(.95rem,1.35vw,1.08rem);line-height:1.5;letter-spacing:-.005em;
+  transition:opacity .28s var(--ease),transform .28s var(--ease);
+}
+.rv-who{
+  margin:0;font-size:.8rem;color:rgba(255,255,255,.62);
+  transition:opacity .28s var(--ease),transform .28s var(--ease);
+}
+.rv-tab.is-swapping .rv-quote,
+.rv-tab.is-swapping .rv-who{opacity:0;transform:translateY(6px);}
+
+/* the white wipe */
+.rv-wipe{
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:#fff;opacity:0;transform:translateX(-101%);
+}
+.rv-tab.wipe-next .rv-wipe{animation:rv-wipe-l 620ms cubic-bezier(.7,0,.25,1);}
+.rv-tab.wipe-prev .rv-wipe{animation:rv-wipe-r 620ms cubic-bezier(.7,0,.25,1);}
+@keyframes rv-wipe-l{
+  0%  {opacity:.9;transform:translateX(-101%);}
+  48% {opacity:.9;transform:translateX(0);}
+  100%{opacity:.9;transform:translateX(101%);}
+}
+@keyframes rv-wipe-r{
+  0%  {opacity:.9;transform:translateX(101%);}
+  48% {opacity:.9;transform:translateX(0);}
+  100%{opacity:.9;transform:translateX(-101%);}
+}
+
+/* arrows: only on approach, never in the way */
+.rv-arrow{
+  position:absolute;top:50%;z-index:4;
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  background:rgba(255,255,255,.14);color:#fff;
+  border:1px solid rgba(255,255,255,.3);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  opacity:0;transform:translateY(-50%) scale(.9);
+  transition:opacity .3s var(--ease),transform .3s var(--ease),background .2s var(--ease);
+}
+.rv-arrow svg{width:17px;height:17px;}
+.rv-prev{left:.5rem;}
+.rv-next{right:.5rem;}
+.rv-tab.is-awake .rv-arrow{opacity:1;transform:translateY(-50%) scale(1);}
+.rv-arrow:hover{background:rgba(255,255,255,.28);}
+.rv-arrow:focus-visible{opacity:1;outline:2px solid var(--gold);outline-offset:2px;}
+
+@media (max-width:820px){
+  .hero-stage{max-width:none;padding-bottom:0;}
+  .ws-frame{aspect-ratio:4/3;}
+  /* Dragging fights the scroll on a phone, so the tab sits still underneath. */
+  .rv-tab{
+    position:relative;left:auto;bottom:auto;width:100%;margin-top:.9rem;
+    opacity:1;cursor:default;background:rgba(10,16,30,.62);
+  }
+  .rv-arrow{opacity:1;transform:translateY(-50%) scale(1);}
+}
+@media (prefers-reduced-motion:reduce){
+  .rv-wipe{display:none;}
+  .rv-stars-fill,.rv-quote,.rv-who,.rv-tab,.rv-arrow{transition:none;}
+}
+
+/* Edit mode stacks the window's shots so every one can be reached, not just
+   the one showing, and the review tab stops floating over the top of them. */
+body.wba-editing .ws-frame{aspect-ratio:auto;overflow:visible;}
+body.wba-editing .ws-shots{position:static;display:grid;gap:1rem;}
+body.wba-editing .ws-shot{position:relative;inset:auto;opacity:1;pointer-events:auto;}
+body.wba-editing .ws-shot img{aspect-ratio:16/10;}
+body.wba-editing .ws-quote{
+  position:static;width:auto;height:auto;clip:auto;overflow:visible;
+  margin:.6rem 0 0;padding:.6rem .8rem;border-radius:var(--r-sm);
+  background:rgba(255,255,255,.08);color:#fff;font-size:.9rem;line-height:1.5;
+}
+body.wba-editing .ws-chrome{display:none;}
+body.wba-editing .rv-tab{position:relative;left:auto;bottom:auto;width:100%;margin-top:1rem;opacity:1;}
+
+/* ==========================================================================
+   23. SITES — "How we design"
+   Price card left, the work in the middle, the perks cycling on the right.
+   ========================================================================== */
+.design-stage{
+  display:grid;gap:clamp(1rem,2.5vw,1.75rem);align-items:center;
+  grid-template-columns:minmax(0,.82fr) minmax(0,1.3fr) minmax(0,.88fr);
+  margin-top:clamp(2.5rem,5vw,4rem);
+}
+
+/* ---- the middle: a site we made, in a soft frame ---- */
+.design-shot{
+  margin:0;border-radius:var(--r-lg);overflow:hidden;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.2);
+  box-shadow:0 30px 70px rgba(4,9,20,.45), inset 0 1px 0 rgba(255,255,255,.12);
+  padding:clamp(.5rem,1vw,.8rem);
+}
+.design-shot img{
+  width:100%;aspect-ratio:16/10;object-fit:cover;display:block;
+  border-radius:calc(var(--r-lg) - .5rem);
+}
+
+/* ---- the perk rail: exactly four on screen, cycling upward ----
+   A fixed window height and a masked top/bottom edge, so an item entering or
+   leaving fades at the boundary rather than popping. */
+.perk-rail{
+  --pk-h:3.6rem;                /* one row, including its gap */
+  position:relative;height:calc(var(--pk-h) * 4);overflow:hidden;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 14%,#000 86%,transparent 100%);
+          mask-image:linear-gradient(to bottom,transparent 0,#000 14%,#000 86%,transparent 100%);
+}
+.pk-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;}
+.pk{
+  display:flex;align-items:center;gap:.7rem;
+  height:3.1rem;margin-bottom:.5rem;flex:0 0 auto;
+  padding:0 .9rem;border-radius:var(--r-sm);
+  background:rgba(255,255,255,.09);
+  border:1px solid rgba(255,255,255,.14);
+  font-size:.9rem;line-height:1.35;color:#fff;
+  transition:transform .55s cubic-bezier(.22,.61,.36,1),opacity .55s var(--ease);
+}
+.pk-ico{
+  width:30px;height:30px;flex:0 0 auto;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.12);color:var(--gold);
+}
+.pk-ico svg{width:16px;height:16px;}
+/* Leaving: slides right and fades, as asked. */
+.pk.is-out{transform:translateX(120%);opacity:0;}
+/* Arriving from underneath. */
+.pk.is-in{transform:translateY(18px);opacity:0;}
+
+@media (max-width:1000px){
+  .design-stage{grid-template-columns:1fr 1fr;}
+  .design-shot{grid-column:1 / -1;order:-1;}
+}
+@media (max-width:700px){
+  .design-stage{grid-template-columns:1fr;}
+  .perk-rail{--pk-h:3.6rem;}
+}
+@media (prefers-reduced-motion:reduce){
+  .pk{transition:none;}
+}
+
+/* ---- a button that feels pressed ---- */
+.btn.press{
+  transition:transform .12s cubic-bezier(.2,.8,.3,1), box-shadow .18s var(--ease),
+             background var(--t-fast) var(--ease);
+  will-change:transform;
+}
+.btn.press:active{transform:scale(.965);}
+.btn.press::after{
+  /* A ring that expands once on click — the tap feedback a native app gives. */
+  content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  box-shadow:0 0 0 0 rgba(245,196,22,.55);opacity:0;
+}
+.btn.press.is-pressed::after{animation:btn-press .5s var(--ease);}
+@keyframes btn-press{
+  0%  {opacity:1;box-shadow:0 0 0 0 rgba(245,196,22,.55);}
+  100%{opacity:0;box-shadow:0 0 0 14px rgba(245,196,22,0);}
+}
+.btn.press{position:relative;}
+
+/* The price card now carries the call to action. */
+.design-stage .price-card{display:flex;flex-direction:column;align-items:flex-start;}
+.design-stage .price-card .btn{margin-top:1.1rem;width:100%;justify-content:center;}
+.design-stage .price-card .cta-aside{
+  margin-top:.7rem;
+  /* Measured 3.13:1 against the price card. This clears AA for small text. */
+  color:rgba(255,255,255,.82);
+  text-decoration-color:rgba(255,255,255,.45);
+}
+.design-stage .price-card .cta-aside:hover{color:#fff;text-decoration-color:var(--gold);}
