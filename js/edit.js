@@ -40,7 +40,6 @@
 
   var PAGE = normalisePath(location.pathname);
   var SHARED = '*';               /* nav + footer: one row, every page */
-  var BAR_ID = 'wba-editbar';
   var NBSP = '\u00a0';   /* escape, not a literal: editors eat a stray nbsp */
 
   var state = {
@@ -255,29 +254,109 @@
     var existing = f.el.__wbaBtn;
     if (!on) {
       if (existing) { existing.remove(); f.el.__wbaBtn = null; }
+      if (f.el.__wbaRO) { f.el.__wbaRO.disconnect(); f.el.__wbaRO = null; }
       f.el.removeAttribute('data-edit-target');
       return;
     }
     if (existing) return;
 
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'wba-edit-pin wba-edit-pin-' + type;
-    btn.textContent = type === 'img' ? 'Change image' : 'Change link';
-    btn.setAttribute('aria-label', btn.textContent + ' (' + f.key + ')');
-    btn.onclick = function (e) {
-      e.preventDefault(); e.stopPropagation();
-      (type === 'img' ? openImagePanel : openLinkPanel)(f);
-    };
-
-    /* The pin is positioned against the element's offset parent, so give the
-       nearest sensible ancestor a position if it has none. */
     var host = f.el.parentElement;
     if (host && getComputedStyle(host).position === 'static') host.style.position = 'relative';
-    (host || document.body).appendChild(btn);
 
+    if (type === 'img') {
+      /* An image that sits behind editable text (a hero background) must not be
+         covered by a full overlay — you'd lose the headline. Those get a small
+         corner pill; ordinary content images get the full "Replace image"
+         overlay you'd expect to click anywhere. */
+      var behindText = imageIsBackdrop(f.el);
+      var ov = document.createElement('button');
+      ov.type = 'button';
+      ov.className = 'wba-img-overlay' + (behindText ? ' wba-img-overlay-corner' : '');
+      ov.setAttribute('aria-label', 'Replace this image');
+      ov.innerHTML =
+        '<span class="wba-img-overlay-in">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+            '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.6-3.6a2 2 0 0 0-2.8 0L6 20"/></svg>' +
+          '<span>Replace image</span>' +
+        '</span>';
+      ov.onclick = function (e) { e.preventDefault(); e.stopPropagation(); openImagePanel(f); };
+      (host || document.body).appendChild(ov);
+      f.el.__wbaBtn = ov;
+      f.el.__wbaCorner = behindText;
+      f.el.__wbaReposition = function () { positionOverlay(ov, f.el); };
+      positionOverlay(ov, f.el);
+
+      /* An image far down the page may still be 0x0 when edit mode starts
+         (not yet laid out), and it changes size when a new one is dropped in.
+         A ResizeObserver keeps the overlay exactly over it in every case. */
+      if (window.ResizeObserver) {
+        var ro = new ResizeObserver(function () { positionOverlay(ov, f.el); });
+        ro.observe(f.el);
+        if (host) ro.observe(host);
+        f.el.__wbaRO = ro;
+      } else {
+        f.el.addEventListener('load', f.el.__wbaReposition);
+      }
+    } else {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'wba-edit-pin wba-edit-pin-href';
+      btn.textContent = 'Change link';
+      btn.setAttribute('aria-label', 'Change where this link goes (' + f.key + ')');
+      btn.onclick = function (e) { e.preventDefault(); e.stopPropagation(); openLinkPanel(f); };
+      (host || document.body).appendChild(btn);
+      f.el.__wbaBtn = btn;
+    }
     f.el.setAttribute('data-edit-target', '');
-    f.el.__wbaBtn = btn;
+  }
+
+  /* Lay the overlay directly over its image. Uses getBoundingClientRect on
+     both and the difference, which is correct regardless of where the image's
+     offsetParent actually is (offset* would be wrong when the image's nearest
+     positioned ancestor isn't the host we appended to). Zero-size images —
+     not yet laid out, or hidden at this breakpoint — get a hidden overlay
+     rather than a stray 4px square; the ResizeObserver shows it when it grows. */
+  function positionOverlay(ov, img) {
+    var host = ov.parentElement;
+    if (!host) return;
+    var ir = img.getBoundingClientRect();
+    if (ir.width < 8 || ir.height < 8) { ov.style.display = 'none'; return; }
+    ov.style.display = '';
+    var hr = host.getBoundingClientRect();
+    var bl = parseFloat(getComputedStyle(host).borderLeftWidth) || 0;
+    var bt = parseFloat(getComputedStyle(host).borderTopWidth) || 0;
+    var top = ir.top - hr.top - bt, left = ir.left - hr.left - bl;
+
+    if (ov.classList.contains('wba-img-overlay-corner')) {
+      /* A compact pill in the image's top-right, so the hero text underneath
+         stays clickable. Width/height are the pill's own (from CSS). */
+      ov.style.top = (top + 12) + 'px';
+      ov.style.left = 'auto';
+      ov.style.right = (hr.right - ir.right) + 'px';
+      ov.style.width = 'auto';
+      ov.style.height = 'auto';
+    } else {
+      ov.style.top    = top + 'px';
+      ov.style.left   = left + 'px';
+      ov.style.right  = 'auto';
+      ov.style.width  = ir.width + 'px';
+      ov.style.height = ir.height + 'px';
+    }
+  }
+
+  /* Does editable text sit on top of this image? If so it's a backdrop (a hero
+     banner) and must not be covered by a full-image button. */
+  function imageIsBackdrop(img) {
+    var ir = img.getBoundingClientRect();
+    if (ir.width < 8 || ir.height < 8) return false;
+    var texts = document.querySelectorAll('[data-edit]');
+    for (var i = 0; i < texts.length; i++) {
+      var tr = texts[i].getBoundingClientRect();
+      if (tr.width < 4 || tr.height < 4) continue;
+      var cx = tr.left + tr.width / 2, cy = tr.top + tr.height / 2;
+      if (cx > ir.left && cx < ir.right && cy > ir.top && cy < ir.bottom) return true;
+    }
+    return false;
   }
 
   /* -------------------------------------------------------------- panel -- */
@@ -421,8 +500,10 @@
       else { f.el.removeAttribute('width'); f.el.removeAttribute('height'); }
 
       state.dirty['img:' + f.key] = JSON.stringify({ src: url, w: w, h: h, alt: alt });
+      /* The new image may be a different height, so move the overlay back over it. */
+      if (f.el.__wbaReposition) requestAnimationFrame(f.el.__wbaReposition);
       refreshCount();
-      msg('Image changed. Press Save to keep it.');
+      msg('Image changed — tick to save.');
     }
   }
 
@@ -472,71 +553,66 @@
 
   /* ------------------------------------------------------------------- UI - */
 
-  function bar() { return document.getElementById(BAR_ID); }
   function el(id) { return document.getElementById(id); }
+  function pen() { return document.getElementById('wba-pen'); }
 
-  function buildBar() {
-    if (bar()) return;
-    var b = document.createElement('div');
-    b.id = BAR_ID;
-    b.setAttribute('role', 'region');
-    b.setAttribute('aria-label', 'Edit mode');
-    b.innerHTML =
-      '<div class="wba-eb-in">' +
-        '<span class="wba-eb-dot" aria-hidden="true"></span>' +
-        '<strong class="wba-eb-title">Edit mode</strong>' +
-        '<span class="wba-eb-count" id="wba-eb-count"></span>' +
-        '<span class="wba-eb-spacer"></span>' +
-        '<button type="button" class="wba-eb-btn" id="wba-eb-toggle">Start editing</button>' +
-        '<button type="button" class="wba-eb-btn solid" id="wba-eb-save" hidden>Save</button>' +
-        '<button type="button" class="wba-eb-btn ghost" id="wba-eb-revert" hidden>Discard</button>' +
-        '<a class="wba-eb-btn ghost" href="/admin/">Admin</a>' +
-        '<button type="button" class="wba-eb-btn ghost wba-eb-x" id="wba-eb-hide" ' +
-          'title="Hide the bar until you next sign in" aria-label="Hide edit bar">&#215;</button>' +
-      '</div>' +
-      '<div class="wba-eb-msg" id="wba-eb-msg" role="status" aria-live="polite"></div>';
+  /* The whole entry point is one floating button, only ever built for a
+     signed-in admin. Idle it's a pen ("edit this page"); while editing it's a
+     tick ("save"). No bar, no menu — click to edit, click to save. */
+  var ICON_PEN  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+  var ICON_TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+
+  function buildPen() {
+    if (pen()) return;
+    var b = document.createElement('button');
+    b.id = 'wba-pen';
+    b.type = 'button';
+    b.className = 'wba-pen';
+    b.innerHTML = '<span class="wba-pen-ico">' + ICON_PEN + '</span>' +
+                  '<span class="wba-pen-badge" id="wba-pen-badge" hidden></span>';
+    b.setAttribute('aria-label', 'Edit this page');
+    b.title = 'Edit this page';
     document.body.appendChild(b);
-    document.body.classList.add('wba-has-editbar');
-
-    el('wba-eb-toggle').onclick = function () { setEditing(!state.on); };
-    el('wba-eb-save').onclick   = save;
-    el('wba-eb-revert').onclick = revert;
-    el('wba-eb-hide').onclick   = function () {
-      if (Object.keys(state.dirty).length &&
-          !confirm('You have unsaved changes. Hide the bar and lose them?')) return;
-      try { sessionStorage.setItem('wba-editbar-hidden', '1'); } catch (e) {}
-      setEditing(false);
-      b.remove();
-      document.body.classList.remove('wba-has-editbar');
+    document.body.classList.add('wba-has-pen');
+    b.onclick = function () {
+      if (state.on) save(true);        // tick -> save, then leave edit mode
+      else setEditing(true);           // pen  -> enter edit mode
     };
+
+    /* A small toast for feedback, separate from the button. */
+    var t = document.createElement('div');
+    t.id = 'wba-toast';
+    t.className = 'wba-toast';
+    t.setAttribute('role', 'status');
+    t.setAttribute('aria-live', 'polite');
+    document.body.appendChild(t);
   }
 
+  var toastTimer = null;
   function msg(text, tone) {
-    var m = el('wba-eb-msg');
-    if (!m) return;
-    m.textContent = text || '';
-    m.className = 'wba-eb-msg' + (tone ? ' ' + tone : '');
+    var t = el('wba-toast');
+    if (!t) return;
+    if (!text) { t.classList.remove('show'); return; }
+    t.textContent = text;
+    t.className = 'wba-toast show' + (tone ? ' ' + tone : '');
+    clearTimeout(toastTimer);
+    /* Errors stay until dismissed by the next action; success fades. */
+    if (tone !== 'bad') toastTimer = setTimeout(function () { t.classList.remove('show'); }, 4000);
   }
 
   function refreshCount() {
-    var c = el('wba-eb-count');
-    if (!c) return;
-
+    var b = pen();
+    if (!b) return;
     var d = Object.keys(state.dirty).length;
-    var p = Object.keys(state.pending).length;
-    var bits = [];
-    if (d) bits.push(d + ' unsaved');
-    if (p) bits.push(p + ' awaiting publish');
-    if (!d && !p) {
-      var n = state.fields.length + state.images.length + state.links.length;
-      bits.push(n + ' editable here');
-    }
-    c.textContent = bits.join(' · ');
 
-    el('wba-eb-save').hidden   = !d;
-    el('wba-eb-revert').hidden = !d;
-    var b = bar();
-    if (b) b.classList.toggle('is-dirty', !!d);
+    b.classList.toggle('is-editing', state.on);
+    b.classList.toggle('is-dirty', d > 0);
+    b.querySelector('.wba-pen-ico').innerHTML = state.on ? ICON_TICK : ICON_PEN;
+    b.setAttribute('aria-label', state.on ? 'Save changes' : 'Edit this page');
+    b.title = state.on ? (d ? 'Save ' + d + ' change' + (d === 1 ? '' : 's') : 'Done — nothing to save') : 'Edit this page';
+
+    var badge = el('wba-pen-badge');
+    if (badge) { badge.hidden = !d; badge.textContent = d || ''; }
   }
 
   /* --------------------------------------------------------- editing mode - */
@@ -544,8 +620,6 @@
   function setEditing(on) {
     state.on = !!on;
     document.body.classList.toggle('wba-editing', state.on);
-    var t = el('wba-eb-toggle');
-    if (t) t.textContent = state.on ? 'Stop editing' : 'Start editing';
 
     state.fields.forEach(function (f) {
       if (state.on) {
@@ -566,8 +640,8 @@
     });
 
     decorate(state.on);
-    if (!state.on) closePanel();
-    msg(state.on ? 'Click any highlighted text to change it, or use the buttons on images and links.' : '');
+    if (!state.on) { closePanel(); state.dirty = {}; }
+    msg(state.on ? 'Click the red text to change it, or an image to replace it. Tick to save.' : '');
     refreshCount();
   }
 
@@ -619,9 +693,11 @@
 
   /* ------------------------------------------------------------------ io - */
 
-  function save() {
+  function save(exitAfter) {
     var keys = Object.keys(state.dirty);
-    if (!keys.length || state.saving) return;
+    /* Clicking the tick with nothing changed just leaves edit mode. */
+    if (!keys.length) { if (exitAfter) setEditing(false); return; }
+    if (state.saving) return;
     state.saving = true;
     msg('Saving…');
 
@@ -654,9 +730,10 @@
         target.el.setAttribute('data-edit-pending', '');
       });
       state.dirty = {};
-      msg('Saved. ' + keys.length + ' change' + (keys.length === 1 ? '' : 's') +
-          ' will reach visitors at the next publish.', 'ok');
-      refreshCount();
+      msg('Saved — ' + keys.length + ' change' + (keys.length === 1 ? '' : 's') +
+          ' will be live within a few minutes.', 'ok');
+      if (exitAfter) setEditing(false);
+      else refreshCount();
     }).catch(function (e) {
       state.saving = false;
       msg('Could not save: ' + ((e && e.message) || e), 'bad');
@@ -711,20 +788,29 @@
   function start() {
     var n = collect() + collectMedia();
     if (!n) return;                         // nothing marked up on this page
-    buildBar();
+    buildPen();
     refreshCount();
     applyPending();
 
+    /* Unsaved changes are only ever in the DOM and in state.dirty — never
+       written until the tick is pressed — so leaving the page simply discards
+       them, which is exactly the intended behaviour. The native prompt just
+       stops an accidental click from losing work. */
     window.addEventListener('beforeunload', function (e) {
-      if (Object.keys(state.dirty).length) { e.preventDefault(); e.returnValue = ''; }
+      if (state.on && Object.keys(state.dirty).length) { e.preventDefault(); e.returnValue = ''; }
     });
+
+    /* Image overlays are absolutely positioned, so keep them over their images
+       as the layout reflows (resize, font load, an image swap changing height). */
+    var reflow = function () {
+      if (!state.on) return;
+      state.images.forEach(function (f) { if (f.el.__wbaReposition) f.el.__wbaReposition(); });
+    };
+    window.addEventListener('resize', reflow, { passive: true });
   }
 
   function boot() {
     if (!window.WBAdb || !WBAdb.currentUser || !WBAdb.getPageContent) return;
-    try {
-      if (sessionStorage.getItem('wba-editbar-hidden') === '1') return;
-    } catch (e) {}
 
     WBAdb.currentUser().then(function (u) {
       if (!u || !u.data || !u.data.user) return;      // signed out: nothing happens

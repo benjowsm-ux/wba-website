@@ -252,7 +252,7 @@ function nav(active){
     `<a href="${href}"${active === key ? ' class="active"' : ''}>${label}</a>`;
   return `<nav class="nav">
   <div class="nav-inner">
-    <a href="/" class="nav-logo" aria-label="WBA home"><img src="${LOGO}" alt="WBA" width="500" height="255"/></a>
+    <a href="/" class="nav-logo" aria-label="WBA home"><img src="${LOGO}" alt="WBA" width="438" height="248"/></a>
     <button class="nav-toggle" aria-label="Menu" aria-expanded="false" onclick="toggleNav()"><span></span><span></span><span></span></button>
     <div class="nav-links" id="navLinks">
       ${link('/','Home','home')}
@@ -269,7 +269,7 @@ function nav(active){
 const FOOTER = `<footer>
   <div class="footer-grid">
     <div class="footer-brand">
-      <img src="${LOGO}" alt="WBA" width="500" height="255"/>
+      <img src="${LOGO}" alt="WBA" width="438" height="248"/>
       <p data-edit="footer.body" data-edit-kind="rich" data-edit-scope="shared">A design &amp; technology agency in Weston-super-Mare. We build, create and grow for local business.</p>
     </div>
     <div class="footer-col">
