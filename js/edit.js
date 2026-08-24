@@ -46,7 +46,9 @@
   var state = {
     on: false,
     admin: false,
-    fields: [],          // [{el, key, kind, original}]
+    fields: [],          // [{el, key, kind, page, original}]
+    images: [],          // [{el, key, page, original}]
+    links:  [],          // [{el, key, page, original}]
     dirty: {},           // key -> value typed but not saved
     pending: {},         // key -> value saved but not yet built
     saving: false
@@ -149,6 +151,11 @@
     else f.el.textContent = value;
   }
 
+  function byKey(list, key) {
+    for (var i = 0; i < list.length; i++) if (list[i].key === key) return list[i];
+    return null;
+  }
+
   function fieldByKey(key) {
     for (var i = 0; i < state.fields.length; i++) {
       if (state.fields[i].key === key) return state.fields[i];
@@ -184,6 +191,283 @@
     }
 
     return state.fields.length;
+  }
+
+  /* ======================================================================
+     Images and link destinations.
+
+     Text is edited in place. These two are not: an image is not text you can
+     type into, and a URL is metadata rather than content. Both get a small
+     panel instead, opened by a button that only exists while editing.
+
+     Same storage, same allow-lists, same publish cycle as the text fields.
+     ====================================================================== */
+
+  var SAFE_LINK = /^(https?:\/\/|\/(?!\/)|mailto:|tel:|#)/i;
+  var SAFE_SRC  = /^(\/(?!\/)|https:\/\/[a-z0-9.-]+\.supabase\.co\/storage\/v1\/object\/public\/)/i;
+
+  /* Control characters are stripped before testing, because browsers ignore
+     them mid-scheme: "java<TAB>script:" runs. Mirrors normaliseUrl() in
+     scripts/lib/page-content.mjs — if these two drift, the editor will accept
+     something the build then refuses, which is a confusing way to fail. */
+  function cleanUrl(raw) {
+    return String(raw == null ? '' : raw).replace(/[\u0000-\u001f\u007f]/g, '').trim();
+  }
+  function okLink(u) { u = cleanUrl(u); return SAFE_LINK.test(u) ? u : null; }
+  function okSrc(u)  { u = cleanUrl(u); return SAFE_SRC.test(u)  ? u : null; }
+
+  /* ---------------------------------------------------------- discovery -- */
+
+  function collectMedia() {
+    state.images = [].slice.call(document.querySelectorAll('[data-edit-img]'))
+      .map(function (el) {
+        return {
+          el: el,
+          key: el.getAttribute('data-edit-img'),
+          page: el.getAttribute('data-edit-scope') === 'shared' ? SHARED : PAGE,
+          original: { src: el.getAttribute('src'), alt: el.getAttribute('alt') || '' }
+        };
+      })
+      .filter(function (f) { return f.key; });
+
+    state.links = [].slice.call(document.querySelectorAll('[data-edit-href]'))
+      .map(function (el) {
+        return {
+          el: el,
+          key: el.getAttribute('data-edit-href'),
+          page: el.getAttribute('data-edit-scope') === 'shared' ? SHARED : PAGE,
+          original: el.getAttribute('href') || ''
+        };
+      })
+      .filter(function (f) { return f.key; });
+
+    return state.images.length + state.links.length;
+  }
+
+  /* Buttons appear only while editing, and are removed when it stops, so an
+     admin reading the site sees the site. */
+  function decorate(on) {
+    state.images.forEach(function (f) { markable(f, on, 'img'); });
+    state.links.forEach(function (f) { markable(f, on, 'href'); });
+  }
+
+  function markable(f, on, type) {
+    var existing = f.el.__wbaBtn;
+    if (!on) {
+      if (existing) { existing.remove(); f.el.__wbaBtn = null; }
+      f.el.removeAttribute('data-edit-target');
+      return;
+    }
+    if (existing) return;
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'wba-edit-pin wba-edit-pin-' + type;
+    btn.textContent = type === 'img' ? 'Change image' : 'Change link';
+    btn.setAttribute('aria-label', btn.textContent + ' (' + f.key + ')');
+    btn.onclick = function (e) {
+      e.preventDefault(); e.stopPropagation();
+      (type === 'img' ? openImagePanel : openLinkPanel)(f);
+    };
+
+    /* The pin is positioned against the element's offset parent, so give the
+       nearest sensible ancestor a position if it has none. */
+    var host = f.el.parentElement;
+    if (host && getComputedStyle(host).position === 'static') host.style.position = 'relative';
+    (host || document.body).appendChild(btn);
+
+    f.el.setAttribute('data-edit-target', '');
+    f.el.__wbaBtn = btn;
+  }
+
+  /* -------------------------------------------------------------- panel -- */
+
+  function panel(title, bodyHTML, onSave) {
+    closePanel();
+    var wrap = document.createElement('div');
+    wrap.className = 'wba-panel-back';
+    wrap.id = 'wba-panel';
+    wrap.innerHTML =
+      '<div class="wba-panel" role="dialog" aria-modal="true" aria-label="' + title + '">' +
+        '<div class="wba-panel-head"><strong>' + title + '</strong>' +
+          '<button type="button" class="wba-eb-btn ghost" data-close aria-label="Close">&#215;</button></div>' +
+        '<div class="wba-panel-body">' + bodyHTML + '</div>' +
+        '<div class="wba-panel-foot">' +
+          '<span class="wba-panel-msg" id="wba-panel-msg"></span>' +
+          '<button type="button" class="wba-eb-btn ghost" data-close>Cancel</button>' +
+          '<button type="button" class="wba-eb-btn solid" data-apply>Apply</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(wrap);
+
+    wrap.addEventListener('click', function (e) {
+      if (e.target === wrap || e.target.hasAttribute('data-close')) closePanel();
+      if (e.target.hasAttribute('data-apply')) onSave(wrap);
+    });
+    document.addEventListener('keydown', escClose);
+    /* Focus the first control so the panel is usable from the keyboard. */
+    var first = wrap.querySelector('input,button,select');
+    if (first) first.focus();
+    return wrap;
+  }
+
+  function escClose(e) { if (e.key === 'Escape') closePanel(); }
+
+  function closePanel() {
+    var p = document.getElementById('wba-panel');
+    if (p) p.remove();
+    document.removeEventListener('keydown', escClose);
+  }
+
+  function panelMsg(text, bad) {
+    var m = document.getElementById('wba-panel-msg');
+    if (m) { m.textContent = text || ''; m.className = 'wba-panel-msg' + (bad ? ' bad' : ''); }
+  }
+
+  /* --------------------------------------------------------- image panel -- */
+
+  var photoCache = null;
+
+  function loadPhotos() {
+    if (photoCache) return Promise.resolve(photoCache);
+    /* Two sources: photos committed to the repo (listed by a manifest the
+       build writes, because a CDN folder has no index) and anything uploaded
+       through Admin -> Photos. */
+    var repo = fetch('/photos/manifest.json')
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .catch(function () { return []; });
+
+    var uploaded = (window.WBAdb && WBAdb.listMedia)
+      ? WBAdb.listMedia(200, 0).then(function (r) {
+          return (r.data || [])
+            .filter(function (o) { return o.name && o.name.charAt(0) !== '.'; })
+            .map(function (o) { return { url: WBAdb.mediaUrl(o.name), name: o.name, w: null, h: null }; });
+        }).catch(function () { return []; })
+      : Promise.resolve([]);
+
+    return Promise.all([repo, uploaded]).then(function (r) {
+      photoCache = { repo: r[0] || [], uploaded: r[1] || [] };
+      return photoCache;
+    });
+  }
+
+  function openImagePanel(f) {
+    var body =
+      '<div class="wba-field">' +
+        '<label for="wba-img-alt">Description (alt text)</label>' +
+        '<input type="text" id="wba-img-alt" value="' + escAttr(f.el.getAttribute('alt') || '') + '" ' +
+          'placeholder="What is in the picture?"/>' +
+        '<p class="wba-hint">Read aloud by screen readers, and shown if the image fails to load.</p>' +
+      '</div>' +
+      '<div class="wba-field">' +
+        '<label for="wba-img-url">Image</label>' +
+        '<input type="text" id="wba-img-url" value="' + escAttr(f.el.getAttribute('src') || '') + '"/>' +
+        '<p class="wba-hint">Pick one below, or paste a path. Uploads live in Admin &rarr; Photos.</p>' +
+      '</div>' +
+      '<div class="wba-picker" id="wba-picker"><p class="wba-hint">Loading images…</p></div>';
+
+    var wrap = panel('Change image', body, function () {
+      var url = okSrc(document.getElementById('wba-img-url').value);
+      if (!url) {
+        panelMsg('That address is not allowed. Use a path on this site, or an uploaded image.', true);
+        return;
+      }
+      var alt = document.getElementById('wba-img-alt').value.slice(0, 300);
+      applyImage(f, url, alt);
+      closePanel();
+    });
+
+    loadPhotos().then(function (p) {
+      var box = document.getElementById('wba-picker');
+      if (!box) return;
+      var section = function (title, list) {
+        if (!list.length) return '';
+        return '<h4>' + title + '</h4><div class="wba-thumbs">' + list.map(function (i) {
+          return '<button type="button" class="wba-thumb" data-url="' + escAttr(i.url) + '" ' +
+                 (i.w ? 'data-w="' + i.w + '" data-h="' + i.h + '" ' : '') +
+                 'title="' + escAttr(i.name) + '">' +
+                 '<img src="' + escAttr(i.url) + '" alt="" loading="lazy"/></button>';
+        }).join('') + '</div>';
+      };
+      box.innerHTML = section('Uploaded', p.uploaded) + section('In the site', p.repo) ||
+                      '<p class="wba-hint">No images found.</p>';
+
+      box.addEventListener('click', function (e) {
+        var t = e.target.closest('.wba-thumb');
+        if (!t) return;
+        document.getElementById('wba-img-url').value = t.getAttribute('data-url');
+        [].forEach.call(box.querySelectorAll('.wba-thumb'), function (b) { b.classList.remove('on'); });
+        t.classList.add('on');
+        panelMsg('');
+      });
+    });
+
+    return wrap;
+  }
+
+  /* Show the change immediately, and record the real pixel size so the build
+     can write width/height back onto the tag. Without them the page reflows
+     as the new image loads. */
+  function applyImage(f, url, alt) {
+    var probe = new Image();
+    probe.onload = function () { commit(probe.naturalWidth, probe.naturalHeight); };
+    probe.onerror = function () { commit(null, null); };
+    probe.src = url;
+
+    function commit(w, h) {
+      f.el.setAttribute('src', url);
+      if (alt !== null && alt !== undefined) f.el.setAttribute('alt', alt);
+      if (w && h) { f.el.setAttribute('width', w); f.el.setAttribute('height', h); }
+      else { f.el.removeAttribute('width'); f.el.removeAttribute('height'); }
+
+      state.dirty['img:' + f.key] = JSON.stringify({ src: url, w: w, h: h, alt: alt });
+      refreshCount();
+      msg('Image changed. Press Save to keep it.');
+    }
+  }
+
+  /* ---------------------------------------------------------- link panel -- */
+
+  function openLinkPanel(f) {
+    var current = f.el.getAttribute('href') || '';
+    var body =
+      '<div class="wba-field">' +
+        '<label for="wba-href">Where should this go?</label>' +
+        '<input type="text" id="wba-href" value="' + escAttr(current) + '"/>' +
+        '<p class="wba-hint">A page on this site (<code>/sites/</code>), a full address ' +
+          '(<code>https://…</code>), an email (<code>mailto:…</code>), a phone number ' +
+          '(<code>tel:…</code>), or a spot on this page (<code>#start</code>).</p>' +
+      '</div>' +
+      '<div class="wba-field"><label>Quick pick</label><div class="wba-chips">' +
+        ['/', '/sites/', '/services/', '/about/', '/feed/', '/contact/', '#start']
+          .map(function (u) { return '<button type="button" class="wba-chip" data-url="' + u + '">' + u + '</button>'; })
+          .join('') +
+      '</div></div>';
+
+    var wrap = panel('Change link', body, function () {
+      var url = okLink(document.getElementById('wba-href').value);
+      if (!url) {
+        panelMsg('That address is not allowed. Links must be a path, https, mailto, tel or #.', true);
+        return;
+      }
+      f.el.setAttribute('href', url);
+      state.dirty['href:' + f.key] = url;
+      refreshCount();
+      msg('Link changed. Press Save to keep it.');
+      closePanel();
+    });
+
+    wrap.addEventListener('click', function (e) {
+      var c = e.target.closest('.wba-chip');
+      if (c) document.getElementById('wba-href').value = c.getAttribute('data-url');
+    });
+    return wrap;
+  }
+
+  function escAttr(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
   /* ------------------------------------------------------------------- UI - */
@@ -243,7 +527,10 @@
     var bits = [];
     if (d) bits.push(d + ' unsaved');
     if (p) bits.push(p + ' awaiting publish');
-    if (!d && !p) bits.push(state.fields.length + ' editable here');
+    if (!d && !p) {
+      var n = state.fields.length + state.images.length + state.links.length;
+      bits.push(n + ' editable here');
+    }
     c.textContent = bits.join(' · ');
 
     el('wba-eb-save').hidden   = !d;
@@ -278,7 +565,9 @@
       }
     });
 
-    msg(state.on ? 'Click any highlighted text to change it.' : '');
+    decorate(state.on);
+    if (!state.on) closePanel();
+    msg(state.on ? 'Click any highlighted text to change it, or use the buttons on images and links.' : '');
     refreshCount();
   }
 
@@ -336,14 +625,19 @@
     state.saving = true;
     msg('Saving…');
 
+    /* Dirty keys are namespaced so an image and a heading can share a name:
+       "img:hero.photo", "href:cta.main", or a bare key for text. */
     var rows = keys.map(function (k) {
+      if (k.indexOf('img:') === 0) {
+        var im = byKey(state.images, k.slice(4));
+        return { page: im ? im.page : PAGE, key: k.slice(4), value: state.dirty[k], kind: 'src' };
+      }
+      if (k.indexOf('href:') === 0) {
+        var ln = byKey(state.links, k.slice(5));
+        return { page: ln ? ln.page : PAGE, key: k.slice(5), value: state.dirty[k], kind: 'href' };
+      }
       var f = fieldByKey(k);
-      return {
-        page:  f ? f.page : PAGE,
-        key:   k,
-        value: state.dirty[k],
-        kind:  f ? f.kind : 'text'
-      };
+      return { page: f ? f.page : PAGE, key: k, value: state.dirty[k], kind: f ? f.kind : 'text' };
     });
 
     WBAdb.savePageContent(rows).then(function (r) {
@@ -352,8 +646,12 @@
 
       keys.forEach(function (k) {
         state.pending[k] = state.dirty[k];
-        var f = fieldByKey(k);
-        if (f) { f.original = state.dirty[k]; f.el.setAttribute('data-edit-pending', ''); }
+        var target = k.indexOf('img:') === 0  ? byKey(state.images, k.slice(4))
+                   : k.indexOf('href:') === 0 ? byKey(state.links,  k.slice(5))
+                   : fieldByKey(k);
+        if (!target) return;
+        if (target.kind) target.original = state.dirty[k];
+        target.el.setAttribute('data-edit-pending', '');
       });
       state.dirty = {};
       msg('Saved. ' + keys.length + ' change' + (keys.length === 1 ? '' : 's') +
@@ -371,6 +669,29 @@
     return WBAdb.getPageContent([PAGE, SHARED]).then(function (r) {
       if (!r || r.error || !r.data) return;
       r.data.forEach(function (row) {
+        if (row.kind === 'src') {
+          var im = byKey(state.images, row.key);
+          if (!im || im.page !== row.page) return;
+          var v; try { v = JSON.parse(row.value); } catch (e) { v = { src: row.value }; }
+          if (v && v.src && im.el.getAttribute('src') !== v.src) {
+            im.el.setAttribute('src', v.src);
+            if (v.alt != null) im.el.setAttribute('alt', v.alt);
+            if (v.w && v.h) { im.el.setAttribute('width', v.w); im.el.setAttribute('height', v.h); }
+            state.pending['img:' + row.key] = row.value;
+            im.el.setAttribute('data-edit-pending', '');
+          }
+          return;
+        }
+        if (row.kind === 'href') {
+          var ln = byKey(state.links, row.key);
+          if (!ln || ln.page !== row.page) return;
+          if (ln.el.getAttribute('href') !== row.value) {
+            ln.el.setAttribute('href', row.value);
+            state.pending['href:' + row.key] = row.value;
+            ln.el.setAttribute('data-edit-pending', '');
+          }
+          return;
+        }
         var f = fieldByKey(row.key);
         /* a shared row must not overwrite a same-named page field */
         if (!f || f.page !== row.page) return;
@@ -388,7 +709,8 @@
   /* ----------------------------------------------------------------- boot - */
 
   function start() {
-    if (!collect()) return;                 // nothing marked up on this page
+    var n = collect() + collectMedia();
+    if (!n) return;                         // nothing marked up on this page
     buildBar();
     refreshCount();
     applyPending();

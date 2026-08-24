@@ -29,7 +29,8 @@
 
 import { marked } from 'marked';
 import { writeFileSync, readFileSync, mkdirSync, rmSync, existsSync, readdirSync } from 'fs';
-import { replaceEditable, renderValue, declaredKeys, pagePathFor } from './lib/page-content.mjs';
+import { replaceEditable, renderValue, declaredKeys, pagePathFor,
+         replaceAttrs, declaredAttrKeys, parseImage, safeLink } from './lib/page-content.mjs';
 
 const SUPABASE_URL = process.env.WBA_SUPABASE_URL || 'https://lynzhiyvggqyplssrapi.supabase.co';
 const KEY  = process.env.WBA_SUPABASE_KEY || 'sb_publishable_j_RkzVTMyM-QtmFnLsf_Vw_ulanlx9K';
@@ -841,12 +842,59 @@ async function bakePageContent(){
     if(!overrides.length) continue;
 
     let html = readFileSync(file, 'utf8');
-    const declared = new Set(declaredKeys(html));
+    const declared     = new Set(declaredKeys(html));
+    const declaredImg  = new Set(declaredAttrKeys(html, 'data-edit-img'));
+    const declaredHref = new Set(declaredAttrKeys(html, 'data-edit-href'));
     let touched = false;
 
     for(const row of overrides){
       const isShared = row.page === '*';
 
+      /* ---- an image ---- */
+      if(row.kind === 'src'){
+        if(!declaredImg.has(row.key)){
+          if(!isShared){ orphaned++; problems.push(`  ${page} ${row.key}: image no longer in the markup`); }
+          continue;
+        }
+        const img = parseImage(row.value);
+        if(!img){
+          skipped++;
+          problems.push(`  ${page} ${row.key}: image source refused by the allow-list`);
+          continue;
+        }
+        const out = replaceAttrs(html, 'data-edit-img', row.key, {
+          src: img.src,
+          /* No dimensions means we genuinely do not know them. Removing the
+             stale pair beats keeping numbers that describe a different
+             picture — a wrong width is a guaranteed layout shift. */
+          width:  img.w,
+          height: img.h,
+          ...(img.alt === null ? {} : { alt: img.alt })
+        });
+        if(out.status === 'ok'){ html = out.html; touched = true; applied++; }
+        else { skipped++; problems.push(`  ${page} ${row.key}: ${out.status}`); }
+        continue;
+      }
+
+      /* ---- a link destination ---- */
+      if(row.kind === 'href'){
+        if(!declaredHref.has(row.key)){
+          if(!isShared){ orphaned++; problems.push(`  ${page} ${row.key}: link no longer in the markup`); }
+          continue;
+        }
+        const href = safeLink(row.value);
+        if(!href){
+          skipped++;
+          problems.push(`  ${page} ${row.key}: link refused by the allow-list`);
+          continue;
+        }
+        const out = replaceAttrs(html, 'data-edit-href', row.key, { href });
+        if(out.status === 'ok'){ html = out.html; touched = true; applied++; }
+        else { skipped++; problems.push(`  ${page} ${row.key}: ${out.status}`); }
+        continue;
+      }
+
+      /* ---- text ---- */
       if(!declared.has(row.key)){
         /* A shared key simply isn't on this page — the admin panel has no
            footer, for one — which is normal and not worth reporting. A
@@ -894,5 +942,30 @@ async function bakePageContent(){
               (orphaned ? `, ${orphaned} orphaned` : '') + '.');
   if(problems.length) console.warn(problems.join('\n'));
 }
+
+/* ==========================================================================
+   A manifest of the photos already in the repo.
+
+   The Edit-mode image picker can list what has been uploaded to Supabase
+   Storage, because Storage has an API. It cannot list /photos/ — that is just
+   a folder on a CDN with no directory index. So the build writes one, with
+   real dimensions, and the picker offers both sources side by side.
+   ========================================================================== */
+function writePhotoManifest(){
+  if(!existsSync('photos')) return;
+  const files = readdirSync('photos', { withFileTypes: true })
+    .filter(e => e.isFile() && /\.(jpe?g|png|webp|avif)$/i.test(e.name))
+    .map(e => {
+      const url = '/photos/' + e.name;
+      const d = imageSize(url);
+      return { url, name: e.name, w: d ? d.w : null, h: d ? d.h : null };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  writeFileSync('photos/manifest.json', JSON.stringify(files, null, 1));
+  console.log(`Photos: manifest lists ${files.length} image(s).`);
+}
+
+writePhotoManifest();
 
 await bakePageContent();

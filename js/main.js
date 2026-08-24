@@ -464,6 +464,23 @@ async function submitForm(){
   fab.rel = 'noopener';
   fab.className = 'wa-fab';
   fab.setAttribute('aria-label', 'Message us on WhatsApp');
-  fab.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.2 4.79 1.2h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm5.8 14.18c-.25.69-1.45 1.32-1.99 1.36-.53.05-1.02.24-3.45-.72-2.91-1.15-4.76-4.12-4.9-4.31-.14-.19-1.17-1.56-1.17-2.97 0-1.41.74-2.11 1-2.4.26-.29.57-.36.76-.36.19 0 .38 0 .55.01.18.01.42-.07.65.5.25.6.84 2.07.91 2.22.07.14.12.31.02.5-.09.19-.14.31-.28.48-.14.17-.29.38-.42.5-.14.14-.28.29-.12.57.16.28.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.22 1.37.28.14.44.12.6-.07.16-.19.69-.81.87-1.08.18-.28.36-.23.61-.14.25.09 1.6.76 1.87.9.28.14.46.21.53.33.07.12.07.66-.18 1.35z"/></svg>WhatsApp';
+  fab.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.2 4.79 1.2h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm5.8 14.18c-.25.69-1.45 1.32-1.99 1.36-.53.05-1.02.24-3.45-.72-2.91-1.15-4.76-4.12-4.9-4.31-.14-.19-1.17-1.56-1.17-2.97 0-1.41.74-2.11 1-2.4.26-.29.57-.36.76-.36.19 0 .38 0 .55.01.18.01.42-.07.65.5.25.6.84 2.07.91 2.22.07.14.12.31.02.5-.09.19-.14.31-.28.48-.14.17-.29.38-.42.5-.14.14-.28.29-.12.57.16.28.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.22 1.37.28.14.44.12.6-.07.16-.19.69-.81.87-1.08.18-.28.36-.23.61-.14.25.09 1.6.76 1.87.9.28.14.46.21.53.33.07.12.07.66-.18 1.35z"/></svg><span class="wa-label">WhatsApp</span>';
   document.body.appendChild(fab);
+
+  /* Hold it back until the hero is out of the way.
+
+     A floating button sits on top of whatever scrolls under it. At the top of
+     a phone screen that is the hero's own buttons — measured, it was covering
+     "Learn More" — and a shortcut that hides the primary call to action is a
+     bad trade. Below the fold it only ever overlaps a corner of a card, which
+     is what a floating action button is understood to do. */
+  var showAfter = function(){
+    var hero = document.querySelector('.hero, .page-hero');
+    var past = hero
+      ? window.scrollY > hero.getBoundingClientRect().height * 0.75
+      : window.scrollY > window.innerHeight * 0.6;
+    fab.classList.toggle('is-in', past);
+  };
+  showAfter();
+  window.addEventListener('scroll', showAfter, { passive: true });
 })();

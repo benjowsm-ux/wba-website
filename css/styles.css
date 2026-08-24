@@ -1121,19 +1121,6 @@ h1,h2,h3,h4,.intro-statement{text-wrap:balance;}
 /* ==========================================================================
    15  PILLAR CARDS — animated mark, blue glow
    ========================================================================== */
-.pillar-body{position:relative;}
-
-.pillar-ico{
-  position:absolute;top:clamp(1.5rem,2.3vw,2rem);right:clamp(1.5rem,2.3vw,2rem);
-  width:38px;height:38px;color:var(--blue);opacity:.5;
-  transition:opacity var(--t) var(--ease),color var(--t) var(--ease);
-  pointer-events:none;
-}
-.pillar-ico svg{width:100%;height:100%;overflow:visible;}
-.pillar:hover .pillar-ico{opacity:1;}
-/* Leave the heading room so a long title never runs under the mark. */
-.pillar-body h3{padding-right:3rem;}
-
 /* The glow. Two rings — a tight edge and a soft bloom — so it reads as light
    rather than as a drop shadow. */
 .pillar{transition:transform var(--t) var(--ease),box-shadow var(--t) var(--ease),border-color var(--t) var(--ease);}
@@ -1145,12 +1132,11 @@ h1,h2,h3,h4,.intro-statement{text-wrap:balance;}
 }
 
 /* ---- The marks move ---- */
-.pillar-ico [class^="an-"]{transform-box:view-box;}
+.icon-step .ico [class^="an-"]{transform-box:view-box;}
 
 /* Build: the head swings down and lands on the bench, then the sparks fly.
    Pivot is the grip at the far end of the handle, so the HEAD is what hits. */
 .an-hammer{transform-origin:36px 24px;}
-.pillar:hover .an-hammer{animation:ico-strike 1.1s var(--ease) 2;}
 @keyframes ico-strike{
   /* Geometry note: the grip is the pivot and the head hangs down-LEFT of it,
      so a NEGATIVE rotation is what drives the head into the bench. The
@@ -1171,34 +1157,9 @@ h1,h2,h3,h4,.intro-statement{text-wrap:balance;}
   66%,100% {opacity:0;transform:scale(1.6);}
 }
 .an-spark{opacity:0;transform-origin:16px 30px;}
-.pillar:hover .an-spark{animation:ico-spark 1.1s var(--ease) 2;}
-
-/* Create: the nib travels, the stroke draws itself behind it. */
-.an-stroke{stroke-dasharray:44;stroke-dashoffset:44;}
-.pillar:hover .an-stroke{animation:ico-draw 1.4s var(--ease) 2;}
-@keyframes ico-draw{0%{stroke-dashoffset:44;}60%,100%{stroke-dashoffset:0;}}
-.pillar:hover .an-pen{animation:ico-nib 1.4s var(--ease) 2;}
-@keyframes ico-nib{
-  0%  {transform:translate(-18px,10px);}
-  60% {transform:translate(0,0);}
-  100%{transform:translate(0,0);}
-}
-
-/* Grow: the line climbs, then the tip lands. */
-.an-climb{stroke-dasharray:52;stroke-dashoffset:52;}
-.pillar:hover .an-climb{animation:ico-climb 1.3s var(--ease) 2;}
-@keyframes ico-climb{0%{stroke-dashoffset:52;}70%,100%{stroke-dashoffset:0;}}
-.an-tip{opacity:0;}
-.pillar:hover .an-tip{animation:ico-tip 1.3s var(--ease) 2;}
-@keyframes ico-tip{0%,62%{opacity:0;}74%,100%{opacity:1;}}
-.pillar:hover .an-pip{animation:ico-pip 1.3s var(--ease) 2;}
-@keyframes ico-pip{0%,66%{opacity:0;transform:scale(.4);}78%{opacity:1;transform:scale(1.3);}100%{opacity:1;transform:scale(1);}}
 
 @media (hover: none),(prefers-reduced-motion: reduce){
-  .pillar:hover [class^="an-"]{animation:none;}
-  .pillar-ico{opacity:.7;}
-  .an-stroke,.an-climb{stroke-dashoffset:0;}
-  .an-tip{opacity:1;}
+  .icon-step:hover [class^="an-"]{animation:none;}
 }
 @media (hover: none){
   .pillar:hover{box-shadow:var(--sh-1);border-color:var(--line);}
@@ -1494,3 +1455,212 @@ body.wba-editing [data-edit-pending]{position:relative;}
 .draft-bar .admin-btn{padding:.32rem .6rem;font-size:.76rem;}
 .post-meta-line{font-size:.78rem;color:var(--faint);white-space:nowrap;}
 .post-meta-line.is-dirty{color:#b45309;font-weight:600;}
+
+/* ---- edit mode: images and links -------------------------------------- */
+/* The pins only exist while editing — js/edit.js creates and removes them. */
+.wba-edit-pin{
+  position:absolute;z-index:60;top:.6rem;right:.6rem;
+  font:600 .7rem/1 var(--font-body);letter-spacing:.01em;
+  padding:.4rem .6rem;border-radius:var(--r-pill);cursor:pointer;
+  background:rgba(11,18,32,.86);color:#fff;border:1px solid rgba(255,255,255,.28);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  box-shadow:0 2px 10px rgba(6,12,26,.3);
+  transition:background var(--t-fast) var(--ease),transform var(--t-fast) var(--ease);
+}
+.wba-edit-pin:hover{background:var(--blue);transform:translateY(-1px);}
+.wba-edit-pin:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+.wba-edit-pin-href{top:auto;bottom:.4rem;right:.4rem;}
+body.wba-editing [data-edit-target]{outline:1px dashed rgba(10,83,199,.5);outline-offset:3px;}
+body.wba-editing [data-edit-target][data-edit-pending]{outline-color:#ff9f43;}
+
+/* ---- the panel -------------------------------------------------------- */
+.wba-panel-back{
+  position:fixed;inset:0;z-index:10000;
+  background:rgba(8,13,26,.55);backdrop-filter:blur(3px);
+  display:flex;align-items:center;justify-content:center;padding:1rem;
+}
+.wba-panel{
+  width:min(40rem,100%);max-height:min(84vh,44rem);
+  display:flex;flex-direction:column;
+  background:var(--paper);border-radius:var(--r);box-shadow:var(--sh-3);
+  overflow:hidden;
+}
+.wba-panel-head,.wba-panel-foot{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.9rem 1.1rem;background:var(--mist);
+}
+.wba-panel-head{border-bottom:1px solid var(--line);}
+.wba-panel-head strong{font-family:var(--font-display);font-size:1rem;flex:1 1 auto;}
+.wba-panel-foot{border-top:1px solid var(--line);justify-content:flex-end;}
+.wba-panel-head .wba-eb-btn,.wba-panel-foot .wba-eb-btn{
+  background:var(--paper);color:var(--ink);border-color:var(--line);
+}
+.wba-panel-head .wba-eb-btn:hover,.wba-panel-foot .wba-eb-btn:hover{background:#eef1f6;}
+.wba-panel-foot .wba-eb-btn.solid{background:var(--blue);border-color:var(--blue);color:#fff;}
+.wba-panel-foot .wba-eb-btn.solid:hover{background:#0947aa;border-color:#0947aa;}
+.wba-panel-body{padding:1.1rem;overflow-y:auto;flex:1 1 auto;}
+.wba-panel-msg{flex:1 1 auto;font-size:.8rem;color:var(--slate);min-width:0;}
+.wba-panel-msg.bad{color:#b91c1c;}
+
+.wba-field + .wba-field{margin-top:1.1rem;}
+.wba-field label{display:block;font-size:.82rem;font-weight:600;color:var(--ink);margin-bottom:.35rem;}
+.wba-field input[type=text]{
+  width:100%;font:inherit;font-size:.9rem;padding:.55rem .7rem;
+  border:1px solid var(--line);border-radius:var(--r-sm);background:var(--paper);color:var(--text);
+}
+.wba-field input[type=text]:focus{outline:2px solid var(--blue);outline-offset:1px;border-color:var(--blue);}
+.wba-hint{font-size:.76rem;color:var(--faint);margin:.35rem 0 0;line-height:1.55;}
+.wba-hint code{
+  font:500 .72rem/1.4 var(--font-mono);background:var(--mist);
+  border-radius:var(--r-xs);padding:.1rem .28rem;
+}
+
+.wba-picker h4{
+  font-family:var(--font-display);font-size:.74rem;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--faint);margin:1.2rem 0 .5rem;
+}
+.wba-thumbs{display:grid;gap:.5rem;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));}
+.wba-thumb{
+  padding:0;border:2px solid transparent;border-radius:var(--r-sm);
+  background:var(--mist);cursor:pointer;overflow:hidden;aspect-ratio:4/3;
+}
+.wba-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.wba-thumb:hover{border-color:var(--line);}
+.wba-thumb.on{border-color:var(--blue);box-shadow:0 0 0 3px rgba(10,83,199,.18);}
+.wba-thumb:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+.wba-chips{display:flex;flex-wrap:wrap;gap:.35rem;}
+.wba-chip{
+  font:500 .78rem/1 var(--font-mono);padding:.4rem .6rem;cursor:pointer;
+  border:1px solid var(--line);border-radius:var(--r-pill);
+  background:var(--paper);color:var(--navy);
+}
+.wba-chip:hover{border-color:var(--blue);background:var(--blue-soft);}
+
+@media (max-width:560px){
+  .wba-panel{max-height:92vh;}
+  .wba-edit-pin{font-size:.64rem;padding:.32rem .5rem;top:.4rem;right:.4rem;}
+}
+@media (prefers-reduced-motion:reduce){
+  .wba-edit-pin:hover{transform:none;}
+}
+
+/* ==========================================================================
+   20. MOBILE POLISH
+   Every rule here answers something measured on a real emulated phone
+   (scripts/audit.mjs), not a guess about what might be awkward.
+   ========================================================================== */
+
+/* ---- iOS zooms the whole page when a focused input is under 16px --------
+   The inputs were 15.4px (.96rem). Safari's response to that is to zoom in on
+   focus and leave the visitor scrolled sideways mid-form, which reads as the
+   site being broken. 16px is the threshold; it is not a suggestion. */
+@media (max-width:900px){
+  input[type=text],input[type=email],input[type=tel],input[type=password],
+  input[type=date],input[type=search],input[type=number],textarea,select{
+    font-size:16px;
+  }
+}
+
+/* ---- footer contrast ---------------------------------------------------
+   Measured against the footer's own background, not assumed:
+     column headings   3.08:1  ->  needs 4.5
+     copyright line    2.67:1
+     Privacy / Terms   4.08:1
+   All small text, so all need 4.5:1. These values clear it with room. */
+.footer-col h4{color:rgba(255,255,255,.72);}
+.footer-col a{color:rgba(255,255,255,.78);}
+.footer-bottom{color:rgba(255,255,255,.62);}
+.footer-bottom a{color:rgba(255,255,255,.78);}
+
+/* ---- small type --------------------------------------------------------
+   Eyebrows, tags and meta were 11.2–11.8px. At arm's length on a phone that
+   is a squint, and it is the kind of detail that makes a site feel cheap. */
+.eyebrow{font-size:.78rem;}
+.post-tag{font-size:.76rem;}
+.price-lbl{font-size:.8rem;}
+.post-meta .muted{font-size:.78rem;}
+
+/* ---- tap targets -------------------------------------------------------
+   Standalone controls need to be comfortably hittable. Padding rather than
+   height, so nothing moves on desktop where the pointer is precise. */
+@media (max-width:900px){
+  /* "Explore Build →" and friends were 24px tall. */
+  .link-go{padding:.5rem 0;min-height:44px;}
+  .pillar .link-go{min-height:0;padding-top:.6rem;}
+
+  /* Footer navigation: full-width rows, so only the height was short. */
+  .footer-col a{padding:.45rem 0;margin-bottom:.15rem;}
+
+  .nav-toggle{width:46px;height:46px;}
+
+  /* Feed filters and the article's action row. */
+  .feed-filters button,.article-foot button{min-height:44px;}
+
+  /* A 24px checkbox is hard to hit deliberately. The label is clickable too,
+     but the box itself should not be the fiddly part. */
+  input[type=checkbox]{width:22px;height:22px;}
+  .checkline{padding:.35rem 0;align-items:center;}
+}
+
+/* ---- the floating WhatsApp button --------------------------------------
+   It was a ~130px wide pill fixed to the bottom-right, and it sat on top of
+   whatever scrolled under it — in testing it covered a post headline and one
+   of the hero buttons. A circular icon-only button covers a fraction of the
+   area and is the shape people already expect a floating action button to be.
+   The label stays for screen readers. */
+@media (max-width:900px){
+  .wa-fab{
+    width:56px;height:56px;padding:0;gap:0;
+    justify-content:center;border-radius:50%;
+    right:max(1rem,env(safe-area-inset-right,0));
+    bottom:calc(1rem + env(safe-area-inset-bottom,0));
+    box-shadow:0 6px 20px rgba(0,0,0,.28);
+  }
+  .wa-fab svg{width:26px;height:26px;}
+  /* Keep the text in the accessibility tree, out of the layout. */
+  .wa-fab .wa-label{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+  }
+  /* Clear the last of the page so the button never rests on the footer's
+     final line. */
+  body{padding-bottom:calc(4.5rem + env(safe-area-inset-bottom,0));}
+  body.wba-has-editbar{padding-bottom:calc(9rem + env(safe-area-inset-bottom,0));}
+}
+
+/* The feed search box sets its own font-size at higher specificity, so the
+   blanket 16px rule above never reached it. Same reason, same fix. */
+@media (max-width:900px){
+  .feed-search input[type=search]{font-size:16px;}
+}
+
+/* The floating button stays out of the way until the hero has scrolled past,
+   so it can never cover the page's primary call to action. */
+@media (max-width:900px){
+  .wa-fab{
+    opacity:0;transform:scale(.7);pointer-events:none;
+    transition:opacity var(--t) var(--ease),transform var(--t) var(--ease);
+  }
+  .wa-fab.is-in{opacity:1;transform:none;pointer-events:auto;}
+
+  /* The last few controls sitting just under 44px. Nudged with padding so
+     desktop, where the pointer is precise, is untouched. */
+  .nav-logo{display:inline-flex;align-items:center;min-height:44px;}
+  .footer-col a{padding:.65rem 0;}
+  .link-go{min-height:44px;}
+  input[type=checkbox]{width:24px;height:24px;}
+}
+@media (prefers-reduced-motion:reduce){
+  .wa-fab{transition:none;}
+}
+
+@media (max-width:900px){
+  /* The pillar card's "Explore Build →" was pinned to the card foot with
+     min-height:0, which undid the 44px floor. Give it the padding instead. */
+  .pillar .link-go{min-height:44px;padding:.6rem 0 .2rem;}
+  /* Privacy / Terms sit inline in the footer's last line at 15px tall. */
+  .footer-bottom a{display:inline-block;padding:.45rem .15rem;}
+  /* The domain caveat beside Get Started is a link, so it needs the height. */
+  .cta-aside{padding:.35rem 0;}
+}

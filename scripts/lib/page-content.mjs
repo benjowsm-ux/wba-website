@@ -157,6 +157,105 @@ export function renderValue(value, kind) {
 }
 
 /* --------------------------------------------------------------------------
+   Attributes: image sources and link destinations.
+
+   These do not go through sanitiseRich — they are not markup, they are single
+   attribute values, and they need their own allow-list. The rule for both is
+   the same: a scheme we recognise, or a path on this site. Anything else is
+   refused outright rather than "cleaned", because a half-repaired URL is
+   worse than no change at all.
+   -------------------------------------------------------------------------- */
+
+/* Where an <img src> may point. Note `data:` is absent on purpose: a data:
+   URL can carry an SVG, and an SVG can carry script. */
+const SAFE_SRC = /^(\/(?!\/)|https:\/\/[a-z0-9.-]+\.supabase\.co\/storage\/v1\/object\/public\/)/i;
+
+/* Where a link may point. Same list the rich sanitiser uses for <a href>. */
+const SAFE_LINK = /^(https?:\/\/|\/(?!\/)|mailto:|tel:|#)/i;
+
+/* Strip control characters, then test the allow-list.
+
+   Control characters first because browsers ignore them mid-scheme: a value
+   of "java" + TAB + "script:alert(1)" is parsed as javascript: by more
+   parsers than you would like. Stripping them means the allow-list below
+   sees what the browser will see, not a disguised version of it. */
+function normaliseUrl(raw) {
+  return String(raw == null ? '' : raw)
+    .replace(/[\u0000-\u001f\u007f]/g, '')
+    .trim();
+}
+
+export function safeLink(raw) {
+  const u = normaliseUrl(raw);
+  return SAFE_LINK.test(u) ? u : null;
+}
+
+export function safeSrc(raw) {
+  const u = normaliseUrl(raw);
+  return SAFE_SRC.test(u) ? u : null;
+}
+
+/* An image override is stored as JSON so the dimensions and alt text travel
+   with the source. Without width/height the page reflows as each new image
+   loads, which is exactly the problem we fixed everywhere else. */
+export function parseImage(value) {
+  let v = value;
+  if (typeof v === 'string') {
+    const t = v.trim();
+    if (t.startsWith('{')) { try { v = JSON.parse(t); } catch (e) { v = { src: t }; } }
+    else v = { src: t };
+  }
+  if (!v || typeof v !== 'object') return null;
+
+  const src = safeSrc(v.src);
+  if (!src) return null;
+
+  const w = Number.isFinite(+v.w) && +v.w > 0 ? Math.round(+v.w) : null;
+  const h = Number.isFinite(+v.h) && +v.h > 0 ? Math.round(+v.h) : null;
+  const alt = v.alt == null ? null : String(v.alt).slice(0, 300);
+  return { src, w, h, alt };
+}
+
+/* Replace one attribute on the element carrying data-edit-img / data-edit-href.
+   Returns the same {html, status} shape as replaceEditable. */
+export function replaceAttrs(html, marker, key, attrs) {
+  const needle = `${marker}="${key}"`;
+  const at = html.indexOf(needle);
+  if (at === -1) return { html, status: 'missing' };
+
+  const lt = html.lastIndexOf('<', at);
+  if (lt === -1) return { html, status: 'malformed' };
+  const gt = findTagEnd(html, lt);
+  if (gt === -1) return { html, status: 'malformed' };
+
+  let tag = html.slice(lt, gt + 1);
+  const selfClosing = /\/>$/.test(tag);
+
+  for (const [name, val] of Object.entries(attrs)) {
+    if (val === null || val === undefined) {
+      /* Remove it: a stale width on a new image is worse than none. */
+      tag = tag.replace(new RegExp(`\\s${name}="[^"]*"`, 'i'), '');
+      continue;
+    }
+    const attr = `${name}="${escapeAttr(val)}"`;
+    const re = new RegExp(`\\s${name}="[^"]*"`, 'i');
+    if (re.test(tag)) tag = tag.replace(re, ' ' + attr);
+    else tag = tag.slice(0, selfClosing ? -2 : -1) + ' ' + attr + (selfClosing ? '/>' : '>');
+  }
+
+  return { html: html.slice(0, lt) + tag + html.slice(gt + 1), status: 'ok' };
+}
+
+/* Keys declared for images / links, so the build can spot orphans. */
+export function declaredAttrKeys(html, marker) {
+  const out = [];
+  const re = new RegExp(`${marker}="([^"]+)"`, 'g');
+  let m;
+  while ((m = re.exec(html))) out.push(m[1]);
+  return out;
+}
+
+/* --------------------------------------------------------------------------
    replaceEditable — swap the contents of the element carrying data-edit="key".
 
    Written as a scanner rather than a regex because the element usually has

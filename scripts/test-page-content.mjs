@@ -10,7 +10,8 @@
 
 import {
   sanitiseRich, renderText, renderValue,
-  replaceEditable, declaredKeys, pagePathFor
+  replaceEditable, declaredKeys, pagePathFor,
+  safeLink, safeSrc, parseImage, replaceAttrs, declaredAttrKeys
 } from './lib/page-content.mjs';
 
 let pass = 0, fail = 0;
@@ -179,6 +180,105 @@ is(pagePathFor('sites\\index.html'), '/sites/', 'windows separators normalised')
      '<p data-edit="b" data-edit-kind="rich">Say <b>hi</b>x</p>',
      'full round trip: escaped text, sanitised rich, script neutralised');
 }
+
+/* ======================================================================== */
+/* Images and link destinations — the attribute allow-lists.                */
+/* ======================================================================== */
+
+/* ------------------------------------------------------------ safeLink -- */
+is(safeLink('/sites/'), '/sites/', 'root-relative link');
+is(safeLink('https://a.co/x'), 'https://a.co/x', 'https link');
+is(safeLink('http://a.co'), 'http://a.co', 'http link');
+is(safeLink('mailto:a@b.co'), 'mailto:a@b.co', 'mailto');
+is(safeLink('tel:+441234'), 'tel:+441234', 'tel');
+is(safeLink('#start'), '#start', 'fragment');
+is(safeLink('javascript:alert(1)'), null, 'javascript: refused');
+is(safeLink('JAVASCRIPT:alert(1)'), null, 'uppercase javascript: refused');
+is(safeLink('  javascript:alert(1)'), null, 'leading-space javascript: refused');
+is(safeLink('java\tscript:alert(1)'), null, 'tab-split javascript: refused');
+is(safeLink('java\u0000script:alert(1)'), null, 'NUL-split javascript: refused');
+is(safeLink('java\nscript:alert(1)'), null, 'newline-split javascript: refused');
+is(safeLink('data:text/html,<script>'), null, 'data: refused');
+is(safeLink('vbscript:msgbox'), null, 'vbscript: refused');
+is(safeLink('//evil.com'), null, 'protocol-relative refused (would leave the site)');
+is(safeLink('/\\evil.com'), '/\\evil.com', 'backslash path is still a path, not a host');
+is(safeLink(''), null, 'empty refused');
+is(safeLink(null), null, 'null refused');
+
+/* ------------------------------------------------------------- safeSrc -- */
+is(safeSrc('/photos/a.jpg'), '/photos/a.jpg', 'local photo');
+is(safeSrc('https://abc.supabase.co/storage/v1/object/public/media/x.webp'),
+   'https://abc.supabase.co/storage/v1/object/public/media/x.webp', 'supabase public object');
+is(safeSrc('https://evil.com/x.jpg'), null, 'arbitrary remote host refused');
+is(safeSrc('https://abc.supabase.co/rest/v1/posts'), null, 'supabase non-storage path refused');
+is(safeSrc('data:image/svg+xml,<svg onload=alert(1)>'), null, 'data: URL refused (SVG can carry script)');
+is(safeSrc('javascript:alert(1)'), null, 'javascript: refused');
+is(safeSrc('//evil.com/x.jpg'), null, 'protocol-relative refused');
+is(safeSrc('http://abc.supabase.co/storage/v1/object/public/m/x.jpg'), null, 'plain http supabase refused');
+
+/* ---------------------------------------------------------- parseImage -- */
+{
+  const r = parseImage('{"src":"/photos/a.jpg","w":1600,"h":900,"alt":"A view"}');
+  is(r.src, '/photos/a.jpg', 'image src parsed');
+  is(r.w, 1600, 'image width parsed');
+  is(r.h, 900, 'image height parsed');
+  is(r.alt, 'A view', 'image alt parsed');
+}
+is(parseImage('/photos/a.jpg').src, '/photos/a.jpg', 'bare string treated as src');
+is(parseImage('{"src":"javascript:alert(1)"}'), null, 'unsafe src rejects the whole object');
+is(parseImage('{"src":"/a.jpg","w":"abc"}').w, null, 'non-numeric width dropped');
+is(parseImage('{"src":"/a.jpg","w":-5}').w, null, 'negative width dropped');
+is(parseImage('{"src":"/a.jpg","w":900.6}').w, 901, 'fractional width rounded');
+is(parseImage('not json at all'), null, 'unparseable value with no safe src is refused');
+is(parseImage('{"src":"/a.jpg","alt":"' + 'x'.repeat(400) + '"}').alt.length, 300, 'alt is capped');
+is(parseImage(null), null, 'null image refused');
+
+/* --------------------------------------------------------- replaceAttrs -- */
+{
+  const h = '<img data-edit-img="hero.img" src="/photos/old.jpg" width="10" height="20" alt="old"/>';
+  const r = replaceAttrs(h, 'data-edit-img', 'hero.img',
+    { src: '/photos/new.jpg', width: 1600, height: 900, alt: 'new' });
+  is(r.status, 'ok', 'image swap status');
+  is(r.html, '<img data-edit-img="hero.img" src="/photos/new.jpg" width="1600" height="900" alt="new"/>',
+     'image swap keeps the self-closing tag and replaces in place');
+}
+{
+  /* dimensions unknown for a remote file: drop them rather than lie */
+  const h = '<img data-edit-img="k" src="/a.jpg" width="10" height="20"/>';
+  const r = replaceAttrs(h, 'data-edit-img', 'k', { src: '/b.jpg', width: null, height: null });
+  is(r.html, '<img data-edit-img="k" src="/b.jpg"/>', 'stale dimensions removed, not kept');
+}
+{
+  /* attribute that does not exist yet gets appended */
+  const h = '<img data-edit-img="k" src="/a.jpg"/>';
+  is(replaceAttrs(h, 'data-edit-img', 'k', { alt: 'added' }).html,
+     '<img data-edit-img="k" src="/a.jpg" alt="added"/>', 'missing attribute appended');
+}
+{
+  const h = '<a data-edit-href="cta" href="/old/" class="btn">Go</a>';
+  is(replaceAttrs(h, 'data-edit-href', 'cta', { href: '/new/' }).html,
+     '<a data-edit-href="cta" href="/new/" class="btn">Go</a>', 'href swapped, class untouched');
+}
+{
+  /* the escape that matters: a quote in the value must not open an attribute */
+  const h = '<a data-edit-href="k" href="/a">x</a>';
+  const r = replaceAttrs(h, 'data-edit-href', 'k', { href: '/a" onmouseover="alert(1)' });
+  contains(r.html, 'onmouseover="alert(1)"', 'quote in href cannot create a live handler', false);
+  contains(r.html, '&quot;', 'the quote is entity-encoded instead', true);
+}
+is(replaceAttrs('<img src="/a.jpg"/>', 'data-edit-img', 'nope', { src: '/b.jpg' }).status,
+   'missing', 'absent image key reported');
+{
+  /* two images on one page must not be confused */
+  const h = '<img data-edit-img="a" src="/1.jpg"/><img data-edit-img="b" src="/2.jpg"/>';
+  is(replaceAttrs(h, 'data-edit-img', 'b', { src: '/3.jpg' }).html,
+     '<img data-edit-img="a" src="/1.jpg"/><img data-edit-img="b" src="/3.jpg"/>',
+     'second image targeted correctly');
+}
+is(declaredAttrKeys('<img data-edit-img="a"/><a data-edit-href="b">x</a>', 'data-edit-img').join(','),
+   'a', 'image keys listed');
+is(declaredAttrKeys('<img data-edit-img="a"/><a data-edit-href="b">x</a>', 'data-edit-href').join(','),
+   'b', 'link keys listed');
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
