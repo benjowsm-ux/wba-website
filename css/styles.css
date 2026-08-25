@@ -241,6 +241,10 @@ footer{background:var(--ink);color:rgba(255,255,255,.55);padding:4.5rem var(--gu
 .stack-sm > * + *{margin-top:.9rem;}
 .stack > * + *{margin-top:1.4rem;}
 .section-head{margin-bottom:clamp(2.75rem,4.5vw,4.25rem);}
+/* .centered was only ever wired to the eyebrow, so a "centred" head rendered
+   with a centred kicker over a left-aligned headline. */
+.section-head.centered{text-align:center;}
+.section-head.centered .lede{margin-left:auto;margin-right:auto;max-width:56ch;}
 
 /* A rule that separates without shouting */
 .hr{height:1px;background:var(--line);border:0;margin:0;}
@@ -500,15 +504,20 @@ footer{background:var(--ink);color:rgba(255,255,255,.55);padding:4.5rem var(--gu
 .on-dark .step p{color:rgba(255,255,255,.6);}
 
 /* Offer card (free sites) */
+/* The layout is the one that was here before, restored. The three-stop
+   diagonal wash it used to carry is not: a box that fades navy to blue across
+   its own corner is the "patchy gradient" look we spent a day getting rid of.
+   One flat ink surface, one soft gold glow, and the same grid. */
 .offer{
   display:grid;grid-template-columns:1.2fr .8fr;gap:clamp(2rem,5vw,4rem);align-items:center;
-  background:linear-gradient(155deg,#0b1220 0%,#07264f 58%,#0a3f8e 100%);
-  border-radius:var(--r-xl);padding:clamp(2rem,4.5vw,3.5rem);color:#fff;position:relative;overflow:hidden;
+  background:var(--ink);
+  border-radius:var(--r-lg);padding:clamp(2rem,4.5vw,3.5rem);color:#fff;position:relative;overflow:hidden;
+  border:1px solid rgba(255,255,255,.08);
   box-shadow:var(--sh-3);
 }
 .offer::after{
-  content:'';position:absolute;top:-50%;right:-10%;width:620px;height:620px;border-radius:50%;
-  background:radial-gradient(circle,rgba(245,196,22,.16),transparent 62%);pointer-events:none;
+  content:'';position:absolute;top:-55%;right:-12%;width:620px;height:620px;border-radius:50%;
+  background:radial-gradient(circle,rgba(245,196,22,.1),transparent 64%);pointer-events:none;
 }
 .offer > *{position:relative;z-index:1;}
 .offer h2{color:#fff;margin-bottom:1rem;}
@@ -1810,11 +1819,8 @@ body.wba-editing [data-edit-href][data-edit-target][data-edit-pending]{outline-c
 /* ==========================================================================
    HERO STAGE — the message window and the review tab
    ========================================================================== */
-.hero-stage{
-  position:relative;width:100%;max-width:56rem;
-  margin-top:clamp(2.25rem,4vw,3.25rem);
-  padding-bottom:2.5rem;   /* room for the tab to overhang */
-}
+/* Kept for the edit-mode override further down, which still names it. */
+.hero-stage{position:relative;width:100%;}
 
 .ws-win{width:100%;}
 .ws-body{position:relative;aspect-ratio:16/9;}
@@ -2295,7 +2301,7 @@ html{ background:var(--ink); }
 .page-hero .hero-copy{grid-column:1;}
 .page-hero .crumb{grid-column:1 / -1;margin-bottom:1.9rem;}
 .hero-panel{grid-column:2;justify-self:end;width:min(100%,380px);}
-.hero-panel .win-body{padding:1.15rem 1.25rem 1.3rem;}
+.hero-panel .win-body{padding:0;}
 
 /* Rows of label / value, hairline-separated. Deliberately plain: the panel
    earns its place by being legible at a glance, not by being decorated. */
@@ -2595,3 +2601,402 @@ html.cp-on{overflow:hidden;}
   .map-sub{font-size:15px;}
   .map-ring-label,.map-road-label,.map-compass{font-size:17px;}
 }
+
+/* ==========================================================================
+   13  THE HERO, REARRANGED — and tabs that behave like windows
+
+   The homepage hero used to be one column: headline, sub, buttons, and then
+   a wide window slung underneath with the review card clipped to its edge.
+   That left the right-hand third of the photograph — the sky — completely
+   empty while the content ran out of room underneath.
+
+   It is now two columns. Copy on the left with the review card floating
+   under the buttons; the client's work raised into the sky on the right.
+   Both are windows, both can be picked up by the title bar and moved
+   anywhere on the hero, and the panels fold.
+   ========================================================================== */
+
+.hero-inner{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.06fr);
+  gap:clamp(1.5rem,4vw,3.25rem);
+  align-items:start;
+}
+/* The copy starts lower than the window, which is what puts the window "up
+   in the sky" rather than level with the headline. */
+.hero-copy{min-width:0;padding-top:clamp(1.25rem,3.5vw,3rem);}
+.hero-side{min-width:0;position:relative;}
+.hero h1{max-width:none;}
+.hero-sub{max-width:42ch;}
+
+.ws-win{width:100%;}
+
+/* ---- the review card: dark, under the buttons, floating ----
+   Black-blue rather than the frosted white of the other windows. It sits on
+   top of a photograph either way, and a dark card reads as a separate object
+   in front of the scene instead of a lighter patch of it. */
+.rv-tab{
+  position:relative;right:auto;top:auto;z-index:7;
+  width:min(23rem,100%);
+  margin-top:clamp(1.75rem,3.5vw,2.75rem);
+  background:rgba(6,12,26,.88);
+  border-color:rgba(255,255,255,.15);
+  box-shadow:var(--depth-3),inset 0 1px 0 rgba(255,255,255,.1);
+  opacity:1;
+}
+.rv-tab.is-awake{background:rgba(8,15,32,.94);border-color:rgba(255,255,255,.24);}
+.rv-tab .win-bar{background:rgba(255,255,255,.04);}
+
+/* ---- window chrome shared by every tab ---- */
+/* The title takes the slack so nothing else needs an auto margin — two
+   competing `margin-left:auto` would split the free space and strand the
+   live chip in the middle of the bar. */
+.win-bar .win-title{flex:1 1 auto;min-width:0;}
+.hp-live{margin-left:0;}
+
+.win-fold{
+  flex:0 0 auto;margin-left:.4rem;
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:8px;
+  background:none;border:1px solid transparent;cursor:pointer;
+  color:rgba(255,255,255,.52);
+  transition:background var(--t2),color var(--t2),border-color var(--t2);
+}
+.win-fold svg{width:15px;height:15px;transition:transform var(--t3) var(--m-settle);}
+.win-fold:hover{background:var(--sf-3);border-color:var(--edge);color:#fff;}
+.is-folded .win-fold svg{transform:rotate(-90deg);}
+/* A 28px square is fine under a mouse and mean under a thumb. */
+@media (pointer:coarse){
+  .win-fold{width:40px;height:40px;}
+  .win-fold svg{width:17px;height:17px;}
+  .tt-tool{width:38px;height:38px;}
+}
+
+/* Folding.
+
+   grid-template-rows 1fr -> 0fr is the one way to animate a box to its own
+   content height without measuring it in JavaScript. The catch is padding:
+   it does not collapse with the row, so a folded panel would keep a couple
+   of rems of empty bar underneath. The padding therefore lives on the inner
+   wrapper, not on .win-body. */
+.win[data-tab~="collapse"] > .win-body{
+  display:grid;grid-template-rows:1fr;padding:0;
+  transition:grid-template-rows var(--t3) var(--m-enter),
+             opacity var(--t2) var(--m-enter);
+}
+.win[data-tab~="collapse"] > .win-body > *{
+  min-height:0;overflow:hidden;
+  transition:padding-top var(--t3) var(--m-enter),padding-bottom var(--t3) var(--m-enter);
+}
+.win.is-folded > .win-body{grid-template-rows:0fr;opacity:0;}
+/* An item with an explicit height (the map viewport is 34rem tall) overflows
+   a zero row instead of being squashed by it, so the body has to do the
+   clipping itself. */
+.win[data-tab~="collapse"] > .win-body{overflow:hidden;}
+/* A 0fr row zeroes the item's CONTENT box. Its padding is added outside that,
+   so a folded panel kept a 39px strip of empty background under the bar —
+   exactly the vertical padding of the rows inside it. Clipping does not help;
+   the padding has to go too. */
+.win.is-folded > .win-body > *{padding-top:0;padding-bottom:0;}
+.win.is-folded{box-shadow:var(--depth-2),var(--sheen);}
+.hero-panel .hp-rows{padding:1.15rem 1.25rem 1.3rem;}
+
+/* Picked up and put down. */
+.is-draggable > .win-bar{cursor:grab;user-select:none;touch-action:none;}
+.is-dragging > .win-bar{cursor:grabbing;}
+.is-dragging{transition:none!important;}
+.is-lifted{box-shadow:var(--depth-4),var(--sheen);}
+/* The title bar of a draggable window says so, quietly, on hover. */
+.is-draggable > .win-bar::after{
+  content:'';position:absolute;left:50%;top:6px;translate:-50% 0;
+  width:34px;height:3px;border-radius:2px;
+  background:rgba(255,255,255,.16);opacity:0;transition:opacity var(--t2);
+}
+.is-draggable > .win-bar{position:relative;}
+.is-draggable:hover > .win-bar::after{opacity:1;}
+
+@media (max-width:900px){
+  .hero-inner{grid-template-columns:minmax(0,1fr);gap:2rem;}
+  .hero-copy{padding-top:0;}
+  .rv-tab{width:100%;}
+  .hero-sub{max-width:none;}
+}
+@media (max-width:760px){
+  .is-draggable > .win-bar::after{display:none;}
+}
+
+/* ==========================================================================
+   14  THE BUILD MAP — a canvas cut into the page
+
+   A pannable, zoomable space holding the stages of a website build as
+   connected nodes. Not a diagram of a picture of a process: an actual
+   surface you move around on.
+
+   How it is put together
+   ----------------------
+   .tt-win        the window it lives in, foldable like any other tab
+   .tt-viewport   the hole. overflow:hidden, and it owns the grid background
+   .tt-world      one transformed layer holding everything. translate+scale
+   .tt-links      an SVG under the nodes; the paths are generated from where
+                  the nodes actually are, so moving one re-routes its wires
+   .tt-node       a window, collapsed to its title bar until you open it
+
+   The grid is painted on the VIEWPORT, not the world, with its
+   background-position and size driven from the same transform. A grid drawn
+   on the world would need the world to be enormous to never run out, and
+   would blur as it scaled. This way it is infinite and always crisp.
+   ========================================================================== */
+
+.tt-sec{padding-bottom:clamp(4rem,8vw,6rem);}
+.tt-win{
+  margin-top:clamp(2rem,4vw,3rem);
+  background:var(--ink);
+  border-color:rgba(255,255,255,.12);
+  backdrop-filter:none;-webkit-backdrop-filter:none;
+}
+.tt-win > .win-body{padding:0;}
+
+/* The bar doubles as the toolbar. */
+.tt-tools{display:inline-flex;align-items:center;gap:.3rem;margin-left:.5rem;}
+.tt-tool{
+  width:28px;height:28px;border-radius:8px;display:inline-flex;
+  align-items:center;justify-content:center;
+  background:var(--sf-2);border:1px solid var(--edge);color:rgba(255,255,255,.66);
+  cursor:pointer;transition:background var(--t2),color var(--t2),border-color var(--t2);
+}
+.tt-tool:hover{background:var(--sf-3);color:#fff;border-color:var(--edge-strong);}
+.tt-tool svg{width:15px;height:15px;}
+.tt-zoom{
+  font-family:var(--font-mono);font-size:.68rem;letter-spacing:.08em;
+  color:rgba(255,255,255,.42);min-width:3.4em;text-align:center;
+}
+/* Zoom controls on a window with nothing in it are just clutter. */
+.tt-win.is-folded .tt-tools{display:none;}
+@media (max-width:560px){ .tt-zoom{display:none;} }
+
+.tt-hold{position:relative;}
+.tt-viewport{
+  position:relative;overflow:hidden;
+  height:clamp(24rem,56vh,34rem);
+  background:#070d1a;
+  cursor:grab;
+  touch-action:pan-y;          /* one finger still scrolls the page */
+  --tx:0px; --ty:0px; --k:1;
+}
+.tt-viewport.is-panning{cursor:grabbing;}
+
+/* The grid. Two scales — fine squares with a heavier line every fifth — so
+   there is something to judge distance against at any zoom. */
+.tt-viewport::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(125,175,255,.22) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(125,175,255,.22) 1px,transparent 1px),
+    linear-gradient(rgba(125,175,255,.085) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(125,175,255,.085) 1px,transparent 1px);
+  background-size:
+    calc(200px * var(--k)) calc(200px * var(--k)),
+    calc(200px * var(--k)) calc(200px * var(--k)),
+    calc(40px * var(--k))  calc(40px * var(--k)),
+    calc(40px * var(--k))  calc(40px * var(--k));
+  background-position:var(--tx) var(--ty);
+}
+/* Depth: the edges of the hole fall away, so it reads as cut INTO the page
+   rather than sitting on it. */
+.tt-viewport::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:5;
+  background:
+    radial-gradient(120% 100% at 50% 50%,transparent 52%,rgba(4,8,18,.62) 100%),
+    linear-gradient(to bottom,rgba(4,8,18,.5),transparent 12%,transparent 88%,rgba(4,8,18,.5));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),inset 0 0 60px rgba(2,5,12,.7);
+}
+
+.tt-world{
+  position:absolute;top:0;left:0;transform-origin:0 0;
+  transform:translate3d(var(--tx),var(--ty),0) scale(var(--k));
+  will-change:transform;
+}
+.tt-viewport.is-panning .tt-world{transition:none;}
+.tt-world.is-gliding{transition:transform var(--t4) var(--m-enter);}
+
+.tt-links{position:absolute;top:0;left:0;overflow:visible;pointer-events:none;max-width:none;height:auto;}
+.tt-link{
+  fill:none;stroke:rgba(130,180,255,.5);stroke-width:2.2;
+  stroke-linecap:round;
+}
+.tt-link.is-spine{stroke:rgba(245,196,22,.6);stroke-width:3;}
+/* A slow crawl along the wires. Pure decoration, and the first thing to go
+   when someone asks for less motion. */
+.tt-link.is-spine{stroke-dasharray:10 14;animation:tt-flow 3.6s linear infinite;}
+@keyframes tt-flow{to{stroke-dashoffset:-48px;}}
+@media (prefers-reduced-motion:reduce){
+  .tt-link.is-spine{animation:none;stroke-dasharray:none;}
+}
+
+/* ---- the nodes ---- */
+.tt-node{
+  position:absolute;left:var(--x);top:var(--y);width:236px;
+  border-radius:var(--rc);
+  background:rgba(15,24,44,.94);
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:var(--depth-2);
+  color:#fff;
+}
+.tt-node.is-stage{
+  width:260px;
+  background:rgba(19,30,55,.96);
+  border-color:rgba(245,196,22,.34);
+  box-shadow:var(--depth-3),0 0 0 1px rgba(245,196,22,.08);
+}
+.tt-node.is-open{z-index:4;box-shadow:var(--depth-4);}
+
+.tt-head{
+  display:flex;align-items:center;gap:.55rem;width:100%;
+  padding:.62rem .7rem;background:none;border:0;cursor:pointer;
+  text-align:left;color:inherit;border-radius:var(--rc);
+}
+.tt-head:hover{background:rgba(255,255,255,.05);}
+/* The arrow is on the LEFT, and turning it is the whole affordance. */
+.tt-arrow{
+  flex:0 0 auto;width:20px;height:20px;display:inline-flex;
+  align-items:center;justify-content:center;color:rgba(255,255,255,.5);
+  transition:transform var(--t3) var(--m-settle),color var(--t2);
+}
+.tt-arrow svg{width:14px;height:14px;}
+.tt-node.is-open .tt-arrow{transform:rotate(90deg);color:var(--gold);}
+.tt-name{
+  font-family:var(--font-display);font-weight:600;font-size:.9rem;
+  line-height:1.3;letter-spacing:-.005em;flex:1 1 auto;min-width:0;
+}
+.tt-step{
+  font-family:var(--font-mono);font-size:.62rem;letter-spacing:.14em;
+  color:rgba(255,255,255,.34);flex:0 0 auto;
+}
+.tt-node.is-stage .tt-step{color:var(--gold);}
+
+.tt-drop{
+  display:grid;grid-template-rows:0fr;
+  transition:grid-template-rows var(--t3) var(--m-enter);
+}
+.tt-node.is-open .tt-drop{grid-template-rows:1fr;}
+.tt-drop > div{min-height:0;overflow:hidden;}
+.tt-body{padding:0 .8rem .8rem;border-top:1px solid rgba(255,255,255,.09);margin-top:.1rem;}
+.tt-body p{
+  font-size:.8rem;line-height:1.6;color:rgba(255,255,255,.66);
+  margin:.7rem 0 0;
+}
+.tt-more{
+  display:inline-block;margin-top:.75rem;font-size:.78rem;color:rgba(255,255,255,.82);
+  text-decoration:underline;text-underline-offset:3px;
+  text-decoration-color:rgba(255,255,255,.34);
+}
+.tt-more:hover{color:var(--gold);text-decoration-color:var(--gold);}
+
+/* An image node: words on the left, a thumbnail on the right, and the
+   thumbnail grows when you ask it to. */
+/* An image node needs more width than a text one, or the description ends up
+   a four-word-wide column running down the side of the thumbnail. */
+.tt-node.has-img{width:308px;}
+.tt-figure{display:grid;grid-template-columns:1fr 88px;gap:.8rem;align-items:start;margin-top:.7rem;}
+.tt-figure p{margin:0;}
+.tt-thumb{
+  width:88px;height:64px;border-radius:7px;overflow:hidden;padding:0;border:1px solid var(--edge);
+  background:none;cursor:zoom-in;transition:border-color var(--t2),transform var(--t2);
+}
+.tt-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.tt-thumb:hover{border-color:var(--edge-strong);transform:scale(1.04);}
+.tt-node.is-zoomed .tt-figure{grid-template-columns:1fr;}
+.tt-node.is-zoomed .tt-thumb{width:100%;height:auto;aspect-ratio:16/10;cursor:zoom-out;order:-1;}
+.tt-node.is-zoomed .tt-thumb:hover{transform:none;}
+
+/* The instructions, and the legend. Both sit over the canvas, out of the way. */
+.tt-hint{
+  position:absolute;left:.85rem;bottom:.7rem;z-index:6;pointer-events:none;
+  font-family:var(--font-mono);font-size:.64rem;letter-spacing:.1em;
+  text-transform:uppercase;color:rgba(255,255,255,.34);
+}
+/* Telling a thumb to hold ctrl is not help. */
+.tt-hint-touch{display:none;}
+@media (pointer:coarse){
+  .tt-hint-fine{display:none;}
+  .tt-hint-touch{display:inline;}
+}
+.tt-hint kbd{
+  font-family:inherit;font-size:.95em;padding:.12rem .3rem;border-radius:4px;
+  background:rgba(255,255,255,.08);border:1px solid var(--edge);color:rgba(255,255,255,.55);
+}
+.tt-live{
+  position:absolute;right:.85rem;bottom:.7rem;z-index:6;pointer-events:none;
+  font-family:var(--font-mono);font-size:.64rem;letter-spacing:.1em;
+  text-transform:uppercase;color:rgba(255,255,255,.3);
+}
+
+@media (max-width:760px){
+  .tt-viewport{height:clamp(20rem,64vh,26rem);}
+  .tt-hint{font-size:.58rem;letter-spacing:.06em;}
+  .tt-live{display:none;}
+}
+
+/* ==========================================================================
+   15  THE SPOTLIGHT, LAID SIDEWAYS
+
+   It was a portrait card floating in the middle of a wide section with a
+   quarter of a screen of nothing above it. Same card, same byline, turned on
+   its side: half the height, and it now spans enough of the column to look
+   placed rather than dropped.
+   ========================================================================== */
+.spotlight{
+  display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr);
+  max-width:44rem;margin:clamp(2rem,3.5vw,2.75rem) auto 0;
+  align-items:stretch;
+}
+.spotlight-media{height:100%;}
+.spotlight-media img{height:100%;aspect-ratio:auto;min-height:9.5rem;}
+.spotlight-body{
+  display:flex;flex-direction:column;justify-content:center;
+  padding:1.15rem 1.35rem;
+}
+@media (max-width:620px){
+  .spotlight{grid-template-columns:minmax(0,1fr);max-width:26rem;}
+  .spotlight-media img{aspect-ratio:16/9;min-height:0;}
+}
+
+/* --------------------------------------------------------------------------
+   Edit mode: the map stops being a map.
+
+   Everything inside .tt-world sits in a scaled, translated layer. Edit mode
+   positions its outlines and its "replace image" overlays from element
+   rectangles, and a rectangle inside a transformed ancestor does not line up
+   with an overlay drawn outside it — the image node's overlay landed
+   somewhere else entirely.
+
+   Rather than teach the editor about transforms, the canvas flattens: the
+   transform comes off, the nodes fall into an ordinary grid with every
+   description already open, and each one is edited exactly like any other
+   block on the page. Leaving edit mode puts it all back.
+   -------------------------------------------------------------------------- */
+body.wba-editing .tt-viewport{
+  height:auto;overflow:visible;cursor:default;touch-action:auto;
+}
+body.wba-editing .tt-viewport::before,
+body.wba-editing .tt-viewport::after{display:none;}
+body.wba-editing .tt-world{
+  position:static;transform:none!important;
+  width:auto!important;height:auto!important;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));
+  gap:1rem;padding:1rem;
+}
+body.wba-editing .tt-links{display:none;}
+body.wba-editing .tt-node,
+body.wba-editing .tt-node.has-img{position:static;width:auto;}
+body.wba-editing .tt-drop{grid-template-rows:1fr;}
+body.wba-editing .tt-arrow{display:none;}
+body.wba-editing .tt-head{cursor:default;}
+body.wba-editing .tt-thumb{width:100%;height:auto;aspect-ratio:16/10;cursor:default;}
+body.wba-editing .tt-figure{grid-template-columns:1fr;}
+body.wba-editing .tt-hint,
+body.wba-editing .tt-live,
+body.wba-editing .tt-tools{display:none;}
+/* A folded window hides its contents from the editor as well as the reader. */
+body.wba-editing .win.is-folded > .win-body{grid-template-rows:1fr;opacity:1;}
+body.wba-editing .win.is-folded > .win-body > *{padding-top:revert;padding-bottom:revert;}

@@ -18,7 +18,7 @@
 <link rel="manifest" href="/site.webmanifest"/>
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/styles.css?v=e92a5b5602"/>
+<link rel="stylesheet" href="/css/styles.css?v=fc8dcc385e"/>
 <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
 </head>
 <body>
@@ -64,7 +64,7 @@
       <a data-edit-href="link.1" href="#start" class="btn btn-gold" data-track="sites-hero-start">Get Started</a>
       </div>
     </div>
-    <aside class="win hero-panel" aria-label="What it costs">
+    <aside class="win hero-panel" data-tab="drag collapse" aria-label="What it costs">
       <div class="win-bar">
         <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
         <span class="win-title" data-edit="panel.title">What it costs</span>
@@ -95,124 +95,261 @@
 </header>
 
 <!-- HOW WE DESIGN -->
-<section class="section section-ink on-dark reveal design-sec">
+<section class="section section-white reveal">
   <div class="inner">
-    <div class="section-head centered">
-      <p class="eyebrow centered" data-edit="offer.eyebrow" data-edit-kind="rich">How we design</p>
-      <h2 class="h-md" data-edit="offer.h2" data-edit-kind="rich">Pen and paper first.<br><em class="accent">Then the build.</em></h2>
-      <p class="lede" data-edit="offer.body" data-edit-kind="rich">We play around with designs the old-fashioned way. Using pen and paper, we map out your website, branding and tone before touching any code.</p>
-    </div>
-
-    <!-- Price card left, the work in the middle, the perks cycling on the
-         right — the three-column arrangement from the reference. -->
-    <div class="design-stage">
-      <div class="win price-win">
-        <div class="win-bar">
-          <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-          <span class="win-title">Design &amp; build</span>
+    <div class="offer">
+      <div>
+        <p data-edit="offer.eyebrow" data-edit-kind="rich" class="eyebrow">How we design</p>
+        <h2 data-edit="offer.h2" data-edit-kind="rich" class="h-md">Pen and paper first.<br><em class="accent">Then the build.</em></h2>
+        <p data-edit="offer.body" data-edit-kind="rich" style="margin-top:1rem;">We play around with designs the old-fashioned way. Using pen and paper, we map out your website, branding and tone before touching any code.</p>
+        <div class="checks">
+          <div>Human design, creative touch</div>
+          <div>Hand-written content</div>
+          <div>Mobile optimised</div>
+          <div>Indexed by Google</div>
+          <div>SEO built in, not bolted on</div>
+          <div>Google Business profile</div>
+          <div>Forms &amp; booking systems</div>
+          <div>Progressive updates</div>
         </div>
-        <div class="win-body price-body">
-        <div class="price-big">&pound;0</div>
-        <div class="price-lbl">Design &amp; build</div>
-        <div class="price-rule"></div>
-        <div class="price-then">&pound;30<span>/month</span></div>
-        <div class="price-lbl">Hosting, updates &amp; support</div>
-        <p class="price-note" data-edit="offer.body-2" data-edit-kind="rich">You're billed once your site goes live, and only once you're happy with it. Billed monthly from then on.</p>
-        <a class="btn btn-gold press" data-edit-href="link.2" href="#start">Get Started</a>
-        <a href="#start" class="cta-aside">You'll need to own your domain name. Not sure how? We can help.</a>
+        <div class="cta-row">
+          <a data-edit-href="link.2" href="#start" class="btn btn-gold">Get Started</a>
+          <a href="#start" class="cta-aside">You'll need to own your domain name. Not sure how? We can help.</a>
         </div>
       </div>
-
-      <figure class="win shot-win">
-        <div class="win-bar">
-          <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-          <span class="win-title" data-edit="design.url">pivazcafe.co.uk</span>
-        </div>
-        <div class="win-body">
-          <img class="inset" data-edit-img="design.shot" src="/photos/pivaz-menu.jpg"
-               width="1920" height="1080" alt="A site we designed and built" loading="lazy"/>
-        </div>
-      </figure>
-
-      <div class="perk-rail" id="perkRail" aria-label="What is included">
-        <ul class="pk-list">
-            <li class="pk">
-              <span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h7"/></svg></span>
-              <span data-edit="perk.1">Human design, creative touch</span>
-            </li>
-            <li class="pk">
-              <span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
-              <span data-edit="perk.2">Hand-written content</span>
-            </li>
-            <li class="pk">
-              <span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2h10a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1ZM11 19h2"/></svg></span>
-              <span data-edit="perk.3">Mobile optimised</span>
-            </li>
-            <li class="pk">
-              <span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9M12 3v9l6.5 3.8M12 3a9 9 0 0 1 9 9"/></svg></span>
-              <span data-edit="perk.4">Indexed by Google</span>
-            </li>
-            <li class="pk">
-              <span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m3 17 5-5 4 3 8-8M14 7h7v7"/></svg></span>
-              <span data-edit="perk.5">SEO built in, not bolted on</span>
-            </li>
-            <li class="pk">
-              <span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.2 7-10.4A7 7 0 0 0 5 10.6C5 15.8 12 21 12 21ZM12 12.5a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4Z"/></svg></span>
-              <span data-edit="perk.6">Google Business profile</span>
-            </li>
-            <li class="pk">
-              <span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10a2 2 0 0 1 2 2v14l-7-3-7 3V6a2 2 0 0 1 2-2ZM9 9h6M9 13h4"/></svg></span>
-              <span data-edit="perk.7">Forms &amp; booking systems</span>
-            </li>
-            <li class="pk">
-              <span class="pk-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 12a9 9 0 0 1-15 6.7L3 16M21 4v4h-4M3 20v-4h4"/></svg></span>
-              <span data-edit="perk.8">Progressive updates</span>
-            </li>
-        </ul>
+      <div class="price-card">
+        <div class="price-big">£0</div>
+        <div class="price-lbl">Design &amp; build</div>
+        <div class="price-rule"></div>
+        <div class="price-then">£30<span>/month</span></div>
+        <div class="price-lbl">Hosting, updates &amp; support</div>
+        <p data-edit="offer.body-2" data-edit-kind="rich" class="price-note">You're billed once your site goes live, and only once you're happy with it. Billed monthly from then on.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- HOW IT WORKS -->
-<section class="section section-mist reveal" id="how">
+<!-- THE BUILD MAP -->
+<section class="section section-ink on-dark reveal tt-sec" id="how">
   <div class="inner">
-    <div class="icon-steps">
+    <div class="section-head centered">
+      <p class="eyebrow centered" data-edit="map.eyebrow" data-edit-kind="rich">The build, stage by stage</p>
+      <h2 class="h-md" data-edit="map.h2" data-edit-kind="rich">Every site follows<br><em class="accent">the same map.</em></h2>
+      <p class="lede" data-edit="map.lede" data-edit-kind="rich">Five stages, and the work that sits under each one. Drag the map about, open a node to read what actually happens there.</p>
+    </div>
 
-      <div class="icon-step">
-        <svg class="ico" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M7 13a4 4 0 0 1 4-4h26a4 4 0 0 1 4 4v16a4 4 0 0 1-4 4H21l-9 7v-7h-1a4 4 0 0 1-4-4z"/>
-          <circle class="an-dot an-dot1" cx="17" cy="21" r="2" fill="currentColor" stroke="none"/>
-          <circle class="an-dot an-dot2" cx="24" cy="21" r="2" fill="currentColor" stroke="none"/>
-          <circle class="an-dot an-dot3" cx="31" cy="21" r="2" fill="currentColor" stroke="none"/>
-        </svg>
-        <h3 data-edit="step.h3">Contact</h3>
-        <p data-edit="step.body" data-edit-kind="rich">We'll discuss your current situation, what the site needs to do, and where you want to take it.</p>
+    <!-- A pannable canvas, inside a window, that folds away like any other
+         tab. data-tab="collapse" starts it closed on phones — see js/tabs.js. -->
+    <div class="win tt-win" id="ttWin" data-tab="collapse">
+      <div class="win-bar">
+        <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="win-title" data-edit="map.title">Build map</span>
+        <span class="tt-tools">
+          <button type="button" class="tt-tool" id="ttOut" aria-label="Zoom out">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+          </button>
+          <span class="tt-zoom" id="ttZoom" aria-live="off">100%</span>
+          <button type="button" class="tt-tool" id="ttIn" aria-label="Zoom in">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+          <button type="button" class="tt-tool" id="ttFit" aria-label="Fit the whole map">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/></svg>
+          </button>
+        </span>
       </div>
 
-      <div class="icon-step">
-        <svg class="ico mallet" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <g class="an-mallet">
-            <!-- head across the top, handle straight down; the whole group
-                 pivots at the grip so the head swings out to the left -->
-            <rect x="13" y="7" width="22" height="10" rx="2.2"/>
-            <path d="M24 17v24"/>
-          </g>
-        </svg>
-        <h3 data-edit="step.h3-2">Building</h3>
-        <p data-edit="step.body-2" data-edit-kind="rich">We'll keep you in the loop the whole way through the design and build.</p>
-      </div>
+      <div class="win-body">
+        <!-- The wrapper is not decoration. Folding works by taking the body
+             grid from 1fr to 0fr, and a grid item with an EXPLICIT height
+             (the viewport is 34rem tall) sets the track's base size no matter
+             what min-height says — so the map refused to collapse. Give the
+             track an auto-height item and put the height a level further in. -->
+        <div class="tt-hold">
+        <div class="tt-viewport" id="ttViewport" tabindex="0" role="group" aria-label="Build map. Drag to move, use the zoom buttons, open a stage to read about it.">
+          <div class="tt-world" id="ttWorld">
+            <svg class="tt-links" id="ttLinks" aria-hidden="true"></svg>
 
-      <div class="icon-step">
-        <svg class="ico" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="24" cy="24" r="18"/>
-          <path class="an-trace" d="M11 24h6l3.5-7 6 14 3.5-7h7"/>
-          <circle class="an-beat" cx="24" cy="24" r="2.4" fill="currentColor" stroke="none" opacity="0"/>
-        </svg>
-        <h3 data-edit="step.h3-3">Ongoing</h3>
-        <p data-edit="step.body-3" data-edit-kind="rich">We keep your site happy, healthy and up to date.</p>
-      </div>
+            <!-- Stages run left to right along the spine; the work under each
+                 one hangs above and below it. data-x/data-y are world
+                 coordinates and data-parent wires the connectors, so moving a
+                 node is one number and the lines follow. -->
 
+            <article class="tt-node is-stage" id="n1" data-x="60"  data-y="470" style="--x:60px;--y:470px;">
+              <button type="button" class="tt-head">
+                <span class="tt-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+                <span class="tt-name" data-edit="map.n1">Talk it through</span>
+                <span class="tt-step">01</span>
+              </button>
+              <div class="tt-drop"><div><div class="tt-body">
+                <p data-edit="map.n1b" data-edit-kind="rich">Before anything is designed we work out what the site is for. Who is meant to find it, what you want them to do, and what counts as it having worked.</p>
+                <a class="tt-more" href="/feed/what-we-measure/">Read the full write-up</a>
+              </div></div></div>
+            </article>
+
+            <article class="tt-node" data-x="80" data-y="235" data-parent="n1" style="--x:80px;--y:235px;">
+              <button type="button" class="tt-head">
+                <span class="tt-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+                <span class="tt-name" data-edit="map.n1a">What it has to do</span>
+              </button>
+              <div class="tt-drop"><div><div class="tt-body">
+                <p data-edit="map.n1ab" data-edit-kind="rich">Bookings, enquiries, a menu people can read from the pavement. One job the site is judged on, agreed up front.</p>
+              </div></div></div>
+            </article>
+
+            <article class="tt-node" data-x="80" data-y="700" data-parent="n1" style="--x:80px;--y:700px;">
+              <button type="button" class="tt-head">
+                <span class="tt-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+                <span class="tt-name" data-edit="map.n1c">Words and pictures</span>
+              </button>
+              <div class="tt-drop"><div><div class="tt-body">
+                <p data-edit="map.n1cb" data-edit-kind="rich">We write the copy and take the photographs. You do not need to arrive with either, and you should not be paying a photographer before you have a site.</p>
+              </div></div></div>
+            </article>
+
+            <article class="tt-node is-stage" id="n2" data-x="540" data-y="470" data-parent="n1" style="--x:540px;--y:470px;">
+              <button type="button" class="tt-head">
+                <span class="tt-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+                <span class="tt-name" data-edit="map.n2">Pen and paper</span>
+                <span class="tt-step">02</span>
+              </button>
+              <div class="tt-drop"><div><div class="tt-body">
+                <p data-edit="map.n2b" data-edit-kind="rich">Layouts get drawn by hand before a line of code exists. It is faster to throw away a sketch than a build, so this is where most of the thinking happens.</p>
+                <a class="tt-more" href="/feed/a-brand-is-a-set-of-rules/">Read the full write-up</a>
+              </div></div></div>
+            </article>
+
+            <article class="tt-node has-img" data-x="560" data-y="235" data-parent="n2" style="--x:560px;--y:235px;">
+              <button type="button" class="tt-head">
+                <span class="tt-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+                <span class="tt-name" data-edit="map.n2a">On the desk</span>
+              </button>
+              <div class="tt-drop"><div><div class="tt-body">
+                <div class="tt-figure">
+                  <p data-edit="map.n2ab" data-edit-kind="rich">Print, signage and screens laid out together, so the brand holds up off the web as well as on it.</p>
+                  <button type="button" class="tt-thumb" aria-label="Enlarge">
+                    <img data-edit-img="map.img1" src="/photos/wba-print-1.jpg" width="1600" height="900" alt="Printed work laid out on a desk" loading="lazy"/>
+                  </button>
+                </div>
+              </div></div></div>
+            </article>
+
+            <article class="tt-node" data-x="560" data-y="700" data-parent="n2" style="--x:560px;--y:700px;">
+              <button type="button" class="tt-head">
+                <span class="tt-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+                <span class="tt-name" data-edit="map.n2c">Type and colour</span>
+              </button>
+              <div class="tt-drop"><div><div class="tt-body">
+                <p data-edit="map.n2cb" data-edit-kind="rich">Two typefaces, a small palette, one set of rules. What makes a business look established is everything staying the same underneath the logo.</p>
+                <a class="tt-more" href="/feed/a-brand-is-a-set-of-rules/">Read the full write-up</a>
+              </div></div></div>
+            </article>
+
+            <article class="tt-node is-stage" id="n3" data-x="1020" data-y="470" data-parent="n2" style="--x:1020px;--y:470px;">
+              <button type="button" class="tt-head">
+                <span class="tt-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+                <span class="tt-name" data-edit="map.n3">Built by hand</span>
+                <span class="tt-step">03</span>
+              </button>
+              <div class="tt-drop"><div><div class="tt-body">
+                <p data-edit="map.n3b" data-edit-kind="rich">No page builder, no theme licence, no plugin that stops being maintained. The site is written, which is why it stays fast and why it is yours.</p>
+                <a class="tt-more" href="/feed/modern-web-tech-not-page-builders/">Read the full write-up</a>
+              </div></div></div>
+            </article>
+
+            <article class="tt-node" data-x="1040" data-y="235" data-parent="n3" style="--x:1040px;--y:235px;">
+              <button type="button" class="tt-head">
+                <span class="tt-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+                <span class="tt-name" data-edit="map.n3a">Fast by default</span>
+              </button>
+              <div class="tt-drop"><div><div class="tt-body">
+                <p data-edit="map.n3ab" data-edit-kind="rich">Images sized properly, nothing loaded that is not used, and a budget for the page weight that we do not go over.</p>
+              </div></div></div>
+            </article>
+
+            <article class="tt-node" data-x="1040" data-y="700" data-parent="n3" style="--x:1040px;--y:700px;">
+              <button type="button" class="tt-head">
+                <span class="tt-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+                <span class="tt-name" data-edit="map.n3c">Forms that arrive</span>
+              </button>
+              <div class="tt-drop"><div><div class="tt-body">
+                <p data-edit="map.n3cb" data-edit-kind="rich">Enquiries land in your inbox and in a record you can look back through. Bookings, quotes and callbacks all work the same way.</p>
+              </div></div></div>
+            </article>
+
+            <article class="tt-node is-stage" id="n4" data-x="1500" data-y="470" data-parent="n3" style="--x:1500px;--y:470px;">
+              <button type="button" class="tt-head">
+                <span class="tt-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+                <span class="tt-name" data-edit="map.n4">Go live</span>
+                <span class="tt-step">04</span>
+              </button>
+              <div class="tt-drop"><div><div class="tt-body">
+                <p data-edit="map.n4b" data-edit-kind="rich">Domain pointed, certificate on, redirects from every old address so nothing you have already earned in search is thrown away.</p>
+                <a class="tt-more" href="/feed/local-seo-four-things/">Read the full write-up</a>
+              </div></div></div>
+            </article>
+
+            <article class="tt-node" data-x="1520" data-y="235" data-parent="n4" style="--x:1520px;--y:235px;">
+              <button type="button" class="tt-head">
+                <span class="tt-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+                <span class="tt-name" data-edit="map.n4a">Found on Google</span>
+              </button>
+              <div class="tt-drop"><div><div class="tt-body">
+                <p data-edit="map.n4ab" data-edit-kind="rich">Indexing, the business profile, and the four things that actually move a local listing. Built in from the start rather than bolted on later.</p>
+                <a class="tt-more" href="/feed/local-seo-four-things/">Read the full write-up</a>
+              </div></div></div>
+            </article>
+
+            <article class="tt-node" data-x="1520" data-y="700" data-parent="n4" style="--x:1520px;--y:700px;">
+              <button type="button" class="tt-head">
+                <span class="tt-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+                <span class="tt-name" data-edit="map.n4c">Handover</span>
+              </button>
+              <div class="tt-drop"><div><div class="tt-body">
+                <p data-edit="map.n4cb" data-edit-kind="rich">You own the domain, the content and the site. If you ever leave, it comes with you — there is nothing to unpick.</p>
+                <a class="tt-more" href="/free-website-terms/">Read the terms</a>
+              </div></div></div>
+            </article>
+
+            <article class="tt-node is-stage" id="n5" data-x="1980" data-y="470" data-parent="n4" style="--x:1980px;--y:470px;">
+              <button type="button" class="tt-head">
+                <span class="tt-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+                <span class="tt-name" data-edit="map.n5">Keep it moving</span>
+                <span class="tt-step">05</span>
+              </button>
+              <div class="tt-drop"><div><div class="tt-body">
+                <p data-edit="map.n5b" data-edit-kind="rich">The £30 covers hosting, changes and support. A site nobody touches goes stale, so changes are included rather than quoted for.</p>
+                <a class="tt-more" href="/feed/why-we-build-sites-for-free/">Read the full write-up</a>
+              </div></div></div>
+            </article>
+
+            <article class="tt-node" data-x="2000" data-y="235" data-parent="n5" style="--x:2000px;--y:235px;">
+              <button type="button" class="tt-head">
+                <span class="tt-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+                <span class="tt-name" data-edit="map.n5a">What we report</span>
+              </button>
+              <div class="tt-drop"><div><div class="tt-body">
+                <p data-edit="map.n5ab" data-edit-kind="rich">A handful of numbers that mean something, not a dashboard designed to look busy.</p>
+                <a class="tt-more" href="/feed/what-we-measure/">Read the full write-up</a>
+              </div></div></div>
+            </article>
+
+            <article class="tt-node" data-x="2000" data-y="700" data-parent="n5" style="--x:2000px;--y:700px;">
+              <button type="button" class="tt-head">
+                <span class="tt-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+                <span class="tt-name" data-edit="map.n5c">Edit it yourself</span>
+              </button>
+              <div class="tt-drop"><div><div class="tt-body">
+                <p data-edit="map.n5cb" data-edit-kind="rich">Sign in and the page becomes editable in place. Change a price, swap a photo, save. No dashboard to learn.</p>
+              </div></div></div>
+            </article>
+
+          </div>
+
+          <p class="tt-hint" id="ttHint"><span class="tt-hint-fine">Drag to move &middot; <kbd>ctrl</kbd> + scroll to zoom</span><span class="tt-hint-touch">Drag to move &middot; pinch to zoom</span></p>
+          <p class="tt-live" aria-hidden="true">5 stages &middot; 15 nodes</p>
+        </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -326,9 +463,11 @@
   </div>
 </footer>
 
-<script src="/js/main.js?v=d4265cf71b" defer></script>
+<script src="/js/main.js?v=cc44960de5" defer></script>
 <script src="/js/analytics.js?v=6ee0188b0b" defer></script>
-<script src="/js/palette.js?v=b904bc62c8" defer></script>
+<script src="/js/tabs.js?v=8295a2437f" defer></script>
+<script src="/js/map.js?v=1e1902e45e" defer></script>
+<script src="/js/palette.js?v=bb3801caea" defer></script>
 <script src="/js/sites.js?v=e92779fd60" defer></script>
 <script src="/js/edit-boot.js?v=d3c391a5f7" defer></script>
 </body>

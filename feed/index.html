@@ -17,7 +17,7 @@
 <link rel="manifest" href="/site.webmanifest"/>
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/styles.css?v=e92a5b5602"/>
+<link rel="stylesheet" href="/css/styles.css?v=fc8dcc385e"/>
 <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
 </head>
 <body>
@@ -48,7 +48,7 @@
       </div>
       <p class="lede">Work we've finished, and what we learned doing it.</p>
     </div>
-    <aside class="win hero-panel" aria-label="The Feed">
+    <aside class="win hero-panel" data-tab="drag collapse" aria-label="The Feed">
       <div class="win-bar">
         <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
         <span class="win-title" data-edit="panel.title">The Feed</span>
@@ -56,9 +56,18 @@
       </div>
       <div class="win-body">
         <div class="hp-rows">
-          <div class="hp-row"><span class="hp-k" data-edit="panel.k1">Pieces</span><span class="hp-v"><span data-edit="panel.v1" data-edit-kind="rich">7</span><span class="sub" data-edit="panel.s1">Build · Create · Grow</span></span></div>
-          <div class="hp-row"><span class="hp-k" data-edit="panel.k2">Cadence</span><span class="hp-v"><span data-edit="panel.v2" data-edit-kind="rich">When there is something</span><span class="sub" data-edit="panel.s2">Not on a schedule</span></span></div>
-          <div class="hp-row"><span class="hp-k" data-edit="panel.k3">Written by</span><span class="hp-v"><span data-edit="panel.v3" data-edit-kind="rich">The people building it</span></span></div>
+        <div class="hp-row">
+          <span class="hp-k" data-edit="panel.k1">Pieces</span>
+          <span class="hp-v"><span data-edit="panel.v1" data-edit-kind="rich">7</span><span class="sub" data-edit="panel.s1">Build &middot; Create &middot; Grow</span></span>
+        </div>
+        <div class="hp-row">
+          <span class="hp-k" data-edit="panel.k2">Cadence</span>
+          <span class="hp-v"><span data-edit="panel.v2" data-edit-kind="rich">When there is something</span><span class="sub" data-edit="panel.s2">Not on a schedule</span></span>
+        </div>
+        <div class="hp-row">
+          <span class="hp-k" data-edit="panel.k3">Written by</span>
+          <span class="hp-v"><span data-edit="panel.v3" data-edit-kind="rich">The people building it</span></span>
+        </div>
         </div>
       </div>
     </aside>
@@ -78,16 +87,6 @@
     </div>
 
     <div class="feed-grid" id="feedGrid">
-<a class="post-card" data-slug="local-seo-four-things" href="/feed/local-seo-four-things/">
-  <div class="post-card-media"><img src="/photos/high-street.jpg" alt="" width="1600" height="720" loading="lazy"/></div>
-  <div class="post-card-body">
-    <div class="post-meta">Grow<span class="dot"></span><span class="muted">1 min read</span></div>
-    <h3>Local SEO: the four things that actually move the needle</h3>
-    <p>Most local search advice is filler. For a business with one location, almost all of the result comes from four things.</p>
-    <div class="post-tags"><span class="post-tag">seo</span><span class="post-tag">local</span><span class="post-tag">google</span></div>
-    <span class="link-go">Read</span>
-  </div>
-</a>
 <a class="post-card" data-slug="back-of-house-app-harmony" href="/feed/back-of-house-app-harmony/">
   <div class="post-card-media"><img src="/photos/harmony-signage.jpg" alt="" width="1600" height="900" loading="lazy"/></div>
   <div class="post-card-body">
@@ -95,16 +94,6 @@
     <h3>The back-of-house app we built for an aparthotel</h3>
     <p>Stock, changeovers and recurring jobs were living on a clipboard and three group chats. We replaced all of it with one tool.</p>
     <div class="post-tags"><span class="post-tag">apps</span><span class="post-tag">hospitality</span><span class="post-tag">operations</span></div>
-    <span class="link-go">Read</span>
-  </div>
-</a>
-<a class="post-card" data-slug="menu-boards-that-read-from-the-back" href="/feed/menu-boards-that-read-from-the-back/">
-  <div class="post-card-media"><img src="/photos/pivaz-menu.jpg" alt="" width="1920" height="1080" loading="lazy"/></div>
-  <div class="post-card-body">
-    <div class="post-meta">Create<span class="dot"></span><span class="muted">1 min read</span></div>
-    <h3>Menu boards that read from the back of the queue</h3>
-    <p>A café menu is a design problem with a very specific constraint: it has to be legible from eight metres away, in a hurry.</p>
-    <div class="post-tags"><span class="post-tag">print</span><span class="post-tag">signage</span><span class="post-tag">hospitality</span></div>
     <span class="link-go">Read</span>
   </div>
 </a>
@@ -118,6 +107,16 @@
     <span class="link-go">Read</span>
   </div>
 </a>
+<a class="post-card" data-slug="menu-boards-that-read-from-the-back" href="/feed/menu-boards-that-read-from-the-back/">
+  <div class="post-card-media"><img src="/photos/pivaz-menu.jpg" alt="" width="1920" height="1080" loading="lazy"/></div>
+  <div class="post-card-body">
+    <div class="post-meta">Create<span class="dot"></span><span class="muted">1 min read</span></div>
+    <h3>Menu boards that read from the back of the queue</h3>
+    <p>A café menu is a design problem with a very specific constraint: it has to be legible from eight metres away, in a hurry.</p>
+    <div class="post-tags"><span class="post-tag">print</span><span class="post-tag">signage</span><span class="post-tag">hospitality</span></div>
+    <span class="link-go">Read</span>
+  </div>
+</a>
 <a class="post-card" data-slug="a-brand-is-a-set-of-rules" href="/feed/a-brand-is-a-set-of-rules/">
   <div class="post-card-media"><img src="/photos/mural-you-are-loved.jpg" alt="" width="1600" height="720" loading="lazy"/></div>
   <div class="post-card-body">
@@ -125,6 +124,16 @@
     <h3>A brand is a set of rules, not a logo</h3>
     <p>The logo is the easy part. What makes a small business look established is everything that stays the same underneath it.</p>
     <div class="post-tags"><span class="post-tag">branding</span><span class="post-tag">design</span></div>
+    <span class="link-go">Read</span>
+  </div>
+</a>
+<a class="post-card" data-slug="local-seo-four-things" href="/feed/local-seo-four-things/">
+  <div class="post-card-media"><img src="/photos/high-street.jpg" alt="" width="1600" height="720" loading="lazy"/></div>
+  <div class="post-card-body">
+    <div class="post-meta">Grow<span class="dot"></span><span class="muted">1 min read</span></div>
+    <h3>Local SEO: the four things that actually move the needle</h3>
+    <p>Most local search advice is filler. For a business with one location, almost all of the result comes from four things.</p>
+    <div class="post-tags"><span class="post-tag">seo</span><span class="post-tag">local</span><span class="post-tag">google</span></div>
     <span class="link-go">Read</span>
   </div>
 </a>
@@ -153,7 +162,7 @@
   </div>
 </section>
 
-<script id="feedIndexData" type="application/json">[{"slug":"local-seo-four-things","title":"Local SEO: the four things that actually move the needle","excerpt":"Most local search advice is filler. For a business with one location, almost all of the result comes from four things.","tags":["seo","local","google"],"pillar":"grow"},{"slug":"back-of-house-app-harmony","title":"The back-of-house app we built for an aparthotel","excerpt":"Stock, changeovers and recurring jobs were living on a clipboard and three group chats. We replaced all of it with one tool.","tags":["apps","hospitality","operations"],"pillar":"build"},{"slug":"menu-boards-that-read-from-the-back","title":"Menu boards that read from the back of the queue","excerpt":"A café menu is a design problem with a very specific constraint: it has to be legible from eight metres away, in a hurry.","tags":["print","signage","hospitality"],"pillar":"create"},{"slug":"modern-web-tech-not-page-builders","title":"Why we build on modern web tech, not page builders","excerpt":"Template builders are quick for the agency and expensive for you. Here's what you're actually buying when a site is built on one.","tags":["websites","performance","seo"],"pillar":"build"},{"slug":"a-brand-is-a-set-of-rules","title":"A brand is a set of rules, not a logo","excerpt":"The logo is the easy part. What makes a small business look established is everything that stays the same underneath it.","tags":["branding","design"],"pillar":"create"},{"slug":"what-we-measure","title":"What we measure, and what we ignore","excerpt":"A dashboard can be busy and useless at the same time. These are the handful of numbers we actually report on.","tags":["analytics","reporting"],"pillar":"grow"},{"slug":"why-we-build-sites-for-free","title":"Why we build websites for free","excerpt":"It isn't a loss leader and it isn't a trick. It's the most honest way we found to start a long relationship with a local business.","tags":["mission","free sites"],"pillar":"build"}]</script>
+<script id="feedIndexData" type="application/json">[{"slug":"back-of-house-app-harmony","title":"The back-of-house app we built for an aparthotel","excerpt":"Stock, changeovers and recurring jobs were living on a clipboard and three group chats. We replaced all of it with one tool.","tags":["apps","hospitality","operations"],"pillar":"build"},{"slug":"modern-web-tech-not-page-builders","title":"Why we build on modern web tech, not page builders","excerpt":"Template builders are quick for the agency and expensive for you. Here's what you're actually buying when a site is built on one.","tags":["websites","performance","seo"],"pillar":"build"},{"slug":"menu-boards-that-read-from-the-back","title":"Menu boards that read from the back of the queue","excerpt":"A café menu is a design problem with a very specific constraint: it has to be legible from eight metres away, in a hurry.","tags":["print","signage","hospitality"],"pillar":"create"},{"slug":"a-brand-is-a-set-of-rules","title":"A brand is a set of rules, not a logo","excerpt":"The logo is the easy part. What makes a small business look established is everything that stays the same underneath it.","tags":["branding","design"],"pillar":"create"},{"slug":"local-seo-four-things","title":"Local SEO: the four things that actually move the needle","excerpt":"Most local search advice is filler. For a business with one location, almost all of the result comes from four things.","tags":["seo","local","google"],"pillar":"grow"},{"slug":"what-we-measure","title":"What we measure, and what we ignore","excerpt":"A dashboard can be busy and useless at the same time. These are the handful of numbers we actually report on.","tags":["analytics","reporting"],"pillar":"grow"},{"slug":"why-we-build-sites-for-free","title":"Why we build websites for free","excerpt":"It isn't a loss leader and it isn't a trick. It's the most honest way we found to start a long relationship with a local business.","tags":["mission","free sites"],"pillar":"build"}]</script>
 
 <footer>
   <div class="footer-grid">
@@ -181,9 +190,10 @@
     <span><a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · westonbusinessauthority.co.uk</span>
   </div>
 </footer>
-<script src="/js/main.js?v=d4265cf71b" defer></script>
+<script src="/js/main.js?v=cc44960de5" defer></script>
 <script src="/js/analytics.js?v=6ee0188b0b" defer></script>
-<script src="/js/palette.js?v=b904bc62c8" defer></script>
+<script src="/js/tabs.js?v=8295a2437f" defer></script>
+<script src="/js/palette.js?v=bb3801caea" defer></script>
 <script src="/js/edit-boot.js?v=d3c391a5f7" defer></script>
 </body>
 </html>

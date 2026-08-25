@@ -296,6 +296,7 @@ const FOOTER = `<footer>
 
 const SCRIPTS = `<script src="/js/main.js" defer></script>
 <script src="/js/analytics.js" defer></script>
+<script src="/js/tabs.js" defer></script>
 <script src="/js/palette.js" defer></script>
 <script src="/js/edit-boot.js" defer></script>`;
 
@@ -536,7 +537,7 @@ ${nav('feed')}
       </div>
       <p class="lede">Work we've finished, and what we learned doing it.</p>
     </div>
-    <aside class="win hero-panel" aria-label="The Feed">
+    <aside class="win hero-panel" data-tab="drag collapse" aria-label="The Feed">
       <div class="win-bar">
         <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
         <span class="win-title" data-edit="panel.title">The Feed</span>

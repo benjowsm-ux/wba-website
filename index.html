@@ -22,7 +22,7 @@
 <link rel="manifest" href="/site.webmanifest"/>
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/styles.css?v=e92a5b5602"/>
+<link rel="stylesheet" href="/css/styles.css?v=fc8dcc385e"/>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"ProfessionalService","name":"Weston Business Authority","alternateName":"WBA","description":"Design and technology agency in Weston-super-Mare. Websites, apps, systems and automations; branding, graphic design, print and media; SEO, PPC, email and analytics.","url":"https://westonbusinessauthority.co.uk","telephone":"+447902376369","email":"info@westonbusinessauthority.co.uk","address":{"@type":"PostalAddress","addressLocality":"Weston-super-Mare","addressRegion":"Somerset","postalCode":"BS22","addressCountry":"GB"},"geo":{"@type":"GeoCoordinates","latitude":51.346,"longitude":-2.977},"areaServed":[{"@type":"City","name":"Weston-super-Mare"},{"@type":"Place","name":"Worle"},{"@type":"Place","name":"Clevedon"},{"@type":"Place","name":"Nailsea"}],"priceRange":"££"}</script>
 <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
 </head>
@@ -58,6 +58,7 @@
   <div class="hero-media"><img data-edit-img="img.1" src="/photos/seafront-pier.jpg" width="2200" height="1238" alt="" fetchpriority="high"/></div>
   <div class="hero-scrim"></div>
   <div class="hero-inner">
+    <div class="hero-copy">
     <div class="hero-lead">
       <span class="beacon" aria-hidden="true"></span>
       <h1 data-edit="hero.h1" data-edit-kind="rich" class="h-lg">We build, create and <em>grow</em>.</h1>
@@ -68,16 +69,37 @@
       <a data-edit-href="link.2" href="/sites/" class="btn btn-line inverse" data-track="hero-learn-more">Learn More</a>
     </div>
 
-    <!-- The hero stage.
+      <!-- The review tab sits under the buttons, in the left column, and
+           floats over the hero from there. Both windows carry data-tab, so
+           js/tabs.js gives them a draggable title bar clamped to the whole
+           hero rather than to a box around them. -->
+      <div class="win rv-tab" id="rvTab" role="group" aria-label="Client reviews" data-tab="drag">
+        <div class="win-bar" id="rvGrip">
+          <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="win-title">Reviews</span>
+        </div>
+        <span class="rv-wipe" aria-hidden="true"></span>
+        <div class="win-body rv-inner">
+          <div class="rv-stars" id="rvStars" aria-hidden="true">
+            <span class="rv-stars-fill" id="rvStarsFill"></span>
+          </div>
+          <p class="rv-quote" id="rvQuote"></p>
+          <p class="rv-who" id="rvWho"></p>
+        </div>
+        <button type="button" class="rv-arrow rv-prev" id="rvPrev" aria-label="Previous review">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <button type="button" class="rv-arrow rv-next" id="rvNext" aria-label="Next review">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+    </div><!-- /.hero-copy -->
 
-         .ws-frame   the messaging-window chrome. /img/ws-frame.png is dropped
-                     on top when it exists; until then a CSS placeholder draws
-                     the same shape, so the layout never depends on the asset.
-         .ws-shot    the client's work, sitting inside the window.
-         .rv-tab     a separate, draggable review card. The only interactive
-                     piece: arrows on hover, white wipe between reviews. -->
-    <div class="hero-stage" id="heroStage">
-      <div class="win ws-win">
+    <!-- The client's work, in a window, raised into the sky on the right.
+         .ws-chrome takes /img/ws-frame.png when that file exists; until then
+         it paints nothing, so the layout never depends on the asset. -->
+    <div class="hero-side" id="heroStage">
+      <div class="win ws-win" id="wsWin" data-tab="drag">
         <div class="win-bar">
           <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
           <span class="win-title">Messages &middot; WBA</span>
@@ -107,26 +129,6 @@
         </div>
       </div>
 
-      <div class="win rv-tab" id="rvTab" role="group" aria-label="Client reviews">
-        <div class="win-bar" id="rvGrip">
-          <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-          <span class="win-title">Reviews</span>
-        </div>
-        <span class="rv-wipe" aria-hidden="true"></span>
-        <div class="win-body rv-inner">
-          <div class="rv-stars" id="rvStars" aria-hidden="true">
-            <span class="rv-stars-fill" id="rvStarsFill"></span>
-          </div>
-          <p class="rv-quote" id="rvQuote"></p>
-          <p class="rv-who" id="rvWho"></p>
-        </div>
-        <button type="button" class="rv-arrow rv-prev" id="rvPrev" aria-label="Previous review">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        </button>
-        <button type="button" class="rv-arrow rv-next" id="rvNext" aria-label="Next review">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-        </button>
-      </div>
     </div>
   </div>
 </header>
@@ -146,14 +148,14 @@
     </div>
 
     <!-- WBA:SPOTLIGHT:START -->
-    <a class="spotlight" href="/feed/local-seo-four-things/">
-      <span class="spotlight-media"><img src="/photos/high-street.jpg" alt="" width="1600" height="720" loading="lazy"/></span>
+    <a class="spotlight" href="/feed/back-of-house-app-harmony/">
+      <span class="spotlight-media"><img src="/photos/harmony-signage.jpg" alt="" width="1600" height="900" loading="lazy"/></span>
       <span class="spotlight-body">
-        <span class="spotlight-kicker">Grow</span>
-        <span class="spotlight-title">Local SEO: the four things that actually move the needle</span>
+        <span class="spotlight-kicker">Build</span>
+        <span class="spotlight-title">The back-of-house app we built for an aparthotel</span>
         <span class="spotlight-by">
           <span class="sb-ico" aria-hidden="true">W</span>
-          <span class="sb-meta"><b>WBA</b><span>18 August 2026 &middot; 1 min read</span></span>
+          <span class="sb-meta"><b>WBA</b><span>12 August 2026 &middot; 1 min read</span></span>
         </span>
       </span>
     </a>
@@ -306,10 +308,11 @@
   </div>
 </footer>
 
-<script src="/js/main.js?v=d4265cf71b" defer></script>
+<script src="/js/main.js?v=cc44960de5" defer></script>
 <script src="/js/analytics.js?v=6ee0188b0b" defer></script>
-<script src="/js/palette.js?v=b904bc62c8" defer></script>
-<script src="/js/hero-stage.js?v=cd8be259ea" defer></script>
+<script src="/js/tabs.js?v=8295a2437f" defer></script>
+<script src="/js/palette.js?v=bb3801caea" defer></script>
+<script src="/js/hero-stage.js?v=17b057c99c" defer></script>
 <script src="/js/edit-boot.js?v=d3c391a5f7" defer></script>
 </body>
 </html>

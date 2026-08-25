@@ -88,7 +88,7 @@
     tab.classList.add('is-awake');
     clearTimeout(sleepTimer);
     sleepTimer = setTimeout(function () {
-      if (!dragging) tab.classList.remove('is-awake');
+      if (!tab.classList.contains('is-dragging')) tab.classList.remove('is-awake');
     }, 2600);
   }
   ['pointerenter', 'pointermove', 'focusin'].forEach(function (ev) {
@@ -97,87 +97,14 @@
   tab.addEventListener('pointerleave', function () {
     clearTimeout(sleepTimer);
     sleepTimer = setTimeout(function () {
-      if (!dragging) tab.classList.remove('is-awake');
+      if (!tab.classList.contains('is-dragging')) tab.classList.remove('is-awake');
     }, 700);
   });
 
-  /* ------------------------------------------------------------- dragging - *
-     The old version was jittery for a specific reason: it called
-     getBoundingClientRect() on every pointermove to work out the clamp, then
-     wrote a transform. Reading layout and writing style in the same frame
-     forces a synchronous re-layout each move — the browser cannot batch, and
-     the card stutters against the pointer.
-
-     The fix is the standard one: measure ONCE on pointerdown, then during the
-     move only store the coordinates and let a single requestAnimationFrame
-     write the transform. No layout is read while dragging.
-
-     The whole window is not the handle — the title bar is, exactly as a real
-     window behaves. That also leaves the arrows and the text clickable.       */
-  var dragging = false, startX = 0, startY = 0, ox = 0, oy = 0, dx = 0, dy = 0;
-  var minX = 0, maxX = 0, minY = 0, maxY = 0, frame = null;
-  var grip = document.getElementById('rvGrip') || tab;
-
-  function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
-
-  function paintDrag() {
-    frame = null;
-    tab.style.transform = 'translate3d(' + dx + 'px,' + dy + 'px,0)';
-  }
-
-  grip.addEventListener('pointerdown', function (e) {
-    if (editing()) return;
-    if (e.target.closest('.rv-arrow')) return;
-    if (e.button !== 0) return;
-    if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-
-    /* Measure once. These bounds hold for the whole gesture. */
-    var sr = stage.getBoundingClientRect();
-    var tr = tab.getBoundingClientRect();
-    var restLeft = tr.left - dx, restTop = tr.top - dy;
-    minX = sr.left - restLeft;
-    maxX = sr.right - tr.width - restLeft;
-    minY = sr.top - restTop;
-    maxY = sr.bottom - tr.height - restTop;
-
-    dragging = true;
-    startX = e.clientX; startY = e.clientY;
-    ox = dx; oy = dy;
-    tab.classList.add('is-dragging', 'is-lifted');
-    tab.style.willChange = 'transform';
-    grip.setPointerCapture(e.pointerId);
-    wake();
-    e.preventDefault();
-  });
-
-  grip.addEventListener('pointermove', function (e) {
-    if (!dragging) return;
-    dx = clamp(ox + (e.clientX - startX), minX, maxX);
-    dy = clamp(oy + (e.clientY - startY), minY, maxY);
-    /* One write per frame, no reads. */
-    if (!frame) frame = requestAnimationFrame(paintDrag);
-  });
-
-  function endDrag(e) {
-    if (!dragging) return;
-    dragging = false;
-    if (frame) { cancelAnimationFrame(frame); frame = null; paintDrag(); }
-    tab.classList.remove('is-dragging');
-    tab.style.willChange = '';
-    try { grip.releasePointerCapture(e.pointerId); } catch (err) {}
-    wake();
-  }
-  grip.addEventListener('pointerup', endDrag);
-  grip.addEventListener('pointercancel', endDrag);
-
-  /* Double-click returns it home — always a way back. */
-  grip.addEventListener('dblclick', function () {
-    dx = dy = 0;
-    tab.style.transition = 'transform 420ms var(--m-settle)';
-    tab.style.transform = '';
-    tab.classList.remove('is-lifted');
-    setTimeout(function () { tab.style.transition = ''; }, 460);
-  });
+  /* Dragging lives in js/tabs.js now — the review card and the sub-page
+     panels are the same object, so they share one implementation. All this
+     file still owns is what is INSIDE the card: the reviews, the stars and
+     the wipe between them. */
 
   /* Keyboard: the tab is a group, so arrow keys move between reviews. */
   tab.addEventListener('keydown', function (e) {
