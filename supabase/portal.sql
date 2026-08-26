@@ -318,10 +318,25 @@ security invoker
 set search_path = public, pg_temp
 as $$
   select json_build_object(
+    -- The `clients` table predates this file and came across from the old
+    -- site, so its exact columns are not ours to assume. Reading them through
+    -- to_jsonb means a column that is missing comes back NULL instead of
+    -- aborting the whole function with "column does not exist" — which is
+    -- precisely what `c.contact` did (the column is `contact_name`).
+    --
+    -- Note this still names every key explicitly. `select to_jsonb(c)` would
+    -- be shorter and would hand the client every column there is, including
+    -- `notes` and `gc_ref`, which are ours and not theirs.
     'client', (
-      select json_build_object('id', c.id, 'business', c.business,
-                               'contact', c.contact, 'domain', c.domain,
-                               'status', c.status, 'monthly_fee', c.monthly_fee)
+      select json_build_object(
+        'id',          c.id,
+        'business',    to_jsonb(c)->>'business',
+        'contact',     to_jsonb(c)->>'contact_name',
+        'domain',      to_jsonb(c)->>'domain',
+        'site_url',    to_jsonb(c)->>'site_url',
+        'status',      to_jsonb(c)->>'status',
+        'monthly_fee', to_jsonb(c)->>'monthly_fee'
+      )
       from public.clients c where c.id = public.my_client_id()
     ),
     'me', (
