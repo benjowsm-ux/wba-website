@@ -106,7 +106,11 @@
     /* ---------------------------------------------------------------- drag */
     if (modes.indexOf('drag') < 0 || !FINE) return;
 
-    var hero = el.closest('.hero, .page-hero');
+    /* Whatever the window is allowed to roam around in. A hero on the
+       marketing pages; the deck on the client portal. Marking the boundary
+       with an attribute means the next thing that wants draggable windows
+       does not have to touch this file. */
+    var hero = el.closest('[data-tab-area], .hero, .page-hero');
     if (!hero) return;
 
     var dragging = false, moved = false, frame = null;

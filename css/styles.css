@@ -69,6 +69,12 @@
 }
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+/* [hidden] is a UA rule at ELEMENT specificity, so any class or attribute
+   rule that sets `display` silently beats it. That has now caused the same
+   bug three times — a Save button that would not hide, a portal Sign-out
+   button visible to signed-out visitors, and a sign-in panel that stayed on
+   screen behind the dashboard. One !important here ends the category. */
+[hidden]{display:none!important;}
 html{scroll-behavior:smooth;scroll-padding-top:80px;-webkit-text-size-adjust:100%;}
 body{
   font-family:var(--font-body);
@@ -2391,6 +2397,10 @@ html{ background:var(--ink); }
   transition:background var(--t2),border-color var(--t2),color var(--t2);
 }
 .nav-find:hover{background:var(--sf-3);border-color:var(--edge-strong);color:#fff;}
+/* [hidden] is a UA rule at element specificity, so any class rule setting
+   display beats it — the portal's "Sign out" button stayed visible to
+   signed-out visitors until this line existed. */
+.nav-find[hidden]{display:none;}
 .nav-find svg{width:15px;height:15px;flex:none;}
 .nav-find-label{display:none;}
 .nav-find kbd{
@@ -3000,3 +3010,320 @@ body.wba-editing .tt-tools{display:none;}
 /* A folded window hides its contents from the editor as well as the reader. */
 body.wba-editing .win.is-folded > .win-body{grid-template-rows:1fr;opacity:1;}
 body.wba-editing .win.is-folded > .win-body > *{padding-top:revert;padding-bottom:revert;}
+
+/* ==========================================================================
+   16  THE CLIENT PORTAL
+
+   Signed-in territory. It shares the window component, the surface scale and
+   the type with the rest of the site — a client should recognise it as the
+   same company — but it is darker, denser and readier: panels sit on an
+   instrument grid, numbers are set in mono, and every window can be dragged
+   and folded because a dashboard someone uses weekly should bend to them.
+   ========================================================================== */
+.portal-body{background:#060b16;color:#fff;min-height:100vh;}
+.portal-body .nav{background:rgba(6,11,22,.92);backdrop-filter:blur(14px);}
+.pt-who{
+  font-family:var(--font-mono);font-size:.74rem;letter-spacing:.1em;
+  text-transform:uppercase;color:rgba(255,255,255,.5);margin-right:.9rem;
+}
+
+/* --------------------------------------------------------------------- gate */
+.pt-gate{
+  position:relative;min-height:calc(100vh - 78px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:clamp(2rem,6vw,4rem) var(--gutter);
+}
+/* The same coordinate grid the heroes and the build map use, so the sign-in
+   box does not feel like a different product. */
+.pt-gate-bg{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(125,175,255,.16) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(125,175,255,.16) 1px,transparent 1px),
+    linear-gradient(rgba(125,175,255,.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(125,175,255,.06) 1px,transparent 1px);
+  background-size:200px 200px,200px 200px,40px 40px,40px 40px;
+  -webkit-mask-image:radial-gradient(70% 60% at 50% 45%,#000,transparent 78%);
+  mask-image:radial-gradient(70% 60% at 50% 45%,#000,transparent 78%);
+}
+.pt-card{position:relative;width:min(26rem,100%);background:rgba(13,21,38,.92);}
+.pt-card-body{padding:1.4rem 1.5rem 1.5rem;}
+.pt-lede{font-size:.92rem;line-height:1.6;color:rgba(255,255,255,.66);margin:0 0 1.2rem;}
+.pt-label{
+  display:block;font-family:var(--font-mono);font-size:.68rem;letter-spacing:.14em;
+  text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:.5rem;
+}
+/* input[type=text] in section 9 is (0,1,1); a bare .pt-input is (0,1,0) and
+   loses, which is why these rendered as white form fields on a black card.
+   Scoping to the body class makes them (0,2,0). */
+.portal-body .pt-input,
+.portal-body .pt-input:focus,
+.portal-body .pt-input:focus-visible{
+  width:100%;padding:.8rem .9rem;margin-bottom:1rem;
+  background:rgba(255,255,255,.05);border:1px solid var(--edge);border-radius:var(--rc);
+  color:#fff;font-family:var(--font-body);font-size:1rem;
+  outline:none;box-shadow:none;
+}
+.portal-body .pt-input:focus{border-color:var(--gold);background:rgba(255,255,255,.08);}
+.portal-body .pt-input::placeholder{color:rgba(255,255,255,.28);}
+/* A six-digit code is read back digit by digit; space it out like one. */
+.pt-code{
+  font-family:var(--font-mono);font-size:1.5rem;letter-spacing:.5em;
+  text-align:center;padding-left:.5em;
+}
+.pt-btn{width:100%;justify-content:center;}
+.pt-note{font-size:.76rem;line-height:1.55;color:rgba(255,255,255,.42);margin:.9rem 0 0;}
+.pt-back{
+  display:block;width:100%;margin-top:.85rem;background:none;border:0;cursor:pointer;
+  font-size:.8rem;color:rgba(255,255,255,.5);text-decoration:underline;
+  text-underline-offset:3px;
+}
+.pt-back:hover{color:#fff;}
+.pt-msg{margin:.9rem 0 0;font-size:.84rem;line-height:1.5;color:rgba(255,255,255,.6);}
+.pt-msg.is-bad{color:#ff9b9b;}
+.pt-help{
+  position:relative;margin-top:1.6rem;font-size:.84rem;color:rgba(255,255,255,.42);
+}
+.pt-help a{color:var(--gold);text-decoration:underline;text-underline-offset:3px;}
+
+/* --------------------------------------------------------------------- deck */
+.pt-deck{
+  position:relative;
+  max-width:calc(var(--maxw) + var(--gutter) * 2);margin:0 auto;
+  padding:clamp(2rem,5vw,3.5rem) var(--gutter) clamp(3rem,6vw,5rem);
+}
+.pt-head{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;
+  gap:clamp(1.5rem,4vw,3rem);align-items:end;
+  margin-bottom:clamp(1.75rem,4vw,2.5rem);
+}
+.pt-head h1{color:#fff;max-width:18ch;}
+.pt-head .lede{color:rgba(255,255,255,.6);margin-top:1rem;max-width:52ch;}
+.pt-head .crumb{margin-bottom:2.3rem;}
+.pt-deck .beacon{top:-1.4rem;}
+
+/* Three readouts, mono, right-aligned — the instrument cluster. */
+.pt-head-r{display:flex;gap:clamp(1rem,2.5vw,2rem);flex-wrap:wrap;}
+.pt-readout{
+  display:flex;flex-direction:column;gap:.3rem;
+  padding-left:.9rem;border-left:1px solid var(--edge);
+}
+.pt-ro-k{
+  font-family:var(--font-mono);font-size:.66rem;letter-spacing:.14em;
+  text-transform:uppercase;color:rgba(255,255,255,.42);
+}
+.pt-ro-v{font-family:var(--font-display);font-size:1.02rem;font-weight:600;color:#fff;}
+
+/* ---- the five stages ---- */
+.pt-track{margin-bottom:clamp(1.25rem,3vw,1.75rem);}
+.pt-pad{padding:1.1rem 1.25rem 1.25rem;}
+.pt-stages{
+  list-style:none;margin:0;padding:0;
+  display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;
+}
+.pt-stage{
+  position:relative;display:flex;flex-direction:column;gap:.45rem;
+  padding:.7rem .8rem;border-radius:var(--rc);
+  background:var(--sf-1);border:1px solid var(--edge);
+}
+/* The connector between stages: a hairline that fills in as you progress. */
+.pt-stage::after{
+  content:'';position:absolute;right:-.5rem;top:50%;width:.5rem;height:1px;
+  background:var(--edge);
+}
+.pt-stage:last-child::after{display:none;}
+.pt-stage.is-done{background:rgba(245,196,22,.08);border-color:rgba(245,196,22,.28);}
+.pt-stage.is-done::after{background:rgba(245,196,22,.4);}
+.pt-stage.is-now{
+  background:rgba(245,196,22,.14);border-color:var(--gold);
+  box-shadow:0 0 0 1px rgba(245,196,22,.2),0 8px 24px rgba(245,196,22,.08);
+}
+.pt-stage-n{
+  font-family:var(--font-mono);font-size:.66rem;letter-spacing:.12em;
+  color:rgba(255,255,255,.38);
+}
+.pt-stage.is-done .pt-stage-n,.pt-stage.is-now .pt-stage-n{color:var(--gold);}
+.pt-stage-l{
+  font-family:var(--font-display);font-size:.84rem;font-weight:500;
+  line-height:1.3;color:rgba(255,255,255,.66);
+}
+.pt-stage.is-now .pt-stage-l{color:#fff;font-weight:600;}
+
+/* ---- the panel grid ----
+   Twelve columns; each panel says how many it wants with --span. Dragging a
+   window does not reflow the grid, which is the point — it lifts off. */
+.pt-grid{
+  display:grid;grid-template-columns:repeat(12,1fr);
+  gap:clamp(.9rem,2vw,1.25rem);align-items:start;
+}
+.pt-panel{grid-column:span var(--span,6);background:rgba(13,21,38,.9);}
+.pt-panel .win-bar{background:rgba(255,255,255,.035);}
+
+.pt-empty{
+  display:flex;flex-direction:column;gap:.35rem;
+  padding:.6rem 0;color:rgba(255,255,255,.5);font-size:.86rem;line-height:1.55;
+}
+.pt-empty b{color:rgba(255,255,255,.8);font-family:var(--font-display);font-size:.94rem;}
+
+/* ---- preview ---- */
+.pt-pv-frame{
+  display:flex;align-items:center;gap:.55rem;
+  padding:.5rem .7rem;margin-bottom:.7rem;
+  background:var(--sf-1);border:1px solid var(--edge);border-radius:var(--rc);
+  font-family:var(--font-mono);font-size:.74rem;color:rgba(255,255,255,.6);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.pt-pv-dot{
+  width:7px;height:7px;border-radius:50%;background:#4ade80;flex:none;
+  box-shadow:0 0 0 0 rgba(74,222,128,.5);animation:wba-live 2.4s ease-out infinite;
+}
+@media (prefers-reduced-motion:reduce){ .pt-pv-dot{animation:none;} }
+.pt-pv-meta{font-size:.8rem;color:rgba(255,255,255,.5);margin:0 0 1rem;}
+.pt-versions{
+  list-style:none;margin:1.1rem 0 0;padding:1rem 0 0;
+  border-top:1px solid var(--edge);display:grid;gap:.4rem;
+}
+.pt-versions li{display:flex;gap:.7rem;align-items:baseline;font-size:.8rem;}
+.pt-v-n{font-family:var(--font-mono);color:var(--gold);min-width:2.4em;}
+.pt-v-d{color:rgba(255,255,255,.6);}
+.pt-v-x{color:rgba(255,255,255,.4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* ---- timeline ---- */
+.pt-time{list-style:none;margin:0;padding:0;display:grid;gap:.1rem;}
+.pt-t{
+  position:relative;display:grid;gap:.2rem;
+  padding:.7rem 0 .7rem 1.1rem;border-bottom:1px solid var(--edge);
+}
+.pt-t:last-child{border-bottom:0;}
+.pt-t::before{
+  content:'';position:absolute;left:0;top:1.05rem;
+  width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.28);
+}
+.pt-t.is-milestone::before{background:var(--gold);}
+.pt-t.is-preview::before{background:#4ade80;}
+.pt-t-when{
+  font-family:var(--font-mono);font-size:.66rem;letter-spacing:.1em;
+  text-transform:uppercase;color:rgba(255,255,255,.38);
+}
+.pt-t-title{font-family:var(--font-display);font-size:.9rem;font-weight:500;color:#fff;}
+.pt-t-body{font-size:.82rem;line-height:1.55;color:rgba(255,255,255,.58);}
+
+/* ---- tables ---- */
+.pt-owing{
+  margin:0 0 .9rem;padding:.6rem .8rem;border-radius:var(--rc);
+  background:rgba(245,196,22,.1);border:1px solid rgba(245,196,22,.28);
+  font-size:.86rem;color:rgba(255,255,255,.82);
+}
+.pt-owing b{color:var(--gold);font-family:var(--font-mono);}
+.pt-table{width:100%;border-collapse:collapse;font-size:.84rem;}
+.pt-table th{
+  text-align:left;padding:0 0 .55rem;border-bottom:1px solid var(--edge);
+  font-family:var(--font-mono);font-size:.64rem;letter-spacing:.13em;
+  text-transform:uppercase;color:rgba(255,255,255,.42);font-weight:500;
+}
+.pt-table td{padding:.62rem 0;border-bottom:1px solid var(--edge);color:rgba(255,255,255,.75);}
+.pt-table tr:last-child td{border-bottom:0;}
+.pt-num{font-family:var(--font-mono);text-align:right;color:#fff;}
+.pt-table th:last-child,.pt-table td:last-child{text-align:right;}
+.pt-pill{
+  display:inline-block;padding:.18rem .5rem;border-radius:var(--rp);
+  font-family:var(--font-mono);font-size:.64rem;letter-spacing:.1em;
+  text-transform:uppercase;border:1px solid var(--edge);color:rgba(255,255,255,.6);
+}
+.pt-pill.is-paid{background:rgba(74,222,128,.14);border-color:rgba(74,222,128,.4);color:#8ff0b4;}
+.pt-pill.is-sent{background:rgba(245,196,22,.12);border-color:rgba(245,196,22,.36);color:var(--gold-hi);}
+.pt-pill.is-overdue{background:rgba(255,107,107,.14);border-color:rgba(255,107,107,.42);color:#ffb0b0;}
+
+/* ---- accounts ---- */
+.pt-accs{list-style:none;margin:0;padding:0;display:grid;gap:.1rem;}
+.pt-acc{
+  display:grid;grid-template-columns:minmax(0,1fr) auto auto;
+  gap:.6rem;align-items:center;
+  padding:.65rem 0;border-bottom:1px solid var(--edge);
+}
+.pt-acc:last-child{border-bottom:0;}
+.pt-acc-l{font-family:var(--font-display);font-size:.88rem;font-weight:500;color:#fff;}
+.pt-acc-u{
+  grid-column:1;font-family:var(--font-mono);font-size:.74rem;
+  color:rgba(255,255,255,.46);
+}
+.pt-acc-h{
+  font-family:var(--font-mono);font-size:.62rem;letter-spacing:.1em;
+  text-transform:uppercase;padding:.16rem .45rem;border-radius:var(--rp);
+  border:1px solid var(--edge);color:rgba(255,255,255,.5);white-space:nowrap;
+}
+.pt-acc-h.is-wba{background:rgba(10,83,199,.2);border-color:rgba(120,170,255,.34);color:#a9cbff;}
+.pt-acc-h.is-client{background:rgba(74,222,128,.12);border-color:rgba(74,222,128,.34);color:#8ff0b4;}
+.pt-acc-go{display:flex;gap:.6rem;}
+.pt-acc-go a{
+  font-size:.78rem;color:rgba(255,255,255,.72);
+  text-decoration:underline;text-underline-offset:3px;white-space:nowrap;
+}
+.pt-acc-go a:hover{color:var(--gold);}
+.pt-acc-note{
+  margin:.9rem 0 0;padding-top:.9rem;border-top:1px solid var(--edge);
+  font-size:.78rem;line-height:1.55;color:rgba(255,255,255,.42);
+}
+
+.pt-foot{
+  margin-top:clamp(2rem,4vw,3rem);
+  font-family:var(--font-mono);font-size:.68rem;letter-spacing:.08em;
+  text-transform:uppercase;color:rgba(255,255,255,.3);
+}
+.pt-foot a{color:rgba(255,255,255,.5);text-decoration:underline;text-underline-offset:3px;}
+.pt-foot a:hover{color:var(--gold);}
+.pt-foot-sep{margin:0 .5rem;}
+.pt-lonely{max-width:34rem;}
+
+@media (max-width:900px){
+  .pt-head{grid-template-columns:minmax(0,1fr);align-items:start;}
+  .pt-head-r{gap:1.25rem;}
+  .pt-panel{grid-column:span 12;}
+  .pt-stages{grid-template-columns:repeat(2,1fr);}
+  .pt-stage::after{display:none;}
+}
+@media (max-width:560px){
+  .pt-stages{grid-template-columns:1fr;}
+  .pt-acc{grid-template-columns:minmax(0,1fr);gap:.3rem;}
+  .pt-acc-h,.pt-acc-go{justify-self:start;}
+}
+
+/* --------------------------------------------------------------------------
+   Admin — the Portal tab.
+   Plain and dense on purpose. This is the back of house; every second spent
+   admiring it is a second not spent on a client's site.
+   -------------------------------------------------------------------------- */
+.pta-card{margin-top:1rem;}
+.pta-card h3{
+  font-family:var(--font-display);font-size:1rem;font-weight:600;
+  margin-bottom:.85rem;
+}
+.pta-form{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.9rem;align-items:center;}
+.pta-in{
+  padding:.5rem .65rem;border:1px solid var(--line);border-radius:var(--r-xs);
+  font:inherit;font-size:.88rem;background:#fff;color:var(--text);min-width:0;
+}
+.pta-in:focus{outline:2px solid var(--blue);outline-offset:1px;}
+.pta-in.tiny{padding:.25rem .4rem;font-size:.8rem;}
+textarea.pta-in{width:100%;margin-top:.5rem;resize:vertical;}
+.pta-t{width:100%;border-collapse:collapse;font-size:.86rem;}
+.pta-t th{
+  text-align:left;padding:0 .6rem .45rem 0;border-bottom:1px solid var(--line);
+  font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);
+}
+.pta-t td{padding:.5rem .6rem .5rem 0;border-bottom:1px solid var(--line-soft);}
+.pta-t code{font-family:var(--font-mono);font-size:.82rem;}
+.pta-row{display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem;flex-wrap:wrap;}
+.pta-row .pta-in{flex:1 1 8rem;}
+.pta-list{list-style:none;margin:0;padding:0;}
+.pta-list li{
+  display:flex;gap:.6rem;align-items:center;
+  padding:.45rem 0;border-bottom:1px solid var(--line-soft);font-size:.88rem;
+}
+.pta-list li span{color:var(--faint);font-size:.8rem;}
+.pta-list li button{margin-left:auto;}
+.pta-none{color:var(--faint);font-size:.88rem;padding:.4rem 0;}
+.pta-hint{font-size:.8rem;line-height:1.55;color:var(--faint);margin-top:.75rem;}
+.pta-msg{font-size:.88rem;min-height:1.2em;margin-top:.5rem;}
+.pta-msg.is-ok{color:#0a7c3f;}
+.pta-msg.is-bad{color:#b00020;}

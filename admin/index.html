@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/styles.css?v=0b6938e3d3"/>
+<link rel="stylesheet" href="/css/styles.css?v=1a8998da74"/>
 <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>
 </head>
 <body>
@@ -67,6 +67,7 @@
         <button class="admin-tab" id="tabClients" onclick="wbaTab('clients')">Clients <span class="count" id="clCount"></span></button>
         <button class="admin-tab" id="tabMedia" onclick="wbaTab('media')">Photos <span class="count" id="mdCount"></span></button>
         <button class="admin-tab" id="tabPages" onclick="wbaTab('pages')">Pages <span class="count" id="pgCount"></span></button>
+        <button class="admin-tab" id="tabPortal" onclick="wbaTab('portal')">Portal</button>
         <button class="admin-tab" id="tabChecks" onclick="wbaTab('checks')">Checks <span class="count" id="ckCount"></span></button>
       </div>
 
@@ -265,6 +266,98 @@
       </div>
 
       <!-- =========================== CHECKS =========================== -->
+      <div id="panelPortal" style="display:none;">
+        <div class="admin-card">
+          <div class="media-head">
+            <strong style="font-family:var(--font-display);">Client portal</strong>
+            <span class="spacer" style="flex:1 1 auto;"></span>
+            <select id="ptaClient" class="pta-in"></select>
+          </div>
+          <p class="pta-msg" id="ptaMsg"></p>
+        </div>
+
+        <div id="ptaBody" hidden>
+
+          <div class="admin-card pta-card">
+            <h3>Who can sign in</h3>
+            <div id="ptaUsers"></div>
+            <div class="pta-form">
+              <input class="pta-in" id="ptaEmail" type="email" placeholder="their email"/>
+              <input class="pta-in" id="ptaHandle" type="text" placeholder="handle e.g. pivaz"/>
+              <input class="pta-in" id="ptaName" type="text" placeholder="their name"/>
+              <button type="button" class="admin-btn primary" id="ptaInvite">Create login</button>
+            </div>
+            <p class="pta-hint">They sign in with the handle and a six-digit code emailed to them. There is no password to set, lose or reuse.</p>
+          </div>
+
+          <div class="admin-card pta-card">
+            <h3>Project</h3>
+            <div id="ptaProjects"></div>
+            <div class="pta-form">
+              <input class="pta-in" id="ptaNewProject" type="text" placeholder="project name"/>
+              <button type="button" class="admin-btn" id="ptaAddProject">Add project</button>
+            </div>
+          </div>
+
+          <div class="admin-card pta-card">
+            <h3>Post an update</h3>
+            <div id="ptaUpdates"></div>
+            <div class="pta-form">
+              <input class="pta-in" id="ptaUpTitle" type="text" placeholder="what happened"/>
+              <select class="pta-in" id="ptaUpKind">
+                <option value="note">note</option>
+                <option value="milestone">milestone</option>
+                <option value="preview">preview</option>
+                <option value="invoice">invoice</option>
+              </select>
+              <button type="button" class="admin-btn" id="ptaAddUpdate">Post</button>
+            </div>
+            <textarea class="pta-in" id="ptaUpBody" rows="2" placeholder="a sentence of detail (optional)"></textarea>
+          </div>
+
+          <div class="admin-card pta-card">
+            <h3>Invoices</h3>
+            <div id="ptaInvoices"></div>
+            <div class="pta-form">
+              <input class="pta-in" id="ptaInvNo" type="text" placeholder="WBA-0043"/>
+              <input class="pta-in" id="ptaInvAmt" type="number" step="0.01" placeholder="30.00"/>
+              <input class="pta-in" id="ptaInvNote" type="text" placeholder="note (optional)"/>
+              <button type="button" class="admin-btn" id="ptaAddInvoice">Add invoice</button>
+            </div>
+          </div>
+
+          <div class="admin-card pta-card">
+            <h3>Payments</h3>
+            <div id="ptaPayments"></div>
+            <div class="pta-form">
+              <input class="pta-in" id="ptaPayAmt" type="number" step="0.01" placeholder="30.00"/>
+              <input class="pta-in" id="ptaPayMethod" type="text" placeholder="GoCardless"/>
+              <input class="pta-in" id="ptaPayRef" type="text" placeholder="reference"/>
+              <button type="button" class="admin-btn" id="ptaAddPayment">Record payment</button>
+            </div>
+          </div>
+
+          <div class="admin-card pta-card">
+            <h3>Accounts</h3>
+            <div id="ptaAccounts"></div>
+            <div class="pta-form">
+              <input class="pta-in" id="ptaAccLabel" type="text" placeholder="Site admin"/>
+              <input class="pta-in" id="ptaAccUrl" type="text" placeholder="https://…"/>
+              <input class="pta-in" id="ptaAccUser" type="text" placeholder="username"/>
+              <select class="pta-in" id="ptaAccHolder">
+                <option value="shared">shared</option>
+                <option value="wba">we hold it</option>
+                <option value="client">they hold it</option>
+              </select>
+              <input class="pta-in" id="ptaAccVault" type="text" placeholder="vault link (optional)"/>
+              <button type="button" class="admin-btn" id="ptaAddAccount">Add account</button>
+            </div>
+            <p class="pta-hint"><b>No password field, deliberately.</b> Record that the account exists and who holds the secret; the secret itself belongs in the shared vault. See supabase/portal.sql.</p>
+          </div>
+
+        </div>
+      </div>
+
       <div id="panelChecks" style="display:none;">
         <div class="admin-card">
           <div class="media-head">
@@ -287,6 +380,7 @@
 <script src="/js/media.js?v=f0287a4f5d"></script>
 <script src="/js/db.js?v=d94a9ea21b"></script>
 <script src="/js/blocks.js?v=1e28dd9071"></script>
+<script src="/js/admin-portal.js?v=a697b43041"></script>
 <script>
 /* ==========================================================================
    WBA admin. Plain functions, no framework — everything here is doing one
@@ -321,12 +415,13 @@ function wbaSignOut(){ WBAdb.signOut().then(function(){ location.reload(); }); }
 
 function wbaTab(which){
   var tabs = { posts:'tabPosts', subs:'tabSubs', clients:'tabClients', media:'tabMedia',
-               pages:'tabPages', checks:'tabChecks' };
+               pages:'tabPages', portal:'tabPortal', checks:'tabChecks' };
   var panels = { posts:'panelPosts', subs:'panelSubs', clients:'panelClients', media:'panelMedia',
-                 pages:'panelPages', checks:'panelChecks' };
+                 pages:'panelPages', portal:'panelPortal', checks:'panelChecks' };
   /* the library is only fetched when you actually open it */
   if(which === 'media'  && !window.wbaMediaLoaded) wbaLoadMedia();
   if(which === 'pages'  && !window.wbaPagesLoaded) wbaLoadPages();
+  if(which === 'portal' && window.wbaLoadPortal) wbaLoadPortal();
   if(which === 'checks') wbaRunChecks();
   Object.keys(tabs).forEach(function(k){
     var t = el(tabs[k]); if(t) t.classList.toggle('on', k === which);

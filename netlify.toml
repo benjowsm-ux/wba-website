@@ -61,3 +61,33 @@
   for = "/search-index.json"
   [headers.values]
     Cache-Control = "public, max-age=600"
+
+# The portal's handle→code endpoint. Proxied (status 200, not a 301) so the
+# browser sees it as same-origin: no CORS preflight, and no Supabase project
+# URL in the page for someone to poke at directly.
+[[redirects]]
+  from = "/api/portal-login"
+  to = "https://lynzhiyvggqyplssrapi.supabase.co/functions/v1/portal-login"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/api/portal-invite"
+  to = "https://lynzhiyvggqyplssrapi.supabase.co/functions/v1/portal-invite"
+  status = 200
+  force = true
+
+# Previews live on their own hostname, deliberately — see
+# cloudflare/preview-worker.js. This makes the portal's short link work.
+[[redirects]]
+  from = "/preview/*"
+  to = "https://preview.westonbusinessauthority.co.uk/:splat"
+  status = 302
+  force = true
+
+# Nothing signed-in should ever be cached by a shared proxy.
+[[headers]]
+  for = "/portal/*"
+  [headers.values]
+    Cache-Control = "private, no-store"
+    X-Robots-Tag = "noindex, nofollow"

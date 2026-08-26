@@ -1,4 +1,10 @@
 User-agent: *
 Allow: /
 
+# Signed-in areas. The pages also carry noindex; this stops the crawl
+# happening at all rather than relying on a meta tag being honoured.
+Disallow: /portal/
+Disallow: /preview/
+Disallow: /admin/
+
 Sitemap: https://westonbusinessauthority.co.uk/sitemap.xml

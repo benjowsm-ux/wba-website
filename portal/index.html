@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Client portal — WBA</title>
+<meta name="description" content="Your project, your previews and your invoices, in one place."/>
+<!-- A private area has no business in an index. -->
+<meta name="robots" content="noindex, nofollow"/>
+<link rel="icon" href="/img/wba-icon.png"/>
+<link rel="apple-touch-icon" href="/img/wba-icon.png"/>
+<meta name="theme-color" content="#0b1220"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/css/styles.css?v=1a8998da74"/>
+</head>
+<body class="portal-body">
+
+<!-- NAV — cut down. Nobody signs in to browse the marketing site. -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo" aria-label="WBA home"><img src="/img/wba-logo.png" alt="WBA" width="438" height="248"/></a>
+    <div class="nav-links" id="navLinks">
+      <span class="pt-who" id="ptWho" hidden></span>
+      <button type="button" class="nav-find" id="ptOut" hidden>Sign out</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ==========================================================================
+     SIGN IN
+
+     One field. Type the handle we gave you (or the email address), we send a
+     six-digit code, you type it. No password to choose, forget, reuse or
+     have stolen — there isn't one to steal.
+     ========================================================================== -->
+<main class="pt-gate" id="ptGate">
+  <div class="pt-gate-bg" aria-hidden="true"></div>
+  <div class="win pt-card">
+    <div class="win-bar">
+      <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="win-title">Client access</span>
+      <span class="hp-live"><i aria-hidden="true"></i><span>Secure</span></span>
+    </div>
+    <div class="win-body pt-card-body">
+
+      <form id="ptStep1" class="pt-step">
+        <p class="pt-lede">Sign in to see your project, your previews and your invoices.</p>
+        <label class="pt-label" for="ptHandle">Your handle or email</label>
+        <input class="pt-input" id="ptHandle" type="text" autocomplete="username"
+               spellcheck="false" placeholder="pivaz" required/>
+        <button class="btn btn-gold pt-btn" type="submit" id="ptSend">Send my code</button>
+        <p class="pt-note">We'll email a six-digit code. It works once and expires in ten minutes.</p>
+      </form>
+
+      <form id="ptStep2" class="pt-step" hidden>
+        <p class="pt-lede">Check your email. The code is six digits.</p>
+        <label class="pt-label" for="ptCode">Your code</label>
+        <input class="pt-input pt-code" id="ptCode" type="text" inputmode="numeric"
+               autocomplete="one-time-code" pattern="[0-9]*" maxlength="6"
+               placeholder="000000" required/>
+        <button class="btn btn-gold pt-btn" type="submit" id="ptVerify">Sign in</button>
+        <button class="pt-back" type="button" id="ptBack">Use a different account</button>
+      </form>
+
+      <p class="pt-msg" id="ptMsg" role="status" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <p class="pt-help">
+    No access yet? <a href="/contact/">Ask us to set you up</a>.
+  </p>
+</main>
+
+<!-- ==========================================================================
+     THE DECK
+
+     Every panel is the same window component as the rest of the site, so it
+     drags and folds without any new code. data-tab-area marks how far they
+     are allowed to roam.
+     ========================================================================== -->
+<main class="pt-deck" id="ptDeck" data-tab-area hidden>
+
+  <header class="pt-head">
+    <div class="pt-head-l">
+      <p class="crumb"><span id="ptCrumb">Client</span></p>
+      <div class="hero-lead">
+        <span class="beacon" aria-hidden="true"></span>
+        <h1 class="h-lg" id="ptTitle">Your project.</h1>
+      </div>
+      <p class="lede" id="ptSummary"></p>
+    </div>
+    <div class="pt-head-r">
+      <div class="pt-readout">
+        <span class="pt-ro-k">Stage</span>
+        <span class="pt-ro-v" id="ptStageName">—</span>
+      </div>
+      <div class="pt-readout">
+        <span class="pt-ro-k">Since</span>
+        <span class="pt-ro-v" id="ptSince">—</span>
+      </div>
+      <div class="pt-readout">
+        <span class="pt-ro-k">Monthly</span>
+        <span class="pt-ro-v" id="ptFee">—</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- The five stages, same words as the build map on /sites/ -->
+  <div class="win pt-panel pt-track" data-tab="drag collapse">
+    <div class="win-bar">
+      <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="win-title">Where we are</span>
+    </div>
+    <div class="win-body">
+      <div class="pt-pad">
+        <ol class="pt-stages" id="ptStages"></ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="pt-grid">
+
+    <div class="win pt-panel" data-tab="drag collapse" style="--span:7">
+      <div class="win-bar">
+        <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="win-title">Your preview</span>
+        <span class="hp-live" id="ptPvLive" hidden><i aria-hidden="true"></i><span>Live</span></span>
+      </div>
+      <div class="win-body">
+        <div class="pt-pad" id="ptPreview"></div>
+      </div>
+    </div>
+
+    <div class="win pt-panel" data-tab="drag collapse" style="--span:5">
+      <div class="win-bar">
+        <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="win-title">What's happened</span>
+      </div>
+      <div class="win-body">
+        <div class="pt-pad" id="ptTimeline"></div>
+      </div>
+    </div>
+
+    <div class="win pt-panel" data-tab="drag collapse" style="--span:6">
+      <div class="win-bar">
+        <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="win-title">Invoices</span>
+      </div>
+      <div class="win-body">
+        <div class="pt-pad" id="ptInvoices"></div>
+      </div>
+    </div>
+
+    <div class="win pt-panel" data-tab="drag collapse" style="--span:6">
+      <div class="win-bar">
+        <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="win-title">Payments received</span>
+      </div>
+      <div class="win-body">
+        <div class="pt-pad" id="ptPayments"></div>
+      </div>
+    </div>
+
+    <div class="win pt-panel" data-tab="drag collapse" style="--span:7">
+      <div class="win-bar">
+        <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="win-title">Your accounts</span>
+      </div>
+      <div class="win-body">
+        <div class="pt-pad" id="ptAccounts"></div>
+      </div>
+    </div>
+
+    <div class="win pt-panel" data-tab="drag collapse" style="--span:5">
+      <div class="win-bar">
+        <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="win-title">Reach us</span>
+      </div>
+      <div class="win-body">
+        <div class="pt-pad">
+          <div class="hp-rows">
+            <div class="hp-row"><span class="hp-k">Email</span><span class="hp-v"><a href="mailto:info@westonbusinessauthority.co.uk">info@westonbusiness<wbr>authority.co.uk</a></span></div>
+            <div class="hp-row"><span class="hp-k">Phone</span><span class="hp-v"><a href="tel:+447902376369">07902 376369</a><span class="sub">Mon–Fri, 9–6</span></span></div>
+            <div class="hp-row"><span class="hp-k">WhatsApp</span><span class="hp-v"><a href="https://wa.me/447902376369" target="_blank" rel="noopener">Usually quickest</a></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="pt-foot">
+    Windows drag by their title bar and fold from the chevron.
+    <span class="pt-foot-sep">·</span>
+    <a href="/">Back to the site</a>
+  </p>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/db.js?v=d94a9ea21b"></script>
+<script src="/js/tabs.js?v=3389d437d1" defer></script>
+<script src="/js/portal.js?v=ab332d7431" defer></script>
+</body>
+</html>
