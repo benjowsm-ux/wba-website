@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="/img/wba-icon.png"/>
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/styles.css?v=ea442d9d9b"/>
+<link rel="stylesheet" href="/css/styles.css?v=0b863929dc"/>
 </head>
 <!-- Where previews are served from. Empty until the Cloudflare Worker is
      deployed; the portal then says "not switched on yet" instead of
@@ -104,39 +104,18 @@
     </div>
     <div class="pt-head-r">
       <div class="pt-readout">
-        <span class="pt-ro-k">Stage</span>
-        <span class="pt-ro-v" id="ptStageName">—</span>
-      </div>
-      <div class="pt-readout">
-        <span class="pt-ro-k">Since</span>
-        <span class="pt-ro-v" id="ptSince">—</span>
-      </div>
-      <div class="pt-readout">
-        <span class="pt-ro-k">Monthly</span>
-        <span class="pt-ro-v" id="ptFee">—</span>
+        <span class="pt-ro-k">Version</span>
+        <span class="pt-ro-v" id="ptVersion">—</span>
       </div>
     </div>
   </header>
 
-  <!-- The five stages, same words as the build map on /sites/ -->
-  <div class="win pt-panel pt-track" data-tab="drag collapse">
-    <div class="win-bar">
-      <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-      <span class="win-title">Where we are</span>
-    </div>
-    <div class="win-body">
-      <div class="pt-pad">
-        <ol class="pt-stages" id="ptStages"></ol>
-      </div>
-    </div>
-  </div>
-
   <div class="pt-grid">
 
-    <div class="win pt-panel" data-tab="drag collapse" style="--span:7">
+    <div class="win pt-panel pt-site" data-tab="drag collapse" style="--span:12">
       <div class="win-bar">
         <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span class="win-title">Your preview</span>
+        <span class="win-title">Your site</span>
         <span class="hp-live" id="ptPvLive" hidden><i aria-hidden="true"></i><span>Live</span></span>
       </div>
       <div class="win-body">
@@ -144,43 +123,13 @@
       </div>
     </div>
 
-    <div class="win pt-panel" data-tab="drag collapse" style="--span:5">
+    <div class="win pt-panel" data-tab="drag collapse" style="--span:7">
       <div class="win-bar">
         <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
         <span class="win-title">What's happened</span>
       </div>
       <div class="win-body">
         <div class="pt-pad" id="ptTimeline"></div>
-      </div>
-    </div>
-
-    <div class="win pt-panel" data-tab="drag collapse" style="--span:6">
-      <div class="win-bar">
-        <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span class="win-title">Invoices</span>
-      </div>
-      <div class="win-body">
-        <div class="pt-pad" id="ptInvoices"></div>
-      </div>
-    </div>
-
-    <div class="win pt-panel" data-tab="drag collapse" style="--span:6">
-      <div class="win-bar">
-        <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span class="win-title">Payments received</span>
-      </div>
-      <div class="win-body">
-        <div class="pt-pad" id="ptPayments"></div>
-      </div>
-    </div>
-
-    <div class="win pt-panel" data-tab="drag collapse" style="--span:7">
-      <div class="win-bar">
-        <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span class="win-title">Your accounts</span>
-      </div>
-      <div class="win-body">
-        <div class="pt-pad" id="ptAccounts"></div>
       </div>
     </div>
 
@@ -212,6 +161,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/db.js?v=1cc38d6a40"></script>
 <script src="/js/tabs.js?v=3389d437d1" defer></script>
-<script src="/js/portal.js?v=41f53e3e4c" defer></script>
+<script src="/js/portal.js?v=ef310a4b4e" defer></script>
 </body>
 </html>

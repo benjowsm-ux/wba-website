@@ -276,7 +276,7 @@
 
     sb.rpc('portal_seen').then(function () {});
 
-    sb.rpc('my_portal').then(function (r) {
+    sb.rpc('my_site').then(function (r) {
       /* Two very different failures used to land in the same place, and the
          wrong message is the one a client would see: "you are not attached to
          a client" reads as "we have lost your account" when all that has
@@ -289,7 +289,7 @@
         }
         problem(r.error.message); return;
       }
-      if (!r.data || !r.data.client) { locked(); return; }
+      if (!r.data || !r.data.handle) { locked(); return; }
       render(r.data);
     });
   }
@@ -338,131 +338,51 @@
       '</div></div></div>';
   }
 
-  var STAGES = [
-    { k: 'talk',   n: 'Talk it through' },
-    { k: 'design', n: 'Pen and paper' },
-    { k: 'build',  n: 'Built by hand' },
-    { k: 'live',   n: 'Go live' },
-    { k: 'grow',   n: 'Keep it moving' }
-  ];
-
+  /* One job: show them their site, and what has changed. Invoices, payments,
+     stage trackers and account registers all used to live here. They were
+     scaffolding for a process that already happens in GoCardless and an
+     inbox, and they buried the one thing the client actually came for. */
   function render(d) {
-    var project = (d.projects && d.projects[0]) || null;
-    var client = d.client || {};
-    var me = d.me || {};
+    var project = d.project || null;
+    var version = project ? (project.version || 0) : 0;
 
-    /* ---- who ---- */
     var who = el('ptWho');
-    if (who) {
-      who.textContent = me.name || me.handle || client.business || '';
-      who.hidden = false;
-    }
+    if (who) { who.textContent = d.name || d.handle || d.business || ''; who.hidden = false; }
     el('ptOut').hidden = false;
-    el('ptCrumb').textContent = client.business || 'Client';
-    el('ptTitle').textContent = project ? project.name : (client.business || 'Your project');
-    el('ptSummary').textContent = project && project.summary ? project.summary : '';
+    el('ptCrumb').textContent = d.business || 'Your account';
+    el('ptTitle').textContent = d.business ? d.business : 'Your site';
+    el('ptSummary').textContent = (project && project.summary) || '';
+    el('ptVersion').textContent = version ? 'v' + version : '—';
 
-    el('ptStageName').textContent =
-      project ? (STAGES.filter(function (s) { return s.k === project.stage; })[0] || {}).n || '—' : '—';
-    el('ptSince').textContent = project ? day(project.started_on || project.created_at) : '—';
-    el('ptFee').textContent = client.monthly_fee != null ? '£' + client.monthly_fee : '—';
-
-    /* ---- the five stages ---- */
-    var at = project ? STAGES.map(function (s) { return s.k; }).indexOf(project.stage) : -1;
-    el('ptStages').innerHTML = STAGES.map(function (s, i) {
-      var state = i < at ? 'is-done' : (i === at ? 'is-now' : '');
-      return '<li class="pt-stage ' + state + '">' +
-             '<span class="pt-stage-n">' + String(i + 1).padStart(2, '0') + '</span>' +
-             '<span class="pt-stage-l">' + esc(s.n) + '</span></li>';
-    }).join('');
-
-    /* ---- preview ---- */
-    var previews = d.previews || [];
-    var current = previews.filter(function (p) { return p.is_current; })[0] || previews[0];
+    /* ---- the site ---- */
     var box = el('ptPreview');
-
-    if (!current) {
-      box.innerHTML = empty('Nothing to preview yet',
-        'As soon as there is something to look at, it appears here and you get an email.');
+    if (!version) {
+      box.innerHTML = empty('Nothing to look at yet',
+        'The moment there is something to see, it turns up here and we will tell you.');
     } else {
-      /* Built at click time, not now, so the token is the freshest one we
-         have rather than whatever was valid when the page rendered. */
       el('ptPvLive').hidden = false;
       box.innerHTML =
-        '<div class="pt-pv">' +
-          '<div class="pt-pv-frame"><span class="pt-pv-dot" aria-hidden="true"></span>' +
-            '<span class="pt-pv-url">' + esc(current.path) + '</span></div>' +
-          '<p class="pt-pv-meta">Version ' + esc(current.version) + ' &middot; ' +
-            esc(day(current.uploaded_at)) +
-            (current.note ? ' &middot; ' + esc(current.note) : '') + '</p>' +
-          '<button type="button" class="btn btn-gold" id="ptOpenPv" data-path="' +
-            esc(current.path) + '">Open the preview</button>' +
-        '</div>' +
-        (previews.length > 1
-          ? '<ul class="pt-versions">' + previews.slice(0, 6).map(function (p) {
-              return '<li><span class="pt-v-n">v' + esc(p.version) + '</span>' +
-                     '<span class="pt-v-d">' + esc(day(p.uploaded_at)) + '</span>' +
-                     (p.note ? '<span class="pt-v-x">' + esc(p.note) + '</span>' : '') + '</li>';
-            }).join('') + '</ul>'
+        '<p class="pt-site-lede">Your site is ready to look at. It opens in a new tab, ' +
+        'full size — click around it exactly as a visitor would.</p>' +
+        '<button type="button" class="btn btn-gold pt-open" id="ptOpenPv" data-path="' +
+          esc(d.handle) + '/v' + esc(version) + '">Open my site</button>' +
+        (project && project.live_url
+          ? '<p class="pt-site-note"><a href="' + esc(safeHref(project.live_url)) +
+            '" target="_blank" rel="noopener">Your live site</a></p>'
           : '');
     }
 
-    /* ---- timeline ---- */
+    /* ---- what's happened ---- */
     var updates = d.updates || [];
     el('ptTimeline').innerHTML = updates.length
-      ? '<ol class="pt-time">' + updates.slice(0, 12).map(function (u) {
-          return '<li class="pt-t is-' + esc(u.kind) + '">' +
-                 '<span class="pt-t-when">' + esc(day(u.happened_at)) + '</span>' +
+      ? '<ol class="pt-time">' + updates.slice(0, 10).map(function (u) {
+          return '<li class="pt-t">' +
+                 '<span class="pt-t-when">' + esc(day(u.at)) + '</span>' +
                  '<span class="pt-t-title">' + esc(u.title) + '</span>' +
                  (u.body ? '<span class="pt-t-body">' + esc(u.body) + '</span>' : '') +
                  '</li>';
         }).join('') + '</ol>'
-      : empty('No updates yet', 'Everything we do on your project turns up here.');
-
-    /* ---- invoices ---- */
-    var invoices = d.invoices || [];
-    var owing = invoices.filter(function (i) { return i.status === 'sent' || i.status === 'overdue'; })
-                        .reduce(function (a, i) { return a + (i.amount_pence || 0); }, 0);
-    el('ptInvoices').innerHTML = invoices.length
-      ? (owing ? '<p class="pt-owing">Outstanding <b>' + money(owing) + '</b></p>' : '') +
-        '<table class="pt-table"><thead><tr><th>Invoice</th><th>Issued</th><th>Amount</th><th>Status</th></tr></thead><tbody>' +
-        invoices.map(function (i) {
-          return '<tr><td>' + esc(i.number) + '</td><td>' + esc(day(i.issued_on)) + '</td>' +
-                 '<td class="pt-num">' + money(i.amount_pence) + '</td>' +
-                 '<td><span class="pt-pill is-' + esc(i.status) + '">' + esc(i.status) + '</span></td></tr>';
-        }).join('') + '</tbody></table>'
-      : empty('No invoices yet', 'The build is free. The first invoice appears when your site goes live.');
-
-    /* ---- payments ---- */
-    var payments = d.payments || [];
-    el('ptPayments').innerHTML = payments.length
-      ? '<table class="pt-table"><thead><tr><th>Date</th><th>Method</th><th>Amount</th></tr></thead><tbody>' +
-        payments.map(function (p) {
-          return '<tr><td>' + esc(day(p.paid_on)) + '</td><td>' + esc(p.method || '—') + '</td>' +
-                 '<td class="pt-num">' + money(p.amount_pence) + '</td></tr>';
-        }).join('') + '</tbody></table>'
-      : empty('Nothing yet', 'Payments show up here the moment they clear.');
-
-    /* ---- accounts ---- */
-    var accounts = d.accounts || [];
-    el('ptAccounts').innerHTML = accounts.length
-      ? '<ul class="pt-accs">' + accounts.map(function (a) {
-          var href = safeHref(a.url);
-          var vault = safeHref(a.vault_url);
-          return '<li class="pt-acc">' +
-            '<span class="pt-acc-l">' + esc(a.label) + '</span>' +
-            (a.username ? '<span class="pt-acc-u">' + esc(a.username) + '</span>' : '') +
-            '<span class="pt-acc-h is-' + esc(a.holder) + '">' +
-              (a.holder === 'wba' ? 'We hold it' : a.holder === 'client' ? 'You hold it' : 'Shared') +
-            '</span>' +
-            '<span class="pt-acc-go">' +
-              (href ? '<a href="' + esc(href) + '" target="_blank" rel="noopener">Open</a>' : '') +
-              (vault ? '<a href="' + esc(vault) + '" target="_blank" rel="noopener">Password</a>' : '') +
-            '</span></li>';
-        }).join('') + '</ul>' +
-        '<p class="pt-acc-note">Passwords live in the shared vault, never in this page. ' +
-        'If a “Password” link is missing, ask and we will share it across.</p>'
-      : empty('Nothing recorded', 'Once your site is live this lists every account it depends on.');
+      : empty('Nothing yet', 'Anything worth telling you about shows up here.');
   }
 
   /* Opening a preview.
@@ -479,18 +399,26 @@
     var btn = e.target && e.target.closest ? e.target.closest('#ptOpenPv') : null;
     if (!btn) return;
     var path = btn.getAttribute('data-path') || '';
-    if (!PREVIEW_BASE) {
-      say('Previews are not switched on yet.', true);
-      return;
-    }
     btn.disabled = true;
+
     sb.auth.getSession().then(function (r) {
       btn.disabled = false;
       var token = r && r.data && r.data.session && r.data.session.access_token;
       if (!token) { expired(); return; }
-      var to = PREVIEW_BASE + '/' + path.split('/').map(encodeURIComponent).join('/') +
-               '/?t=' + encodeURIComponent(token);
-      window.open(to, '_blank', 'noopener,noreferrer');
+
+      /* The preview is served from this same origin (Netlify proxies
+         /preview/* to the edge function), so the session travels as a plain
+         cookie — no token in a URL, nothing to strip afterwards.
+
+         Path is scoped to /preview so it is never sent with an ordinary page
+         request, and it is short-lived because it is a viewing pass, not a
+         login. */
+      document.cookie = 'wba_pv=' + encodeURIComponent(token) +
+        '; Path=/preview; Max-Age=28800; SameSite=Lax' +
+        (location.protocol === 'https:' ? '; Secure' : '');
+
+      window.open('/preview/' + path.split('/').map(encodeURIComponent).join('/') + '/',
+                  '_blank', 'noopener');
     });
   });
 
@@ -515,37 +443,14 @@
   }
 
   function demoData() {
-    var now = Date.now(), day1 = 86400000;
+    var now = Date.now(), d1 = 86400000;
     return {
-      client: { business: 'Pivaz Café', contact: 'Sam', domain: 'pivazcafe.co.uk',
-                status: 'live', monthly_fee: 30 },
-      me: { handle: 'pivaz', name: 'Sam' },
-      projects: [{ name: 'Pivaz Café — new site', stage: 'build', status: 'active',
-                   summary: 'Menus that read from the back of the queue, and a booking form that lands in your inbox.',
-                   started_on: new Date(now - 26 * day1).toISOString(), created_at: new Date(now - 26 * day1).toISOString() }],
+      business: 'Pivaz Café', handle: 'pivaz', name: 'Sam',
+      project: { name: 'Website', summary: 'Menus that read from the back of the queue.', version: 3 },
       updates: [
-        { happened_at: new Date(now - 1 * day1).toISOString(), kind: 'preview', title: 'Version 3 is up', body: 'Menu board photography swapped in and the booking form is live on the preview.' },
-        { happened_at: new Date(now - 6 * day1).toISOString(), kind: 'milestone', title: 'Design signed off', body: 'Going to build.' },
-        { happened_at: new Date(now - 12 * day1).toISOString(), kind: 'note', title: 'Photographs taken', body: 'Morning light, front of house and the boards.' },
-        { happened_at: new Date(now - 26 * day1).toISOString(), kind: 'milestone', title: 'Project opened' }
-      ],
-      previews: [
-        { version: 3, path: 'pivaz/v3', uploaded_at: new Date(now - 1 * day1).toISOString(), note: 'Booking form', is_current: true },
-        { version: 2, path: 'pivaz/v2', uploaded_at: new Date(now - 9 * day1).toISOString(), note: 'Menu pages' },
-        { version: 1, path: 'pivaz/v1', uploaded_at: new Date(now - 20 * day1).toISOString(), note: 'First look' }
-      ],
-      invoices: [
-        { number: 'WBA-0042', issued_on: new Date(now - 3 * day1).toISOString(), amount_pence: 3000, status: 'sent' },
-        { number: 'WBA-0031', issued_on: new Date(now - 34 * day1).toISOString(), amount_pence: 3000, status: 'paid' }
-      ],
-      payments: [
-        { paid_on: new Date(now - 32 * day1).toISOString(), method: 'GoCardless', amount_pence: 3000 }
-      ],
-      accounts: [
-        { label: 'Site admin', url: 'https://pivazcafe.co.uk/admin/', username: 'sam', holder: 'shared', vault_url: 'https://vault.bitwarden.com/' },
-        { label: 'Domain registrar', url: 'https://www.namecheap.com/', username: 'sam@pivazcafe.co.uk', holder: 'client' },
-        { label: 'Google Business Profile', url: 'https://business.google.com/', username: 'pivazcafe', holder: 'shared', vault_url: 'https://vault.bitwarden.com/' },
-        { label: 'Hosting (Netlify)', username: 'wba', holder: 'wba' }
+        { at: new Date(now - 1 * d1).toISOString(), title: 'New version of your site is up', body: 'Version 3 — have a look and tell us what to change.' },
+        { at: new Date(now - 6 * d1).toISOString(), title: 'Menu photography swapped in' },
+        { at: new Date(now - 12 * d1).toISOString(), title: 'First draft ready' }
       ]
     };
   }

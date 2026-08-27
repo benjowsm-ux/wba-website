@@ -3345,3 +3345,28 @@ textarea.pta-in{width:100%;margin-top:.5rem;resize:vertical;}
 }
 .pt-resend:hover:not(:disabled){background:var(--sf-3);border-color:var(--edge-strong);color:#fff;}
 .pt-resend:disabled{opacity:.5;cursor:default;}
+
+/* Admin — drop a site folder here. */
+.pta-drop{
+  margin-top:1rem;padding:2rem 1.5rem;text-align:center;cursor:pointer;
+  border:2px dashed var(--line);border-radius:var(--r);background:var(--mist);
+  transition:border-color .18s,background .18s;
+}
+.pta-drop:hover{border-color:var(--blue);background:var(--blue-soft);}
+.pta-drop.is-over{border-color:var(--blue);background:var(--blue-soft);transform:scale(1.005);}
+.pta-drop svg{width:34px;height:34px;color:var(--slate);margin-bottom:.6rem;}
+.pta-drop p{margin:0;font-size:.94rem;}
+.pta-drop-sub{margin-top:.3rem!important;font-size:.84rem!important;color:var(--faint);}
+.pta-drop label{color:var(--blue);text-decoration:underline;cursor:pointer;}
+.pta-bar{margin-top:1rem;}
+.pta-bar-track{height:8px;border-radius:99px;background:var(--line);overflow:hidden;}
+.pta-bar-fill{display:block;height:100%;width:0;background:var(--blue);transition:width .2s;}
+.pta-live{font-size:.9rem;color:var(--text);}
+.pta-live a{color:var(--blue);text-decoration:underline;}
+
+/* Portal — the one button that matters. */
+.pt-site-lede{font-size:.95rem;line-height:1.6;color:rgba(255,255,255,.7);margin:0 0 1.1rem;max-width:52ch;}
+.pt-open{font-size:1.02rem;padding:.85rem 1.8rem;}
+.pt-site-note{margin-top:1rem;font-size:.84rem;}
+.pt-site-note a{color:rgba(255,255,255,.7);text-decoration:underline;text-underline-offset:3px;}
+.pt-site-note a:hover{color:var(--gold);}

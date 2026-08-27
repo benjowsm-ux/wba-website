@@ -77,12 +77,13 @@
   status = 200
   force = true
 
-# Previews live on their own hostname, deliberately — see
-# cloudflare/preview-worker.js. This makes the portal's short link work.
+# Previews. Proxied (200, not a redirect) so the browser treats them as this
+# origin and sends the wba_pv cookie the portal set — a redirect to another
+# host would drop it and every preview would ask you to sign in again.
 [[redirects]]
   from = "/preview/*"
-  to = "https://preview.westonbusinessauthority.co.uk/:splat"
-  status = 302
+  to = "https://lynzhiyvggqyplssrapi.supabase.co/functions/v1/preview/:splat"
+  status = 200
   force = true
 
 # Nothing signed-in should ever be cached by a shared proxy.

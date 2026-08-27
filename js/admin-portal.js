@@ -1,20 +1,22 @@
 /* ==========================================================================
-   WBA — admin: the Portal tab.
+   WBA — admin: Portal.
 
-   Everything the client portal shows is put here: who can sign in, what
-   project they are on, what has happened, what we billed and what arrived.
+   Two jobs, and deliberately no others:
 
-   ONE IDEA RUNS THROUGH THIS FILE
-   The client side is read-only. Every write happens in the admin, as an
-   admin, and row-level security enforces that in the database rather than
-   here — so a bug in this file cannot become a way for a client to change
-   their own invoice. What this file owes you is that it never *appears* to
-   have saved something it did not, which is why every write is checked with
-   wbaWroteNothing() rather than only for an error.
+     1. Give a client a login.
+     2. Put a site folder in front of them.
 
-   AND ONE THING IT WILL NOT DO
-   There is no password field anywhere in the account editor, on purpose.
-   See the header of supabase/portal.sql.
+   The first version of this had invoices, payments, trials, monthly fees and
+   an account register. All of it was scaffolding for a business process that
+   already happens in GoCardless and your inbox, and none of it was the reason
+   the portal exists. It is gone. The tables still exist in the database, so
+   nothing was destroyed — they are simply not the job.
+
+   THE UPLOAD
+   Drop a folder. It reads every file in it, uploads them under
+   <handle>/v<n>/… in a private bucket, and bumps the version. The client's
+   next visit shows the new one. Nothing to name, nothing to configure, no
+   CLI.
    ========================================================================== */
 (function () {
   'use strict';
@@ -23,15 +25,15 @@
   if (!sb) return;
 
   var el = function (id) { return document.getElementById(id); };
-  var current = null;                    /* the client we are editing */
+  var current = null;        /* client id */
+  var handle = null;         /* their handle — also their folder name */
+  var projectId = null;
 
   function esc(v) {
     return String(v == null ? '' : v)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
   }
-  function money(p) { return '£' + ((Number(p) || 0) / 100).toFixed(2); }
-  function pence(v) { return Math.round((parseFloat(v) || 0) * 100); }
   function day(v) { return v ? new Date(v).toLocaleDateString('en-GB') : '—'; }
 
   function toast(m, bad) {
@@ -40,58 +42,55 @@
     box.textContent = m;
     box.className = 'pta-msg' + (bad ? ' is-bad' : ' is-ok');
     clearTimeout(box._t);
-    box._t = setTimeout(function () { box.textContent = ''; box.className = 'pta-msg'; }, 4000);
+    box._t = setTimeout(function () { box.textContent = ''; box.className = 'pta-msg'; }, 5000);
   }
 
-  /* A blocked write comes back 200 with an empty array, not an error — the
-     single most expensive thing to forget with row-level security. */
+  /* A blocked write returns 200 with an empty array, not an error. Checking
+     only for r.error reports "Saved" while nothing happened. */
   function done(r, ok) {
     if (r.error) { toast(r.error.message, true); return false; }
     if (window.wbaWroteNothing && window.wbaWroteNothing(r)) {
-      toast('The database refused that write. Are you still signed in as an admin?', true);
+      toast('The database refused that. Are you still signed in as an admin?', true);
       return false;
     }
-    toast(ok || 'Saved.');
+    if (ok) toast(ok);
     return true;
   }
 
   /* ------------------------------------------------------------- the list */
   function loadClients() {
-    return sb.from('clients').select('id,business,status').order('business')
-      .then(function (r) {
-        var sel = el('ptaClient');
-        if (!sel) return;
-        var rows = r.data || [];
-        sel.innerHTML = '<option value="">Choose a client…</option>' +
-          rows.map(function (c) {
-            return '<option value="' + esc(c.id) + '">' + esc(c.business || '(no name)') + '</option>';
-          }).join('');
-      });
+    return sb.from('clients').select('id,business').order('business').then(function (r) {
+      var sel = el('ptaClient');
+      if (!sel) return;
+      sel.innerHTML = '<option value="">Choose a client…</option>' +
+        (r.data || []).map(function (c) {
+          return '<option value="' + esc(c.id) + '">' + esc(c.business || '(no name)') + '</option>';
+        }).join('');
+    });
   }
 
   function loadClient(id) {
-    current = id;
+    current = id; handle = null; projectId = null;
     if (!id) { el('ptaBody').hidden = true; return; }
     el('ptaBody').hidden = false;
 
     Promise.all([
       sb.from('client_users').select('*').eq('client_id', id),
-      sb.from('projects').select('*').eq('client_id', id).order('created_at'),
-      sb.from('invoices').select('*').eq('client_id', id).order('issued_on', { ascending: false }),
-      sb.from('payments').select('*').eq('client_id', id).order('paid_on', { ascending: false }),
-      sb.from('project_accounts').select('*').eq('client_id', id).order('label')
+      sb.from('projects').select('*').eq('client_id', id).order('created_at')
     ]).then(function (res) {
-      renderUsers(res[0].data || []);
-      renderProjects(res[1].data || []);
-      renderInvoices(res[2].data || []);
-      renderPayments(res[3].data || []);
-      renderAccounts(res[4].data || []);
-      var p = (res[1].data || [])[0];
-      if (p) loadUpdates(p.id); else el('ptaUpdates').innerHTML = '<p class="pta-none">Add a project first.</p>';
+      var users = res[0].data || [];
+      var projects = res[1].data || [];
+
+      handle = users.length ? (users[0].handle || '').toLowerCase() : null;
+      projectId = projects.length ? projects[0].id : null;
+
+      renderUsers(users);
+      renderSite(projects[0] || null);
+      if (projectId) loadUpdates(projectId); else el('ptaUpdates').innerHTML = '';
     });
   }
 
-  /* ------------------------------------------------------------ portal users */
+  /* ------------------------------------------------------------ the login */
   function renderUsers(rows) {
     el('ptaUsers').innerHTML = rows.length
       ? '<table class="pta-t"><tr><th>Handle</th><th>Name</th><th>Last seen</th><th></th></tr>' +
@@ -99,75 +98,221 @@
           return '<tr><td><code>' + esc(u.handle || '—') + '</code></td>' +
                  '<td>' + esc(u.display_name || '—') + '</td>' +
                  '<td>' + esc(u.last_seen_at ? day(u.last_seen_at) : 'never') + '</td>' +
-                 '<td><button type="button" class="admin-btn danger" data-unlink="' + esc(u.user_id) + '">Unlink</button></td></tr>';
+                 '<td><button type="button" class="admin-btn danger" data-unlink="' + esc(u.user_id) + '">Remove</button></td></tr>';
         }).join('') + '</table>'
-      : '<p class="pta-none">Nobody can sign in for this client yet.</p>';
+      : '<p class="pta-none">No login yet. Make one below and they can sign in straight away.</p>';
   }
 
-  /* Creating the auth user needs the service key, which must never be in a
-     browser. So this asks the Edge Function to do it, and the admin's own
-     token is what authorises the request. */
   function invite() {
     var email = (el('ptaEmail').value || '').trim();
-    var handle = (el('ptaHandle').value || '').trim().toLowerCase();
+    var h = (el('ptaHandle').value || '').trim().toLowerCase();
     var name = (el('ptaName').value || '').trim();
     if (!current) { toast('Pick a client first.', true); return; }
-    if (!email || email.indexOf('@') < 1) { toast('That email does not look right.', true); return; }
-    if (!/^[a-z0-9][a-z0-9._-]*$/.test(handle)) {
-      toast('Handles are lower case letters, numbers, dot, dash, underscore.', true); return;
+    if (email.indexOf('@') < 1) { toast('That email does not look right.', true); return; }
+    if (!/^[a-z0-9][a-z0-9._-]*$/.test(h)) {
+      toast('Handle: lower case letters, numbers, dot, dash, underscore.', true); return;
     }
+
+    var btn = el('ptaInvite');
+    btn.disabled = true; btn.textContent = 'Creating…';
 
     sb.auth.getSession().then(function (s) {
       var token = s && s.data && s.data.session && s.data.session.access_token;
       return fetch('/api/portal-invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-        body: JSON.stringify({ client_id: current, email: email, handle: handle, display_name: name })
+        body: JSON.stringify({ client_id: current, email: email, handle: h, display_name: name })
       });
     }).then(function (r) { return r.json(); })
       .then(function (j) {
+        btn.disabled = false; btn.textContent = 'Create login';
         if (j && j.ok) {
-          toast('Invited. They can sign in with “' + handle + '”.');
+          toast('Done. They sign in at /portal/ with “' + h + '”.');
           el('ptaEmail').value = el('ptaHandle').value = el('ptaName').value = '';
           loadClient(current);
         } else {
           toast((j && j.error) || 'Could not create that login.', true);
         }
       })
-      .catch(function () { toast('The invite endpoint is not deployed yet — see docs/PORTAL.md.', true); });
+      .catch(function () {
+        btn.disabled = false; btn.textContent = 'Create login';
+        toast('The portal-invite function is not deployed yet.', true);
+      });
   }
 
-  /* ---------------------------------------------------------------- projects */
-  var STAGES = ['talk', 'design', 'build', 'live', 'grow'];
+  /* --------------------------------------------------------------- the site */
+  function renderSite(project) {
+    var box = el('ptaSite');
+    if (!handle) {
+      box.innerHTML = '<p class="pta-none">Make a login first — the handle is also the folder name for their files.</p>';
+      el('ptaDrop').hidden = true;
+      return;
+    }
+    el('ptaDrop').hidden = false;
 
-  function renderProjects(rows) {
-    el('ptaProjects').innerHTML = rows.length
-      ? rows.map(function (p) {
-          return '<div class="pta-row" data-project="' + esc(p.id) + '">' +
-            '<input class="pta-in" value="' + esc(p.name) + '" data-f="name"/>' +
-            '<select class="pta-in" data-f="stage">' + STAGES.map(function (s) {
-              return '<option' + (s === p.stage ? ' selected' : '') + '>' + s + '</option>';
-            }).join('') + '</select>' +
-            '<input class="pta-in" value="' + esc(p.live_url || '') + '" data-f="live_url" placeholder="live url"/>' +
-            '<button type="button" class="admin-btn" data-saveproject="' + esc(p.id) + '">Save</button>' +
-            '</div>';
-        }).join('')
-      : '<p class="pta-none">No project yet.</p>';
+    var v = project ? (project.preview_version || 0) : 0;
+    box.innerHTML = v
+      ? '<p class="pta-live">Version <b>' + esc(v) + '</b> is live for this client. ' +
+        '<a href="/preview/' + esc(handle) + '/v' + esc(v) + '/" target="_blank" rel="noopener">Open it yourself</a></p>'
+      : '<p class="pta-none">Nothing uploaded yet.</p>';
   }
 
-  function addProject() {
-    if (!current) return;
-    var name = (el('ptaNewProject').value || '').trim();
-    if (!name) return;
-    sb.from('projects').insert([{ client_id: current, name: name }]).select('id')
-      .then(function (r) { if (done(r, 'Project added.')) { el('ptaNewProject').value = ''; loadClient(current); } });
+  /* Reading a dropped folder.
+
+     Two different APIs, because browsers give you two different things: a
+     file INPUT with webkitdirectory hands over files that already carry a
+     relative path, while a DRAG hands over a tree you have to walk yourself.
+     Both end up as {path, file}. */
+  function fromInput(input) {
+    return Promise.resolve([].slice.call(input.files).map(function (f) {
+      return { path: f.webkitRelativePath || f.name, file: f };
+    }));
   }
 
-  /* ---------------------------------------------------------------- updates */
-  function loadUpdates(projectId) {
-    el('ptaUpdates').dataset.project = projectId;
-    sb.from('project_updates').select('*').eq('project_id', projectId)
-      .order('happened_at', { ascending: false }).limit(15)
+  function fromDrop(dt) {
+    var items = [].slice.call(dt.items || []);
+    var roots = items.map(function (i) {
+      return i.webkitGetAsEntry ? i.webkitGetAsEntry() : null;
+    }).filter(Boolean);
+
+    if (!roots.length) {
+      return Promise.resolve([].slice.call(dt.files || []).map(function (f) {
+        return { path: f.name, file: f };
+      }));
+    }
+
+    var out = [];
+    function walk(entry, prefix) {
+      return new Promise(function (resolve) {
+        if (entry.isFile) {
+          entry.file(function (f) { out.push({ path: prefix + entry.name, file: f }); resolve(); },
+                     function () { resolve(); });
+          return;
+        }
+        var reader = entry.createReader();
+        var kids = [];
+        /* readEntries returns at most 100 at a time, so it has to be called
+           until it returns nothing. Miss this and a big folder silently
+           uploads its first hundred files. */
+        (function next() {
+          reader.readEntries(function (batch) {
+            if (!batch.length) {
+              Promise.all(kids.map(function (k) { return walk(k, prefix + entry.name + '/'); })).then(resolve);
+              return;
+            }
+            kids = kids.concat([].slice.call(batch));
+            next();
+          }, function () { resolve(); });
+        })();
+      });
+    }
+
+    return Promise.all(roots.map(function (r) { return walk(r, ''); })).then(function () {
+      /* A dropped folder arrives as "sitefolder/index.html". The folder's own
+         name is ours, not theirs, so strip it — otherwise every preview URL
+         carries a directory nobody chose. */
+      var top = {};
+      out.forEach(function (f) { top[f.path.split('/')[0]] = 1; });
+      var names = Object.keys(top);
+      if (names.length === 1 && out.every(function (f) { return f.path.indexOf('/') > 0; })) {
+        var cut = names[0].length + 1;
+        out.forEach(function (f) { f.path = f.path.slice(cut); });
+      }
+      return out;
+    });
+  }
+
+  var SKIP = /(^|\/)(\.|node_modules\/|\.git\/|\.DS_Store|Thumbs\.db)/i;
+
+  function upload(files) {
+    if (!current) { toast('Pick a client first.', true); return; }
+    if (!handle) { toast('Make a login first — the handle is the folder name.', true); return; }
+
+    files = files.filter(function (f) { return f.path && !SKIP.test(f.path) && f.file.size > 0; });
+    if (!files.length) { toast('No files in that.', true); return; }
+    if (!files.some(function (f) { return /(^|\/)index\.html$/i.test(f.path); })) {
+      if (!confirm('There is no index.html at the top of that folder. The client will land on a "not found" page. Upload anyway?')) return;
+    }
+
+    var bar = el('ptaBar');
+    var fill = el('ptaFill');
+    var label = el('ptaProgress');
+    bar.hidden = false;
+
+    /* Version first, so a half-finished upload never overwrites the version
+       the client is currently looking at. They keep seeing v3 until v4 is
+       entirely in place. */
+    ensureProject().then(function (proj) {
+      var version = (proj.preview_version || 0) + 1;
+      var prefix = handle + '/v' + version + '/';
+      var okCount = 0, failed = [];
+
+      /* Four at a time. Serial is slow on a 200-file site; all at once
+         collapses on a domestic upload and gives worse errors. */
+      var queue = files.slice();
+      function worker() {
+        var next = queue.shift();
+        if (!next) return Promise.resolve();
+        return sb.storage.from('previews')
+          .upload(prefix + next.path, next.file, { upsert: true, contentType: next.file.type || undefined })
+          .then(function (r) {
+            if (r.error) failed.push(next.path + ' — ' + r.error.message);
+            else okCount++;
+            var pct = Math.round(((okCount + failed.length) / files.length) * 100);
+            fill.style.width = pct + '%';
+            label.textContent = (okCount + failed.length) + ' of ' + files.length + ' files';
+            return worker();
+          });
+      }
+
+      return Promise.all([worker(), worker(), worker(), worker()]).then(function () {
+        if (failed.length) {
+          bar.hidden = true;
+          toast(failed.length + ' file(s) failed. First: ' + failed[0], true);
+          return;
+        }
+        return sb.from('projects')
+          .update({ preview_version: version, preview_path: prefix.replace(/\/$/, ''), updated_at: new Date().toISOString() })
+          .eq('id', proj.id).select('id')
+          .then(function (r) {
+            bar.hidden = true;
+            if (!done(r)) return;
+            return sb.from('project_updates').insert([{
+              project_id: proj.id, kind: 'preview',
+              title: 'New version of your site is up',
+              body: 'Version ' + version + ' — have a look and tell us what to change.'
+            }]).then(function () {
+              toast('Uploaded. Version ' + version + ' is live for this client.');
+              loadClient(current);
+            });
+          });
+      });
+    }).catch(function (e) {
+      bar.hidden = true;
+      toast('Upload failed: ' + (e && e.message ? e.message : e), true);
+    });
+  }
+
+  /* A client has one site. If there is no project row yet, make one rather
+     than asking the person uploading to go and create a record first. */
+  function ensureProject() {
+    if (projectId) {
+      return sb.from('projects').select('*').eq('id', projectId).single()
+        .then(function (r) { return r.data; });
+    }
+    return sb.from('projects')
+      .insert([{ client_id: current, name: 'Website' }]).select('*').single()
+      .then(function (r) {
+        if (r.error) throw r.error;
+        projectId = r.data.id;
+        return r.data;
+      });
+  }
+
+  /* --------------------------------------------------------------- updates */
+  function loadUpdates(id) {
+    sb.from('project_updates').select('*').eq('project_id', id)
+      .order('happened_at', { ascending: false }).limit(8)
       .then(function (r) {
         var rows = r.data || [];
         el('ptaUpdates').innerHTML = rows.length
@@ -175,167 +320,72 @@
               return '<li><b>' + esc(u.title) + '</b> <span>' + esc(day(u.happened_at)) + '</span>' +
                      '<button type="button" class="admin-btn danger" data-delupdate="' + esc(u.id) + '">×</button></li>';
             }).join('') + '</ul>'
-          : '<p class="pta-none">Nothing posted yet.</p>';
+          : '<p class="pta-none">Nothing posted.</p>';
       });
   }
 
   function addUpdate() {
-    var projectId = el('ptaUpdates').dataset.project;
-    if (!projectId) { toast('Add a project first.', true); return; }
+    if (!projectId) { toast('Upload a site first.', true); return; }
     var title = (el('ptaUpTitle').value || '').trim();
     if (!title) return;
-    sb.from('project_updates').insert([{
-      project_id: projectId,
-      title: title,
-      body: (el('ptaUpBody').value || '').trim() || null,
-      kind: el('ptaUpKind').value
-    }]).select('id').then(function (r) {
-      if (done(r, 'Posted. The client sees it immediately.')) {
-        el('ptaUpTitle').value = ''; el('ptaUpBody').value = '';
-        loadUpdates(projectId);
-      }
-    });
+    sb.from('project_updates').insert([{ project_id: projectId, title: title }])
+      .select('id').then(function (r) {
+        if (done(r, 'Posted.')) { el('ptaUpTitle').value = ''; loadUpdates(projectId); }
+      });
   }
 
-  /* ---------------------------------------------------------------- money */
-  function renderInvoices(rows) {
-    el('ptaInvoices').innerHTML = rows.length
-      ? '<table class="pta-t"><tr><th>Number</th><th>Issued</th><th>Amount</th><th>Status</th><th></th></tr>' +
-        rows.map(function (i) {
-          return '<tr><td>' + esc(i.number) + '</td><td>' + esc(day(i.issued_on)) + '</td>' +
-                 '<td>' + money(i.amount_pence) + '</td>' +
-                 '<td><select class="pta-in tiny" data-invstatus="' + esc(i.id) + '">' +
-                 ['draft', 'sent', 'paid', 'overdue', 'void'].map(function (s) {
-                   return '<option' + (s === i.status ? ' selected' : '') + '>' + s + '</option>';
-                 }).join('') + '</select></td>' +
-                 '<td><button type="button" class="admin-btn danger" data-delinvoice="' + esc(i.id) + '">×</button></td></tr>';
-        }).join('') + '</table>' +
-        '<p class="pta-hint">Drafts are invisible to the client. They appear the moment you set one to “sent”.</p>'
-      : '<p class="pta-none">No invoices.</p>';
-  }
-
-  function addInvoice() {
-    if (!current) return;
-    var number = (el('ptaInvNo').value || '').trim();
-    var amount = el('ptaInvAmt').value;
-    if (!number || !amount) { toast('Number and amount, please.', true); return; }
-    sb.from('invoices').insert([{
-      client_id: current, number: number, amount_pence: pence(amount),
-      status: 'draft', note: (el('ptaInvNote').value || '').trim() || null
-    }]).select('id').then(function (r) {
-      if (done(r, 'Invoice added as a draft.')) { el('ptaInvNo').value = ''; el('ptaInvAmt').value = ''; loadClient(current); }
-    });
-  }
-
-  function renderPayments(rows) {
-    el('ptaPayments').innerHTML = rows.length
-      ? '<table class="pta-t"><tr><th>Date</th><th>Method</th><th>Amount</th><th></th></tr>' +
-        rows.map(function (p) {
-          return '<tr><td>' + esc(day(p.paid_on)) + '</td><td>' + esc(p.method || '—') + '</td>' +
-                 '<td>' + money(p.amount_pence) + '</td>' +
-                 '<td><button type="button" class="admin-btn danger" data-delpayment="' + esc(p.id) + '">×</button></td></tr>';
-        }).join('') + '</table>'
-      : '<p class="pta-none">Nothing recorded.</p>';
-  }
-
-  function addPayment() {
-    if (!current) return;
-    var amount = el('ptaPayAmt').value;
-    if (!amount) return;
-    sb.from('payments').insert([{
-      client_id: current, amount_pence: pence(amount),
-      method: (el('ptaPayMethod').value || '').trim() || null,
-      reference: (el('ptaPayRef').value || '').trim() || null
-    }]).select('id').then(function (r) {
-      if (done(r, 'Payment recorded.')) { el('ptaPayAmt').value = ''; el('ptaPayRef').value = ''; loadClient(current); }
-    });
-  }
-
-  /* -------------------------------------------------------------- accounts */
-  function renderAccounts(rows) {
-    el('ptaAccounts').innerHTML = rows.length
-      ? '<table class="pta-t"><tr><th>Label</th><th>Username</th><th>Held by</th><th></th></tr>' +
-        rows.map(function (a) {
-          return '<tr><td>' + esc(a.label) + '</td><td><code>' + esc(a.username || '—') + '</code></td>' +
-                 '<td>' + esc(a.holder) + '</td>' +
-                 '<td><button type="button" class="admin-btn danger" data-delaccount="' + esc(a.id) + '">×</button></td></tr>';
-        }).join('') + '</table>'
-      : '<p class="pta-none">No accounts recorded.</p>';
-  }
-
-  function addAccount() {
-    if (!current) return;
-    var label = (el('ptaAccLabel').value || '').trim();
-    if (!label) return;
-    sb.from('project_accounts').insert([{
-      client_id: current, label: label,
-      url: (el('ptaAccUrl').value || '').trim() || null,
-      username: (el('ptaAccUser').value || '').trim() || null,
-      holder: el('ptaAccHolder').value,
-      vault_url: (el('ptaAccVault').value || '').trim() || null
-    }]).select('id').then(function (r) {
-      if (done(r, 'Account noted.')) {
-        ['ptaAccLabel', 'ptaAccUrl', 'ptaAccUser', 'ptaAccVault'].forEach(function (i) { el(i).value = ''; });
-        loadClient(current);
-      }
-    });
-  }
-
-  /* ------------------------------------------------------------- delegation
-     One listener for the whole panel rather than a handler per row, so the
-     lists can be re-rendered freely without leaking listeners. */
-  function del(table, id, label) {
-    if (!confirm('Delete this ' + label + '? This cannot be undone.')) return;
-    sb.from(table).delete().eq('id', id).select('id')
-      .then(function (r) { if (done(r, 'Deleted.')) loadClient(current); });
-  }
-
+  /* ------------------------------------------------------------ delegation */
   document.addEventListener('click', function (e) {
     var t = e.target;
-    if (!t || !t.getAttribute) return;
-
-    if (t.dataset.delinvoice) return del('invoices', t.dataset.delinvoice, 'invoice');
-    if (t.dataset.delpayment) return del('payments', t.dataset.delpayment, 'payment');
-    if (t.dataset.delaccount) return del('project_accounts', t.dataset.delaccount, 'account');
+    if (!t || !t.dataset) return;
     if (t.dataset.delupdate) {
-      var pid = el('ptaUpdates').dataset.project;
-      return sb.from('project_updates').delete().eq('id', t.dataset.delupdate).select('id')
-        .then(function (r) { if (done(r, 'Removed.')) loadUpdates(pid); });
+      sb.from('project_updates').delete().eq('id', t.dataset.delupdate).select('id')
+        .then(function (r) { if (done(r, 'Removed.')) loadUpdates(projectId); });
     }
     if (t.dataset.unlink) {
-      if (!confirm('Remove this login? They will no longer be able to sign in.')) return;
-      return sb.from('client_users').delete().eq('user_id', t.dataset.unlink).select('user_id')
+      if (!confirm('Remove this login? They will not be able to sign in.')) return;
+      sb.from('client_users').delete().eq('user_id', t.dataset.unlink).select('user_id')
         .then(function (r) { if (done(r, 'Login removed.')) loadClient(current); });
     }
-    if (t.dataset.saveproject) {
-      var row = t.closest('.pta-row');
-      var patch = {};
-      row.querySelectorAll('[data-f]').forEach(function (i) { patch[i.dataset.f] = i.value || null; });
-      patch.updated_at = new Date().toISOString();
-      return sb.from('projects').update(patch).eq('id', t.dataset.saveproject).select('id')
-        .then(function (r) { done(r, 'Project saved.'); });
-    }
   });
 
-  document.addEventListener('change', function (e) {
-    var t = e.target;
-    if (t && t.dataset && t.dataset.invstatus) {
-      sb.from('invoices').update({ status: t.value }).eq('id', t.dataset.invstatus).select('id')
-        .then(function (r) { done(r, 'Status updated.'); });
-    }
-  });
-
-  /* --------------------------------------------------------------- wiring */
+  /* ---------------------------------------------------------------- wiring */
   window.wbaLoadPortal = function () {
     if (window.wbaPortalLoaded) return;
     window.wbaPortalLoaded = true;
+
     loadClients();
     el('ptaClient').addEventListener('change', function () { loadClient(this.value); });
     el('ptaInvite').addEventListener('click', invite);
-    el('ptaAddProject').addEventListener('click', addProject);
     el('ptaAddUpdate').addEventListener('click', addUpdate);
-    el('ptaAddInvoice').addEventListener('click', addInvoice);
-    el('ptaAddPayment').addEventListener('click', addPayment);
-    el('ptaAddAccount').addEventListener('click', addAccount);
+
+    var drop = el('ptaDrop');
+    var picker = el('ptaPicker');
+
+    picker.addEventListener('change', function () {
+      fromInput(picker).then(upload);
+      picker.value = '';
+    });
+    drop.addEventListener('click', function (e) {
+      if (e.target.closest('label')) return;   /* the label already opens it */
+      picker.click();
+    });
+
+    ['dragenter', 'dragover'].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) {
+        e.preventDefault(); e.stopPropagation();
+        drop.classList.add('is-over');
+      });
+    });
+    ['dragleave', 'drop'].forEach(function (ev) {
+      drop.addEventListener(ev, function (e) {
+        e.preventDefault(); e.stopPropagation();
+        if (ev === 'dragleave' && drop.contains(e.relatedTarget)) return;
+        drop.classList.remove('is-over');
+      });
+    });
+    drop.addEventListener('drop', function (e) {
+      fromDrop(e.dataTransfer).then(upload);
+    });
   };
 })();
