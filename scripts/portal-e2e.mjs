@@ -28,7 +28,16 @@ const OTHER = 'e2eother';
 const EMAIL = 'e2e-portal-test@westonbusinessauthority.co.uk';
 
 let pass = 0, fail = 0;
+let lastClient = null, lastUser = null;
 const ok = (m) => { console.log('  PASS  ' + m); pass++; };
+/* One retry, then give up gracefully rather than throwing. */
+async function tryFetch(url, opts) {
+  for (let i = 0; i < 2; i++) {
+    try { return await fetch(url, opts); }
+    catch (e) { if (i) console.log('        (network: ' + e.message + ')'); }
+  }
+  return null;
+}
 const no = (m) => { console.log('  FAIL  ' + m); fail++; };
 
 async function main() {
@@ -36,6 +45,7 @@ async function main() {
   const { data: client, error: cErr } = await admin.from('clients')
     .insert([{ business: 'E2E Test Co', status: 'lead' }]).select('id').single();
   if (cErr) { no('create client: ' + cErr.message); return finish(); }
+  lastClient = client.id;
   ok('client created');
 
   console.log('\n2. Their login');
@@ -56,6 +66,7 @@ async function main() {
     .upsert({ user_id: userId, client_id: client.id, handle: HANDLE, display_name: 'E2E' },
             { onConflict: 'user_id' });
   if (lErr) { no('link user: ' + lErr.message); return finish(client.id); }
+  lastUser = userId;
   ok('login created and linked to the client');
 
   console.log('\n3. A site, uploaded');
@@ -117,27 +128,36 @@ async function main() {
   const base = URL + '/functions/v1/preview';
   const cookie = 'wba_pv=' + encodeURIComponent(token);
 
-  const r1 = await fetch(`${base}/${HANDLE}/v1/`, { headers: { Cookie: cookie } });
-  const b1 = await r1.text();
-  if (r1.status === 200 && b1.includes('Preview works')) ok('index.html served');
-  else no(`index.html: ${r1.status} ${b1.slice(0, 160)}`);
+  const r1 = await tryFetch(`${base}/${HANDLE}/v1/`, { headers: { Cookie: cookie } });
+  const b1 = r1 ? await r1.text() : '';
+  if (r1 && r1.status === 200 && b1.includes('Preview works')) ok('index.html served');
+  else no(`index.html: ${r1 ? r1.status : 'network'} ${b1.slice(0, 160)}`);
 
-  const r2 = await fetch(`${base}/${HANDLE}/v1/style.css`, { headers: { Cookie: cookie } });
-  if (r2.status === 200 && (r2.headers.get('content-type') || '').includes('css')) ok('stylesheet served with the right type');
-  else no(`style.css: ${r2.status} ${r2.headers.get('content-type')}`);
+  const r2 = await tryFetch(`${base}/${HANDLE}/v1/style.css`, { headers: { Cookie: cookie } });
+  if (r2 && r2.status === 200 && (r2.headers.get('content-type') || '').includes('css')) ok('stylesheet served with the right type');
+  else no(`style.css: ${r2 ? r2.status : 'network'} ${r2 ? r2.headers.get('content-type') : ''}`);
 
-  const r3 = await fetch(`${base}/${HANDLE}/v1/about/`, { headers: { Cookie: cookie } });
-  const b3 = await r3.text();
-  if (r3.status === 200 && b3.includes('About page')) ok('a folder link lands on its index');
-  else no(`about/: ${r3.status} ${b3.slice(0, 120)}`);
+  const r3 = await tryFetch(`${base}/${HANDLE}/v1/about/`, { headers: { Cookie: cookie } });
+  const b3 = r3 ? await r3.text() : '';
+  if (r3 && r3.status === 200 && b3.includes('About page')) ok('a folder link lands on its index');
+  else no(`about/: ${r3 ? r3.status : 'network'} ${b3.slice(0, 120)}`);
 
   console.log('\n7. The checks that matter');
-  const r4 = await fetch(`${base}/${OTHER}/v1/`, { headers: { Cookie: cookie } });
-  if (r4.status === 403) ok("another client's site is refused");
-  else no(`another client's site returned ${r4.status} — THIS IS A LEAK`);
+  const r4 = await tryFetch(`${base}/${OTHER}/v1/`, { headers: { Cookie: cookie } });
+  if (r4 && r4.status === 403) ok("another client's site is refused");
+  else no(`another client's site returned ${r4 ? r4.status : 'network error'} — CHECK THIS`);
 
-  const r5 = await fetch(`${base}/${HANDLE}/v1/`);
-  if (r5.status === 401) ok('no session, no preview');
+  /* Every network call from here on is wrapped. A dropped TLS handshake used
+     to throw straight past the cleanup, leaving a test client, a test login
+     and a bucket full of test files behind in the live project. A flaky
+     connection is not a reason to litter. */
+  /* redirect:'manual' or fetch follows the 302 to /portal/, gets a perfectly
+     good 200 back, and the test concludes the preview was served to a
+     signed-out stranger. It was not — but a test that cannot tell the
+     difference is worse than no test. */
+  const r5 = await tryFetch(`${base}/${HANDLE}/v1/`, { redirect: 'manual' });
+  if (!r5) no('signed-out check: network failed, could not test');
+  else if (r5.status === 302 || r5.status === 401) ok('no session, sent back to sign in (' + r5.status + ')');
   else no(`signed out returned ${r5.status}`);
 
   const { data: leak } = await anon.from('previews').select('*');
@@ -169,4 +189,10 @@ async function finish(clientId, userId) {
   process.exit(fail ? 1 : 0);
 }
 
-main();
+/* Whatever happens — assertion failure, network drop, a thrown promise —
+   the throwaway client, login and files must not survive this script. */
+main().catch(async (e) => {
+  console.log('  ERROR  ' + (e && e.message ? e.message : e));
+  fail++;
+  await finish(lastClient, lastUser);
+});
