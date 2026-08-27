@@ -3327,3 +3327,21 @@ textarea.pta-in{width:100%;margin-top:.5rem;resize:vertical;}
 .pta-msg{font-size:.88rem;min-height:1.2em;margin-top:.5rem;}
 .pta-msg.is-ok{color:#0a7c3f;}
 .pta-msg.is-bad{color:#b00020;}
+
+/* Remember this device, and the resend. Both live on the code step. */
+.pt-check{
+  display:flex;align-items:center;gap:.6rem;margin:.2rem 0 .5rem;cursor:pointer;
+  font-size:.9rem;color:rgba(255,255,255,.8);
+}
+.portal-body .pt-check input[type=checkbox]{
+  width:20px;height:20px;flex:none;accent-color:var(--gold);cursor:pointer;margin:0;
+}
+.pt-note-tight{margin-top:0;margin-bottom:1rem;}
+.pt-resend{
+  display:block;width:100%;margin-top:.7rem;padding:.6rem;
+  background:var(--sf-2);border:1px solid var(--edge);border-radius:var(--rp);
+  color:rgba(255,255,255,.78);font:inherit;font-size:.86rem;cursor:pointer;
+  transition:background var(--t2),color var(--t2),border-color var(--t2);
+}
+.pt-resend:hover:not(:disabled){background:var(--sf-3);border-color:var(--edge-strong);color:#fff;}
+.pt-resend:disabled{opacity:.5;cursor:default;}

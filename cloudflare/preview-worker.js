@@ -67,7 +67,52 @@ export default {
     const prefix = `${clean[0]}/${clean[1]}`;
     const rest = clean.slice(2).join('/') || 'index.html';
 
-    /* --------------------------------------------------------------- auth */
+    /* --------------------------------------------------------------- auth
+       THE HANDOFF, and why it exists.
+
+       This worker answers on a different origin from the portal, so it
+       cannot read the portal's session — different origin, different
+       storage, by design. And a page's images and stylesheets cannot carry
+       an Authorization header; the browser fetches those on its own.
+
+       So the portal opens the first URL with ?t=<token>. We verify it once,
+       set a cookie ON THIS ORIGIN, and immediately redirect to the same
+       address without the token. Everything after that — the HTML, every
+       asset, every internal link — travels on the cookie.
+
+       The token is briefly in a URL, which is the cost. It is paid down by
+       redirecting it away before the page renders (so it never reaches
+       history as a loaded entry), by no-referrer so it cannot leak sideways,
+       and by the cookie being HttpOnly so script on the previewed page —
+       which is half-built client work — cannot read it back out. */
+    const handoff = url.searchParams.get('t');
+    if (handoff) {
+      let hClaims;
+      try {
+        hClaims = await verify(handoff, env);
+      } catch {
+        return redirectToPortal(url);
+      }
+      if (!(await maySee(hClaims.sub, handoff, prefix, env, ctx))) {
+        return html(403, 'This preview belongs to a different account.');
+      }
+
+      const onward = new URL(url);
+      onward.searchParams.delete('t');
+      return new Response(null, {
+        status: 302,
+        headers: {
+          Location: onward.toString(),
+          /* Path=/ so assets anywhere are covered. That does NOT widen
+             access: maySee() still runs per request, so the cookie proves
+             who you are and the database decides what that entitles you to. */
+          'Set-Cookie': `wba_pv=${encodeURIComponent(handoff)}; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=28800`,
+          'Referrer-Policy': 'no-referrer',
+          'Cache-Control': 'no-store'
+        }
+      });
+    }
+
     const token = bearer(request);
     if (!token) return redirectToPortal(url);
 
@@ -75,7 +120,12 @@ export default {
     try {
       claims = await verify(token, env);
     } catch {
-      return redirectToPortal(url);
+      /* Expired or malformed. Clear it rather than leaving a dead cookie to
+         fail the same way on every asset for the next eight hours. */
+      const back = redirectToPortal(url);
+      const h = new Headers(back.headers);
+      h.append('Set-Cookie', 'wba_pv=; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=0');
+      return new Response(null, { status: 302, headers: h });
     }
 
     const allowed = await maySee(claims.sub, token, prefix, env, ctx);
@@ -191,6 +241,7 @@ function serve(obj, key, status) {
   headers.set('X-Robots-Tag', 'noindex, nofollow');
   /* Previews are not framed anywhere, including by us. */
   headers.set('X-Frame-Options', 'SAMEORIGIN');
+  headers.set('Referrer-Policy', 'no-referrer');
   return new Response(obj.body, { status, headers });
 }
 

@@ -11,9 +11,15 @@
 <link rel="apple-touch-icon" href="/img/wba-icon.png"/>
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/styles.css?v=d565d4115b"/>
+<link rel="stylesheet" href="/css/styles.css?v=ea442d9d9b"/>
 </head>
-<body class="portal-body">
+<!-- Where previews are served from. Empty until the Cloudflare Worker is
+     deployed; the portal then says "not switched on yet" instead of
+     sending a client to a dead address. Set it to the workers.dev URL
+     now, and to https://preview.westonbusinessauthority.co.uk if DNS
+     ever moves to Cloudflare. It is NOT the main domain, deliberately —
+     see the note in js/portal.js. -->
+<body class="portal-body" data-preview-base="">
 
 <!-- NAV — cut down. Nobody signs in to browse the marketing site. -->
 <nav class="nav">
@@ -58,7 +64,14 @@
         <input class="pt-input pt-code" id="ptCode" type="text" inputmode="numeric"
                autocomplete="one-time-code" pattern="[0-9]*" maxlength="6"
                placeholder="000000" required/>
+        <label class="pt-check">
+          <input type="checkbox" id="ptRemember" checked/>
+          <span>Remember this device</span>
+        </label>
+        <p class="pt-note pt-note-tight">Leave this off on a shared or public computer — you'll be signed out when the browser closes.</p>
+
         <button class="btn btn-gold pt-btn" type="submit" id="ptVerify">Sign in</button>
+        <button class="pt-resend" type="button" id="ptResend">Send another code</button>
         <button class="pt-back" type="button" id="ptBack">Use a different account</button>
       </form>
 
@@ -197,8 +210,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/js/db.js?v=d94a9ea21b"></script>
-<script src="/js/tabs.js?v=372fe2d530" defer></script>
-<script src="/js/portal.js?v=7c9bcc9d1c" defer></script>
+<script src="/js/db.js?v=1cc38d6a40"></script>
+<script src="/js/tabs.js?v=3389d437d1" defer></script>
+<script src="/js/portal.js?v=41f53e3e4c" defer></script>
 </body>
 </html>

@@ -89,8 +89,15 @@ would simply not receive a code.
    into Cloudflare. (This also improves deliverability for the contact form.)
 3. Supabase → Authentication → Emails → SMTP Settings:
    - Host `smtp.resend.com`, Port `587`
-   - User `resend`, Password: your Resend API key
+   - **Username: the literal word `resend`.** Not your email, not the API
+     key, not the key's name. This is the single most common cause of
+     "Not authenticated" — SMTP auth fails and every other setting looks fine.
+   - **Password: a Resend API key**, the long string starting `re_`. Create it
+     under Resend → API Keys with **Sending access**; a key scoped to
+     read-only will authenticate and then refuse to send.
    - Sender: `portal@westonbusinessauthority.co.uk`, name `WBA`
+   - The sender domain must be **Verified** in Resend first. A domain still
+     showing "Pending" is rejected even with perfect credentials.
 4. Authentication → Rate Limits → raise "emails per hour" to something sane
    like 60.
 

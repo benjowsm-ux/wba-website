@@ -27,7 +27,73 @@
 (function () {
   'use strict';
 
-  var sb = window.sbc;                    /* created in js/db.js */
+  /* ------------------------------------------------------------- the client
+     The portal builds its OWN Supabase client rather than reusing the one in
+     db.js, for one reason: "Remember this device".
+
+     supabase-js keeps the session wherever you tell it to. localStorage
+     survives closing the browser, which is what you want on your own laptop
+     and precisely what you do not want on the machine in the back office
+     that four people use. sessionStorage dies with the tab.
+
+     So the storage adapter below picks between them at call time, and the
+     checkbox on the sign-in form decides which. Nothing else in the codebase
+     has to know. */
+  var STORE_KEY = 'wba-portal-auth';
+  var useSession = false;          /* set at sign-in; probed on load */
+
+  function box() {
+    try {
+      return useSession ? window.sessionStorage : window.localStorage;
+    } catch (e) {
+      return null;                 /* private mode, cookies blocked */
+    }
+  }
+  var memory = {};                 /* last resort, so sign-in still works */
+
+  var storage = {
+    getItem: function (k) {
+      try { var b = box(); return b ? b.getItem(k) : (memory[k] || null); }
+      catch (e) { return memory[k] || null; }
+    },
+    setItem: function (k, v) {
+      memory[k] = v;
+      try { var b = box(); if (b) b.setItem(k, v); } catch (e) {}
+    },
+    removeItem: function (k) {
+      delete memory[k];
+      /* Clear BOTH, always. Signing out must not leave a copy behind in the
+         store we happen not to be using this time. */
+      try { window.localStorage.removeItem(k); } catch (e) {}
+      try { window.sessionStorage.removeItem(k); } catch (e) {}
+    }
+  };
+
+  /* Which store already holds a session? sessionStorage wins, because its
+     presence means somebody deliberately chose not to be remembered. */
+  try {
+    if (window.sessionStorage && window.sessionStorage.getItem(STORE_KEY)) useSession = true;
+  } catch (e) {}
+
+  var sb = (window.supabase && window.sbcConfig)
+    ? window.supabase.createClient(window.sbcConfig.url, window.sbcConfig.key, {
+        auth: {
+          storage: storage,
+          storageKey: STORE_KEY,
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: false
+        }
+      })
+    : window.sbc;                  /* fall back rather than break entirely */
+
+  /* Where previews are served from.
+
+     Not the main domain: a preview is half-finished client work, and on the
+     same origin its scripts could read the portal's session out of storage.
+     Until DNS moves to Cloudflare this is the workers.dev address; change
+     the one line when preview.westonbusinessauthority.co.uk exists. */
+  var PREVIEW_BASE = (document.body.getAttribute('data-preview-base') || '').replace(/\/$/, '');
   var gate = document.getElementById('ptGate');
   var deck = document.getElementById('ptDeck');
   if (!sb || !gate || !deck) return;
@@ -97,6 +163,8 @@
       /* Same words whether or not the account exists. Telling someone their
          guess was wrong is telling them the other guesses are worth making. */
       say('If that account exists, a code is on its way.');
+      var rb = el('ptResend');
+      if (rb && rb._cool) rb._cool(30);
       codeInput.focus();
     });
   });
@@ -105,6 +173,12 @@
     e.preventDefault();
     var code = codeInput.value.replace(/\D/g, '');
     if (code.length < 6) { say('That code is six digits.', true); return; }
+
+    /* Decided BEFORE verifyOtp, because that call is what writes the session
+       — by then the storage adapter has to already know where to put it. */
+    var remember = el('ptRemember');
+    useSession = !(remember && remember.checked);
+
     busy(el('ptVerify'), true, 'Checking…');
     say('');
 
@@ -115,6 +189,38 @@
         start();
       });
   });
+
+  /* Resend, with a cooldown. Without one the button is a way to have our
+     mail provider post sixty identical emails to a client who has simply not
+     refreshed their inbox — and a fast way to burn the daily send limit. */
+  (function () {
+    var btn = el('ptResend');
+    if (!btn) return;
+    var until = 0, tick = null;
+
+    function paint() {
+      var left = Math.ceil((until - Date.now()) / 1000);
+      if (left > 0) { btn.disabled = true; btn.textContent = 'Send again in ' + left + 's'; }
+      else { btn.disabled = false; btn.textContent = 'Send another code'; clearInterval(tick); tick = null; }
+    }
+    function cool(seconds) {
+      until = Date.now() + seconds * 1000;
+      paint();
+      if (!tick) tick = setInterval(paint, 1000);
+    }
+    btn._cool = cool;
+
+    btn.addEventListener('click', function () {
+      if (!pending) return;
+      cool(30);
+      say('');
+      sb.auth.signInWithOtp({ email: pending, options: { shouldCreateUser: false } })
+        .then(function (r) {
+          if (r.error) say(friendly(r.error), true);
+          else say('Another code is on its way.');
+        });
+    });
+  })();
 
   el('ptBack').addEventListener('click', function () {
     step2.hidden = true; step1.hidden = false;
@@ -171,9 +277,51 @@
     sb.rpc('portal_seen').then(function () {});
 
     sb.rpc('my_portal').then(function (r) {
-      if (r.error || !r.data) { locked(); return; }
+      /* Two very different failures used to land in the same place, and the
+         wrong message is the one a client would see: "you are not attached to
+         a client" reads as "we have lost your account" when all that has
+         actually happened is a token expiring overnight. */
+      if (r.error) {
+        var code = r.error.code || '';
+        var m = (r.error.message || '').toLowerCase();
+        if (code === 'PGRST301' || m.indexOf('jwt') >= 0 || m.indexOf('expired') >= 0) {
+          expired(); return;
+        }
+        problem(r.error.message); return;
+      }
+      if (!r.data || !r.data.client) { locked(); return; }
       render(r.data);
     });
+  }
+
+  /* Session gone. Say so, put them back on the gate, and keep where they
+     were trying to get to so the sign-in returns them there. */
+  function expired() {
+    var here = location.pathname + location.search;
+    sb.auth.signOut().then(function () {
+      deck.hidden = true;
+      gate.hidden = false;
+      document.body.classList.remove('is-signed-in');
+      el('ptOut').hidden = true;
+      el('ptWho').hidden = true;
+      say('You were signed out. Pop your handle in and we will send a fresh code.');
+      handleInput.focus();
+    });
+    return here;
+  }
+
+  /* Something else went wrong. Never blame the client for our outage. */
+  function problem(detail) {
+    deck.innerHTML =
+      '<div class="win pt-panel pt-lonely"><div class="win-bar">' +
+      '<span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>' +
+      '<span class="win-title">Cannot load that right now</span></div>' +
+      '<div class="win-body"><div class="pt-pad">' +
+      '<p>Your account is fine — we could not fetch it. Try again in a minute, ' +
+      'and tell us if it keeps happening.</p>' +
+      '<p><button type="button" class="btn btn-gold" onclick="location.reload()">Try again</button></p>' +
+      (detail ? '<p class="pt-acc-note">' + esc(detail) + '</p>' : '') +
+      '</div></div></div>';
   }
 
   /* Signed in, but not attached to a client. Real case: Ben's own admin
@@ -237,7 +385,8 @@
       box.innerHTML = empty('Nothing to preview yet',
         'As soon as there is something to look at, it appears here and you get an email.');
     } else {
-      var url = '/preview/' + encodeURIComponent(current.path) + '/';
+      /* Built at click time, not now, so the token is the freshest one we
+         have rather than whatever was valid when the page rendered. */
       el('ptPvLive').hidden = false;
       box.innerHTML =
         '<div class="pt-pv">' +
@@ -246,7 +395,8 @@
           '<p class="pt-pv-meta">Version ' + esc(current.version) + ' &middot; ' +
             esc(day(current.uploaded_at)) +
             (current.note ? ' &middot; ' + esc(current.note) : '') + '</p>' +
-          '<a class="btn btn-gold" href="' + esc(url) + '" target="_blank" rel="noopener">Open the preview</a>' +
+          '<button type="button" class="btn btn-gold" id="ptOpenPv" data-path="' +
+            esc(current.path) + '">Open the preview</button>' +
         '</div>' +
         (previews.length > 1
           ? '<ul class="pt-versions">' + previews.slice(0, 6).map(function (p) {
@@ -314,6 +464,35 @@
         'If a “Password” link is missing, ask and we will share it across.</p>'
       : empty('Nothing recorded', 'Once your site is live this lists every account it depends on.');
   }
+
+  /* Opening a preview.
+
+     The preview lives on another origin, so it cannot see this one's session
+     and its assets cannot carry an Authorization header. We therefore pass
+     the access token once, in the URL, and the worker immediately swaps it
+     for a cookie on its own origin and redirects the token out of the address
+     bar. See the handoff note in cloudflare/preview-worker.js.
+
+     noopener matters more than usual here: without it the opened page — which
+     is client work in progress — gets a handle on this window. */
+  document.addEventListener('click', function (e) {
+    var btn = e.target && e.target.closest ? e.target.closest('#ptOpenPv') : null;
+    if (!btn) return;
+    var path = btn.getAttribute('data-path') || '';
+    if (!PREVIEW_BASE) {
+      say('Previews are not switched on yet.', true);
+      return;
+    }
+    btn.disabled = true;
+    sb.auth.getSession().then(function (r) {
+      btn.disabled = false;
+      var token = r && r.data && r.data.session && r.data.session.access_token;
+      if (!token) { expired(); return; }
+      var to = PREVIEW_BASE + '/' + path.split('/').map(encodeURIComponent).join('/') +
+               '/?t=' + encodeURIComponent(token);
+      window.open(to, '_blank', 'noopener,noreferrer');
+    });
+  });
 
   function empty(title, body) {
     return '<div class="pt-empty"><b>' + esc(title) + '</b><span>' + esc(body) + '</span></div>';

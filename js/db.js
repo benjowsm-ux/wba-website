@@ -18,6 +18,10 @@
   }
   var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   window.sbc = sb;
+  /* Published so the portal can build its own client with different session
+     storage — see the "Remember this device" note in js/portal.js. The key is
+     public by design; this exposes nothing that is not already in this file. */
+  window.sbcConfig = { url: SUPABASE_URL, key: SUPABASE_KEY };
 
   window.WBAdb = {
     /* ---------- public reads ---------- */
