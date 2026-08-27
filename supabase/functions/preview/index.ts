@@ -42,15 +42,27 @@ const TYPES: Record<string, string> = {
   mp4: 'video/mp4', webm: 'video/webm', map: 'application/json'
 };
 
+/* A string body comes back out of the edge runtime as text/plain no matter
+   what Content-Type is set on it — which is why the "please sign in" page
+   rendered as visible source in the browser. A Blob carries its own type and
+   survives, which is the same reason the actual site files were always fine. */
 function page(status: number, message: string) {
-  return new Response(
-    `<!doctype html><meta charset="utf-8"><title>Preview</title>` +
+  const body = `<!doctype html><meta charset="utf-8"><title>Preview</title>` +
     `<style>body{background:#060b16;color:#fff;font:16px/1.6 system-ui,sans-serif;` +
     `display:grid;place-items:center;min-height:100vh;margin:0;text-align:center;padding:2rem}` +
     `a{color:#f5c416}</style><div><p>${message}</p>` +
-    `<p><a href="/portal/">Back to your portal</a></p></div>`,
-    { status, headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex' } }
-  );
+    `<p><a href="https://westonbusinessauthority.co.uk/portal/">Back to your portal</a></p></div>`;
+  return new Response(new Blob([body], { type: 'text/html; charset=utf-8' }), {
+    status,
+    headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex' }
+  });
+}
+
+/* Not signed in is not an error page, it is a wrong turn. Send them to the
+   place that can fix it rather than to a dead end with a link on it. */
+function toPortal(path: string) {
+  const to = 'https://westonbusinessauthority.co.uk/portal/?next=' + encodeURIComponent(path);
+  return new Response(null, { status: 302, headers: { Location: to, 'Cache-Control': 'no-store' } });
 }
 
 Deno.serve(async (req) => {
@@ -73,12 +85,12 @@ Deno.serve(async (req) => {
   const cookie = req.headers.get('Cookie') || '';
   const m = cookie.match(/(?:^|;\s*)wba_pv=([^;]+)/);
   const token = m ? decodeURIComponent(m[1]) : null;
-  if (!token) return page(401, 'Please sign in to view this.');
+  if (!token) return toPortal(url.pathname);
 
   const admin = createClient(SB_URL, SB_SERVICE_KEY, { auth: { persistSession: false } });
 
   const { data: who, error: whoErr } = await admin.auth.getUser(token);
-  if (whoErr || !who?.user) return page(401, 'Your sign-in has expired. Sign in again to carry on.');
+  if (whoErr || !who?.user) return toPortal(url.pathname);
 
   /* Which client is this, and is this their folder? */
   const { data: link } = await admin

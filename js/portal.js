@@ -82,7 +82,7 @@
           storageKey: STORE_KEY,
           persistSession: true,
           autoRefreshToken: true,
-          detectSessionInUrl: false
+          detectSessionInUrl: true
         }
       })
     : window.sbc;                  /* fall back rather than break entirely */
@@ -240,7 +240,15 @@
     if (looksLikeEmail) {
       return sb.auth.signInWithOtp({
         email: who,
-        options: { shouldCreateUser: false }      /* invite-only, always */
+        options: {
+          shouldCreateUser: false,               /* invite-only, always */
+          /* If a LINK ever goes out instead of a code — which is what the
+             default Supabase mailer does, and what caused the sign-out loop —
+             it must land here and not on the homepage, where nothing handles
+             it. Paired with detectSessionInUrl above, a clicked link signs
+             them in rather than bouncing them to a signed-out home page. */
+          emailRedirectTo: location.origin + '/portal/'
+        }
       }).then(function (r) {
         if (r.error) return { error: friendly(r.error) };
         return { email: who };
@@ -463,8 +471,29 @@
     return;
   }
 
-  sb.auth.getSession().then(function (r) {
-    if (r && r.data && r.data.session) start();
-    else { gate.hidden = false; handleInput.focus(); }
+  /* detectSessionInUrl needs a moment to swap a hash for a session, so ask
+     once and then once more after it has had the chance. Otherwise someone
+     arriving from a link sees the sign-in box for a beat and types their
+     handle again. */
+  function settle() {
+    return sb.auth.getSession().then(function (r) {
+      if (r && r.data && r.data.session) { start(); return true; }
+      return false;
+    });
+  }
+
+  settle().then(function (signedIn) {
+    if (signedIn) return;
+    if (location.hash.indexOf('access_token') > -1 || location.search.indexOf('code=') > -1) {
+      setTimeout(function () {
+        settle().then(function (ok) {
+          if (!ok) { gate.hidden = false; handleInput.focus(); }
+          else history.replaceState(null, '', location.pathname);
+        });
+      }, 700);
+      return;
+    }
+    gate.hidden = false;
+    handleInput.focus();
   });
 })();

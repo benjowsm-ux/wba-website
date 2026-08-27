@@ -261,6 +261,7 @@ function nav(active){
       ${link('/services/','Services','services')}
       ${link('/about/','About','about')}
       ${link('/feed/','Feed','feed')}
+      <a href="/portal/" class="nav-login">Login</a>
       <a href="/contact/" class="nav-cta">Contact</a>
     </div>
   </div>
