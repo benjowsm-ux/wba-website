@@ -4,6 +4,7 @@
      node scripts/supabase-setup.mjs           everything
      node scripts/supabase-setup.mjs sql       just the SQL
      node scripts/supabase-setup.mjs functions just the edge functions
+     node scripts/supabase-setup.mjs smtp      just the Resend mail settings
 
    NEEDS a personal access token in `.env.supabase` (gitignored):
 
@@ -81,6 +82,69 @@ async function runSql() {
   }
 }
 
+/* ----------------------------------------------------------------- smtp --
+   The Management API refuses a partial SMTP update: host, port, user, pass
+   and admin_email must arrive together or it returns 401 with a message
+   about missing fields. Learned by wiping the lot with a one-field PATCH.
+
+   So this sends all five, every time, and needs the Resend key in the same
+   file as the access token:
+
+     RESEND_API_KEY=re_xxxxxxxx
+   -------------------------------------------------------------------------- */
+async function smtp() {
+  let key = process.env.RESEND_API_KEY;
+  if (!key) {
+    for (const f of ['.env.supabase', '.env.supabase.txt']) {
+      if (!existsSync(f)) continue;
+      const m = readFileSync(f, 'utf8').match(/RESEND_API_KEY\s*=\s*(\S+)/);
+      if (m) { key = m[1].trim(); break; }
+    }
+  }
+  if (!key) {
+    console.error([
+      '',
+      'No Resend key. Add a second line to .env.supabase.txt:',
+      '',
+      '  RESEND_API_KEY=re_your_key_here',
+      '',
+      'Resend -> API Keys -> create one with Sending access.',
+      ''
+    ].join(String.fromCharCode(10)));
+    process.exit(1);
+  }
+
+  process.stdout.write('· smtp … ');
+  const res = await fetch(`https://api.supabase.com/v1/projects/${REF}/config/auth`, {
+    method: 'PATCH',
+    headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      smtp_host: 'smtp.resend.com',
+      smtp_port: '587',
+      smtp_user: 'resend',
+      smtp_pass: key,
+      smtp_admin_email: 'portal@westonbusinessauthority.co.uk',
+      smtp_sender_name: 'Weston Business Authority',
+      /* Six digits, ten minutes, matching what the sign-in page promises. The
+         defaults were eight digits and an hour, and the page's maxlength of 6
+         silently truncated every code it was sent. */
+      mailer_otp_length: 6,
+      mailer_otp_exp: 600,
+      rate_limit_email_sent: 30,
+      /* Invite-only. Portal accounts are made in the admin; nobody signs
+         themselves up. portal-invite uses the admin API, which is unaffected. */
+      disable_signup: true,
+      site_url: 'https://westonbusinessauthority.co.uk'
+    })
+  });
+  if (!res.ok) {
+    console.log('FAILED');
+    console.error('  ' + res.status + ' ' + (await res.text()).slice(0, 400));
+    process.exit(1);
+  }
+  console.log('configured');
+}
+
 /* ------------------------------------------------------------ functions -- */
 const FUNCTIONS = ['portal-login', 'portal-invite', 'preview'];
 
@@ -116,6 +180,7 @@ function deploy() {
 
 /* ----------------------------------------------------------------- go ---- */
 (async () => {
+  if (ONLY === 'smtp') { await smtp(); console.log(''); return; }
   if (ONLY === 'all' || ONLY === 'sql') {
     console.log('\nSQL');
     await runSql();

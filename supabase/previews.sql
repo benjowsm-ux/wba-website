@@ -73,11 +73,26 @@ alter table public.projects add column if not exists preview_version integer not
 -- --------------------------------------------------------------------------
 -- 4.  What the portal asks for now. Two things: who you are, and your site.
 -- --------------------------------------------------------------------------
+-- SECURITY DEFINER, not INVOKER, and the reason is worth writing down.
+--
+-- As INVOKER the `clients` subquery ran as the client — and there is no
+-- policy letting a client read the clients table, deliberately, because that
+-- table also holds our notes and their GoCardless reference. So the business
+-- name came back NULL and the portal greeted people with a blank heading.
+--
+-- Adding a read policy to `clients` would have fixed the symptom and opened
+-- the whole row. DEFINER fixes it without widening anything: this function
+-- picks the four fields a client may see, and nothing else can read that
+-- table through it.
+--
+-- THE RULE THAT KEEPS THIS SAFE: every subquery below is filtered by
+-- my_client_id() or auth.uid(). If you add one, filter it the same way. A
+-- DEFINER function with an unfiltered subquery hands every client the lot.
 create or replace function public.my_site()
 returns json
 language sql
 stable
-security invoker
+security definer
 set search_path = public, pg_temp
 as $$
   select json_build_object(
