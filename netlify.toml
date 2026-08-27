@@ -13,9 +13,9 @@
 # override it. This only tells Netlify where the functions are, which it does
 # not reliably infer on a site that has never had any.
 # --------------------------------------------------------------------------
-[functions]
-  directory = "netlify/functions"
-  node_bundler = "esbuild"
+[[edge_functions]]
+  path = "/preview/*"
+  function = "preview"
 
 [[headers]]
   for = "/*"

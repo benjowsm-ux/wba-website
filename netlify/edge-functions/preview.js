@@ -1,6 +1,12 @@
 /* ==========================================================================
    WBA — preview.  Serves a client's site to that client, and nobody else.
 
+   A NETLIFY EDGE FUNCTION, not a Netlify Function. The classic
+   netlify/functions/ build never produced anything — /.netlify/functions/
+   stayed a 404 through several deploys on a site that has never had a build
+   step. Edge functions need no bundler and are routed from netlify.toml, so
+   there is nothing to infer and nothing to go quietly missing.
+
    WHY THIS IS HERE AND NOT A SUPABASE EDGE FUNCTION
    Because Supabase will not serve HTML. Measured, not assumed: the same
    bucket returns style.css as `text/css` and index.html as `text/plain`, and
@@ -56,7 +62,7 @@ function page(status, message) {
   );
 }
 
-export default async (req) => {
+export default async (req, context) => {
   const url = new URL(req.url);
 
   /* /preview/<handle>/v<n>/rest/of/path */
@@ -138,4 +144,5 @@ export default async (req) => {
   return page(404, 'That page is not in this preview.');
 };
 
-export const config = { path: '/preview/*' };
+/* The route is declared in netlify.toml under [[edge_functions]] rather
+   than here, so there is exactly one place to look when it stops firing. */
