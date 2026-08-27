@@ -146,7 +146,10 @@ async function smtp() {
 }
 
 /* ------------------------------------------------------------ functions -- */
-const FUNCTIONS = ['portal-login', 'portal-invite', 'preview'];
+/* `preview` is deliberately absent: it is retired. Supabase will not serve
+   HTML, so previews are served by netlify/functions/preview.mjs instead —
+   see the header of supabase/functions/preview/index.ts. */
+const FUNCTIONS = ['portal-login', 'portal-invite'];
 
 function deploy() {
   for (const fn of FUNCTIONS) {

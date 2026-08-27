@@ -164,9 +164,30 @@
      relative path, while a DRAG hands over a tree you have to walk yourself.
      Both end up as {path, file}. */
   function fromInput(input) {
-    return Promise.resolve([].slice.call(input.files).map(function (f) {
+    return Promise.resolve(stripWrapper([].slice.call(input.files).map(function (f) {
       return { path: f.webkitRelativePath || f.name, file: f };
-    }));
+    })));
+  }
+
+  /* Both routes hand back paths that begin with the folder YOU picked —
+     "WBA-Site/index.html". That folder's name is ours, not the client's, and
+     leaving it in puts every file one level too deep: the preview asks for
+     weston/v1/index.html and the file is at weston/v1/WBA-Site/index.html.
+
+     This lived inside the drag handler and not the picker, so drops worked
+     and "choose a folder" silently produced a site that 404s on its own
+     front page. One function now, used by both. */
+  function stripWrapper(files) {
+    if (!files.length) return files;
+    var tops = {};
+    files.forEach(function (f) { tops[f.path.split('/')[0]] = 1; });
+    var names = Object.keys(tops);
+    var allNested = files.every(function (f) { return f.path.indexOf('/') > 0; });
+    if (names.length === 1 && allNested) {
+      var cut = names[0].length + 1;
+      files.forEach(function (f) { f.path = f.path.slice(cut); });
+    }
+    return files;
   }
 
   function fromDrop(dt) {
@@ -208,17 +229,7 @@
     }
 
     return Promise.all(roots.map(function (r) { return walk(r, ''); })).then(function () {
-      /* A dropped folder arrives as "sitefolder/index.html". The folder's own
-         name is ours, not theirs, so strip it — otherwise every preview URL
-         carries a directory nobody chose. */
-      var top = {};
-      out.forEach(function (f) { top[f.path.split('/')[0]] = 1; });
-      var names = Object.keys(top);
-      if (names.length === 1 && out.every(function (f) { return f.path.indexOf('/') > 0; })) {
-        var cut = names[0].length + 1;
-        out.forEach(function (f) { f.path = f.path.slice(cut); });
-      }
-      return out;
+      return stripWrapper(out);
     });
   }
 
@@ -230,8 +241,15 @@
 
     files = files.filter(function (f) { return f.path && !SKIP.test(f.path) && f.file.size > 0; });
     if (!files.length) { toast('No files in that.', true); return; }
-    if (!files.some(function (f) { return /(^|\/)index\.html$/i.test(f.path); })) {
-      if (!confirm('There is no index.html at the top of that folder. The client will land on a "not found" page. Upload anyway?')) return;
+    if (!files.some(function (f) { return f.path.toLowerCase() === 'index.html'; })) {
+      var found = files.filter(function (f) { return /index[.]html$/i.test(f.path); })
+                       .map(function (f) { return f.path; }).slice(0, 3).join(', ');
+      var nl = String.fromCharCode(10);
+      if (!confirm(
+        'No index.html at the TOP of that folder, so the client would land on "not found".' +
+        (found ? nl + nl + 'Found instead: ' + found : '') +
+        nl + nl + 'Pick the folder that CONTAINS index.html, not the one above it.' +
+        nl + nl + 'Upload anyway?')) return;
     }
 
     var bar = el('ptaBar');

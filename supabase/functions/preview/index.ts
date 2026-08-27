@@ -1,4 +1,19 @@
 /* ==========================================================================
+   RETIRED — do not deploy.
+
+   This served previews from Supabase until it was measured properly:
+   Supabase will not serve HTML. The same bucket returns style.css as
+   `text/css` and index.html as `text/plain`, and setting the header
+   explicitly here made no difference — it is rewritten on the way out. Every
+   page of a client's site arrived as visible source.
+
+   It is a reasonable policy on their side. It just means a website cannot be
+   served from *.supabase.co, by anyone, ever.
+
+   The live one is netlify/functions/preview.mjs. This is kept only so the
+   next person to think "why not just use an edge function" has the answer.
+   ========================================================================== */
+/* ==========================================================================
    WBA — preview.  Serves a client's site to that client, and nobody else.
 
    Deploy in the dashboard exactly like the other two:
@@ -53,8 +68,8 @@ function page(status: number, message: string) {
     `a{color:#f5c416}</style><div><p>${message}</p>` +
     `<p><a href="https://westonbusinessauthority.co.uk/portal/">Back to your portal</a></p></div>`;
   return new Response(new Blob([body], { type: 'text/html; charset=utf-8' }), {
-    status,
-    headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex' }
+    status: 200,   /* TEMP probe: is a non-200 status what strips the type? */
+    headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex', 'X-Probe': String(status) }
   });
 }
 

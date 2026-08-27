@@ -77,14 +77,15 @@
   status = 200
   force = true
 
-# Previews. Proxied (200, not a redirect) so the browser treats them as this
-# origin and sends the wba_pv cookie the portal set — a redirect to another
-# host would drop it and every preview would ask you to sign in again.
-[[redirects]]
-  from = "/preview/*"
-  to = "https://lynzhiyvggqyplssrapi.supabase.co/functions/v1/preview/:splat"
-  status = 200
-  force = true
+# Previews are served by netlify/functions/preview.mjs, NOT by Supabase.
+# Supabase deliberately refuses to serve HTML — the same bucket returns
+# style.css as text/css and index.html as text/plain, so every page of a
+# client's site rendered as visible source. Netlify has no such rule, and
+# being on this origin means the portal's cookie simply arrives.
+#
+# The function declares its own `config.path`, so no redirect is needed here.
+# Left as a comment rather than deleted, because the obvious fix when previews
+# break is to add one back, and that would shadow the function.
 
 # Nothing signed-in should ever be cached by a shared proxy.
 [[headers]]

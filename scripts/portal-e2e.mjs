@@ -125,13 +125,18 @@ async function main() {
   if (site?.project?.version === 1) ok('version 1 showing'); else no('version: ' + JSON.stringify(site?.project));
 
   console.log('\n6. Opening the preview');
-  const base = URL + '/functions/v1/preview';
+  /* The LIVE path a client actually uses: Netlify's function on our own
+     domain. Testing the Supabase function instead is what let "serves HTML as
+     text/plain" go unnoticed — it passed a test that never looked. */
+  const base = (process.env.WBA_BASE || 'https://westonbusinessauthority.co.uk') + '/preview';
   const cookie = 'wba_pv=' + encodeURIComponent(token);
 
   const r1 = await tryFetch(`${base}/${HANDLE}/v1/`, { headers: { Cookie: cookie } });
   const b1 = r1 ? await r1.text() : '';
   if (r1 && r1.status === 200 && b1.includes('Preview works')) ok('index.html served');
   else no(`index.html: ${r1 ? r1.status : 'network'} ${b1.slice(0, 160)}`);
+  const ct1 = r1 ? (r1.headers.get('content-type') || '') : '';
+  if (ct1.includes('text/html')) ok('index.html served AS HTML'); else no('index.html content-type is "' + ct1 + '" — the browser will show source');
 
   const r2 = await tryFetch(`${base}/${HANDLE}/v1/style.css`, { headers: { Cookie: cookie } });
   if (r2 && r2.status === 200 && (r2.headers.get('content-type') || '').includes('css')) ok('stylesheet served with the right type');
@@ -141,6 +146,14 @@ async function main() {
   const b3 = r3 ? await r3.text() : '';
   if (r3 && r3.status === 200 && b3.includes('About page')) ok('a folder link lands on its index');
   else no(`about/: ${r3 ? r3.status : 'network'} ${b3.slice(0, 120)}`);
+
+  /* The error pages used to come back as text/plain and render as visible
+     markup in the browser. A signed-in request for a file that is not there
+     is the only way to see one, so it is checked here. */
+  const r6 = await tryFetch(`${base}/${HANDLE}/v1/definitely-not-here.html`, { headers: { Cookie: cookie } });
+  const ct6 = r6 ? (r6.headers.get('content-type') || '') : '';
+  if (r6 && r6.status === 404 && ct6.includes('text/html')) ok('a missing page renders as HTML, not source');
+  else no(`404 page: ${r6 ? r6.status : 'network'} content-type "${ct6}"`);
 
   console.log('\n7. The checks that matter');
   const r4 = await tryFetch(`${base}/${OTHER}/v1/`, { headers: { Cookie: cookie } });
