@@ -13,9 +13,10 @@
 # override it. This only tells Netlify where the functions are, which it does
 # not reliably infer on a site that has never had any.
 # --------------------------------------------------------------------------
-[[edge_functions]]
-  path = "/preview/*"
-  function = "preview"
+# The route for the preview edge function is declared INSIDE
+# netlify/edge-functions/preview.js via `export const config`. Declaring it
+# here as well did not route, and having it in two places makes it unclear
+# which one is authoritative when it stops working.
 
 [[headers]]
   for = "/*"
