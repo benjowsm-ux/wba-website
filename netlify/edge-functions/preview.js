@@ -115,6 +115,9 @@ export default async (req, context) => {
       status: 200,
       headers: {
         'Content-Type': TYPES[ext] || 'application/octet-stream',
+        /* So it is possible to tell from a header alone which layer answered.
+           Two deploys were spent guessing at that. */
+        'X-WBA-Preview': 'edge/' + (TYPES[ext] ? ext : 'bin'),
         /* A preview changes under the client by design, and it is theirs
            alone — never let a shared cache hold a copy. */
         'Cache-Control': 'private, no-store',
