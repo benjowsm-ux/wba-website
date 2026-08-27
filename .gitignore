@@ -2,3 +2,8 @@ node_modules/
 package-lock.json
 package.json
 .claude/
+
+# CLI working files and any local token. Never committed.
+.supabase/
+.env.supabase
+.env.supabase.txt

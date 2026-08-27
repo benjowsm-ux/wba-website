@@ -1,0 +1,28 @@
+# ==========================================================================
+# WBA — Supabase CLI config.
+#
+# The reason this file is worth having: the "Verify JWT" toggle in the
+# dashboard turns itself back ON every time a function is updated, which is a
+# known Supabase bug and a genuinely nasty one — sign-in silently stops
+# working after an unrelated edit. Set here, it is applied on every deploy and
+# cannot drift.
+#
+# Deploy everything with:  npx supabase functions deploy
+# ==========================================================================
+project_id = "lynzhiyvggqyplssrapi"
+
+[functions.portal-login]
+# The one endpoint people use BEFORE they have a token. Verifying a JWT here
+# would reject the very people it exists to let in.
+verify_jwt = false
+
+[functions.preview]
+# The session arrives as a cookie, not an Authorization header, because the
+# browser fetches a page's images and stylesheets on its own and cannot be
+# told to attach one. The function checks the cookie itself.
+verify_jwt = false
+
+[functions.portal-invite]
+# Creates client logins, so it must only ever answer a signed-in admin.
+# Checked twice: here by the platform, and again against the admins table.
+verify_jwt = true
