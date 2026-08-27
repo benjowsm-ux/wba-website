@@ -65,6 +65,15 @@ function page(status, message) {
 export default async (req, context) => {
   const url = new URL(req.url);
 
+  /* ?probe=1 answers before any other logic. If this does not come back, the
+     function is not being routed at all and nothing further in here matters —
+     which took three deploys to establish the slow way. */
+  if (url.searchParams.get('probe') === '1') {
+    return new Response('edge alive', {
+      headers: { 'Content-Type': 'text/plain', 'X-WBA-Preview': 'probe' }
+    });
+  }
+
   /* /preview/<handle>/v<n>/rest/of/path */
   let path = url.pathname
     .replace(/^\/\.netlify\/functions\/preview/, '')
@@ -147,5 +156,7 @@ export default async (req, context) => {
   return page(404, 'That page is not in this preview.');
 };
 
-/* The route is declared in netlify.toml under [[edge_functions]] rather
-   than here, so there is exactly one place to look when it stops firing. */
+/* Declared here AND in netlify.toml. Belt and braces on purpose: the config
+   block alone was not routing, and an inline config is what the current
+   Netlify docs lead with. */
+export const config = { path: '/preview/*' };
