@@ -7,6 +7,16 @@
 # committed to the repo, so Netlify has nothing to build — it just serves.
 # ==========================================================================
 
+# --------------------------------------------------------------------------
+# Functions. There is still no [build] block on purpose — the publish
+# directory is set in the Netlify dashboard and a build command here would
+# override it. This only tells Netlify where the functions are, which it does
+# not reliably infer on a site that has never had any.
+# --------------------------------------------------------------------------
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
 [[headers]]
   for = "/*"
   [headers.values]
