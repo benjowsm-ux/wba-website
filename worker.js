@@ -73,9 +73,28 @@ export default {
     if (url.pathname.startsWith('/preview/')) {
       const direct = await env.ASSETS.fetch(request);
       if (direct.status !== 404) return direct;
+
       /* Not a real file, so it is a preview path the service worker should
-         have answered. Serve the page that puts the worker back. */
-      return env.ASSETS.fetch(new Request(new URL('/preview/index.html', url), request));
+         have answered. Serve the page that puts the worker back.
+
+         Fetch '/preview/' and not '/preview/index.html': Cloudflare's asset
+         server answers the second with a 307 to the first, and returning that
+         redirect sends the browser to /preview/ — where the healing page can
+         no longer read which preview was wanted out of the address bar, and
+         says "open this from your portal" about a preview that was fine.
+
+         The BODY is returned at the ORIGINAL url, status 200. That is the
+         whole point: the address bar still says /preview/pivaz/v3/, so the
+         page can reinstall the worker and reload straight back into it. */
+      const heal = await env.ASSETS.fetch(new Request(new URL('/preview/', url), { method: 'GET' }));
+      return new Response(heal.body, {
+        status: 200,
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+          'cache-control': 'no-store',
+          'x-robots-tag': 'noindex, nofollow'
+        }
+      });
     }
 
     return env.ASSETS.fetch(request);
