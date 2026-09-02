@@ -1,0 +1,21 @@
+# Not part of the website. Everything listed here stays out of the upload, so
+# it is neither served nor counted. Same syntax as .gitignore.
+#
+# This matters more than tidiness: assets.directory is the repo root, so
+# without this the Worker's own source, the SQL, the setup scripts and the
+# internal docs would all be publicly readable.
+
+worker.js
+wrangler.jsonc
+.assetsignore
+.gitignore
+node_modules
+package.json
+package-lock.json
+scripts
+supabase
+docs
+.github
+netlify.toml
+README.md
+DEPLOY.md

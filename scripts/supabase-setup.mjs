@@ -146,9 +146,10 @@ async function smtp() {
 }
 
 /* ------------------------------------------------------------ functions -- */
-/* `preview` is deliberately absent: it is retired. Supabase will not serve
-   HTML, so previews are served by netlify/functions/preview.mjs instead —
-   see the header of supabase/functions/preview/index.ts. */
+/* `preview` is deliberately absent, and no longer exists at all. Supabase
+   rewrites HTML to text/plain, so it can never serve a site; previews are
+   served in the browser by preview/sw.js, which needs no function and no
+   deploy. See the header of that file. */
 const FUNCTIONS = ['portal-login', 'portal-invite'];
 
 function deploy() {

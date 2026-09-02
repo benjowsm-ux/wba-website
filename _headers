@@ -1,0 +1,48 @@
+# WBA - response headers. Replaces the [[headers]] blocks in netlify.toml.
+# Cloudflare reads this file from the assets root; it is never served.
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
+
+# Content-addressed by name, never changed in place.
+/photos/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/img/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# CSS and JS carry a content hash in the URL (scripts/stamp.mjs), so a changed
+# file is always a changed URL. Without that stamp this header is a trap: the
+# HTML is uncached, so a returning visitor would pair new markup with an old
+# stylesheet and every new component would render unstyled.
+/css/*
+  Cache-Control: public, max-age=31536000
+
+/js/*
+  Cache-Control: public, max-age=31536000
+
+# Changes whenever a Feed post is published, and its URL has no hash to bust.
+/search-index.json
+  Cache-Control: public, max-age=600
+
+# Nothing signed-in is ever cached by a shared proxy, or indexed.
+/portal/*
+  Cache-Control: private, no-store
+  X-Robots-Tag: noindex, nofollow
+
+/admin/*
+  Cache-Control: private, no-store
+  X-Robots-Tag: noindex, nofollow
+
+# Somebody's unfinished work.
+/preview/*
+  Cache-Control: private, no-store
+  X-Robots-Tag: noindex, nofollow
+
+# A service worker served stale is a fix that cannot reach the browser.
+/preview/sw.js
+  Cache-Control: no-cache
+  Service-Worker-Allowed: /preview/

@@ -15,11 +15,37 @@
    The last check is the one that matters: a signed-in client asking for
    another client's folder must be refused. If that ever passes, stop.
    ========================================================================== */
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { createClient } from '@supabase/supabase-js';
 
-const URL = 'https://lynzhiyvggqyplssrapi.supabase.co';
-const KEYS = JSON.parse(readFileSync(process.argv[2] || 'keys.json', 'utf8'));
+const REF = 'lynzhiyvggqyplssrapi';
+const URL = `https://${REF}.supabase.co`;
+
+/* The project keys used to come from a keys.json sitting in the repo. One of
+   them is service_role, which bypasses every policy in the database, so the
+   safest place for that file is nowhere. They are fetched at run time with
+   the personal access token instead, held in memory, and never written down. */
+function pat() {
+  if (process.env.SUPABASE_ACCESS_TOKEN) return process.env.SUPABASE_ACCESS_TOKEN.trim();
+  for (const f of ['.env.supabase', '.env.supabase.txt']) {
+    if (!existsSync(f)) continue;
+    const m = readFileSync(f, 'utf8').match(/SUPABASE_ACCESS_TOKEN\s*=\s*(\S+)/);
+    if (m) return m[1].trim();
+  }
+  console.error('\nNo SUPABASE_ACCESS_TOKEN in .env.supabase(.txt).\n');
+  process.exit(1);
+}
+
+const res = await fetch(`https://api.supabase.com/v1/projects/${REF}/api-keys?reveal=true`,
+  { headers: { Authorization: 'Bearer ' + pat() } });
+if (!res.ok) {
+  console.error('\nCould not read project API keys: ' + res.status + '\n');
+  process.exit(1);
+}
+const rows = await res.json();
+const keyOf = (n) => { const r = rows.find(k => k.name === n || k.type === n); return r && (r.api_key || r.key); };
+const KEYS = { anon: keyOf('anon'), service_role: keyOf('service_role') };
+
 const admin = createClient(URL, KEYS.service_role, { auth: { persistSession: false } });
 const anon = createClient(URL, KEYS.anon, { auth: { persistSession: false } });
 
@@ -30,14 +56,6 @@ const EMAIL = 'e2e-portal-test@westonbusinessauthority.co.uk';
 let pass = 0, fail = 0;
 let lastClient = null, lastUser = null;
 const ok = (m) => { console.log('  PASS  ' + m); pass++; };
-/* One retry, then give up gracefully rather than throwing. */
-async function tryFetch(url, opts) {
-  for (let i = 0; i < 2; i++) {
-    try { return await fetch(url, opts); }
-    catch (e) { if (i) console.log('        (network: ' + e.message + ')'); }
-  }
-  return null;
-}
 const no = (m) => { console.log('  FAIL  ' + m); fail++; };
 
 async function main() {
@@ -125,53 +143,24 @@ async function main() {
   if (site?.project?.version === 1) ok('version 1 showing'); else no('version: ' + JSON.stringify(site?.project));
 
   console.log('\n6. Opening the preview');
-  /* The LIVE path a client actually uses: Netlify's function on our own
-     domain. Testing the Supabase function instead is what let "serves HTML as
-     text/plain" go unnoticed — it passed a test that never looked. */
-  const base = (process.env.WBA_BASE || 'https://westonbusinessauthority.co.uk') + '/preview';
-  const cookie = 'wba_pv=' + encodeURIComponent(token);
+  /* Previews are no longer fetched over HTTP from a server, because there is
+     no server: preview/sw.js serves them in the browser from signed URLs.
+     That path is tested end to end by scripts/preview-e2e.mjs, which checks
+     the two permissions this one cannot see from here — whether a client may
+     LIST their folder and SIGN every file in it.
 
-  const r1 = await tryFetch(`${base}/${HANDLE}/v1/`, { headers: { Cookie: cookie } });
-  const b1 = r1 ? await r1.text() : '';
-  if (r1 && r1.status === 200 && b1.includes('Preview works')) ok('index.html served');
-  else no(`index.html: ${r1 ? r1.status : 'network'} ${b1.slice(0, 160)}`);
-  const ct1 = r1 ? (r1.headers.get('content-type') || '') : '';
-  if (ct1.includes('text/html')) ok('index.html served AS HTML'); else no('index.html content-type is "' + ct1 + '" — the browser will show source');
-
-  const r2 = await tryFetch(`${base}/${HANDLE}/v1/style.css`, { headers: { Cookie: cookie } });
-  if (r2 && r2.status === 200 && (r2.headers.get('content-type') || '').includes('css')) ok('stylesheet served with the right type');
-  else no(`style.css: ${r2 ? r2.status : 'network'} ${r2 ? r2.headers.get('content-type') : ''}`);
-
-  const r3 = await tryFetch(`${base}/${HANDLE}/v1/about/`, { headers: { Cookie: cookie } });
-  const b3 = r3 ? await r3.text() : '';
-  if (r3 && r3.status === 200 && b3.includes('About page')) ok('a folder link lands on its index');
-  else no(`about/: ${r3 ? r3.status : 'network'} ${b3.slice(0, 120)}`);
-
-  /* The error pages used to come back as text/plain and render as visible
-     markup in the browser. A signed-in request for a file that is not there
-     is the only way to see one, so it is checked here. */
-  const r6 = await tryFetch(`${base}/${HANDLE}/v1/definitely-not-here.html`, { headers: { Cookie: cookie } });
-  const ct6 = r6 ? (r6.headers.get('content-type') || '') : '';
-  if (r6 && r6.status === 404 && ct6.includes('text/html')) ok('a missing page renders as HTML, not source');
-  else no(`404 page: ${r6 ? r6.status : 'network'} content-type "${ct6}"`);
+     What is still worth asserting HERE is that the files exist and that the
+     version the portal will ask for is the version that was uploaded. */
+  const { data: listed, error: lsErr } = await asClient.storage.from('previews')
+    .list(`${HANDLE}/v1`, { limit: 100 });
+  if (lsErr) no('the client cannot list their own preview: ' + lsErr.message);
+  else if ((listed || []).some(f => f.name === 'index.html')) ok('their folder has an index.html in it');
+  else no('no index.html in their folder — the preview would open on "not found"');
 
   console.log('\n7. The checks that matter');
-  const r4 = await tryFetch(`${base}/${OTHER}/v1/`, { headers: { Cookie: cookie } });
-  if (r4 && r4.status === 403) ok("another client's site is refused");
-  else no(`another client's site returned ${r4 ? r4.status : 'network error'} — CHECK THIS`);
-
-  /* Every network call from here on is wrapped. A dropped TLS handshake used
-     to throw straight past the cleanup, leaving a test client, a test login
-     and a bucket full of test files behind in the live project. A flaky
-     connection is not a reason to litter. */
-  /* redirect:'manual' or fetch follows the 302 to /portal/, gets a perfectly
-     good 200 back, and the test concludes the preview was served to a
-     signed-out stranger. It was not — but a test that cannot tell the
-     difference is worse than no test. */
-  const r5 = await tryFetch(`${base}/${HANDLE}/v1/`, { redirect: 'manual' });
-  if (!r5) no('signed-out check: network failed, could not test');
-  else if (r5.status === 302 || r5.status === 401) ok('no session, sent back to sign in (' + r5.status + ')');
-  else no(`signed out returned ${r5.status}`);
+  const { data: nosy } = await asClient.storage.from('previews').list(`${OTHER}/v1`, { limit: 100 });
+  if (!nosy || !nosy.length) ok("another client's folder lists as empty");
+  else no('LEAK: listed ' + nosy.length + " file(s) of another client — STOP");
 
   const { data: leak } = await anon.from('previews').select('*');
   if (!leak || !leak.length) ok('previews table refuses an anonymous read');

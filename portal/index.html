@@ -4,22 +4,16 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Client portal — WBA</title>
-<meta name="description" content="Your project, your previews and your invoices, in one place."/>
+<meta name="description" content="Your site and what has changed on it, in one place."/>
 <!-- A private area has no business in an index. -->
 <meta name="robots" content="noindex, nofollow"/>
 <link rel="icon" href="/img/wba-icon.png"/>
 <link rel="apple-touch-icon" href="/img/wba-icon.png"/>
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/styles.css?v=4d3175dc43"/>
+<link rel="stylesheet" href="/css/styles.css?v=4d23039906"/>
 </head>
-<!-- Where previews are served from. Empty until the Cloudflare Worker is
-     deployed; the portal then says "not switched on yet" instead of
-     sending a client to a dead address. Set it to the workers.dev URL
-     now, and to https://preview.westonbusinessauthority.co.uk if DNS
-     ever moves to Cloudflare. It is NOT the main domain, deliberately —
-     see the note in js/portal.js. -->
-<body class="portal-body" data-preview-base="">
+<body class="portal-body">
 
 <!-- NAV — cut down. Nobody signs in to browse the marketing site. -->
 <nav class="nav">
@@ -50,7 +44,7 @@
     <div class="win-body pt-card-body">
 
       <form id="ptStep1" class="pt-step">
-        <p class="pt-lede">Sign in to see your project, your previews and your invoices.</p>
+        <p class="pt-lede">Sign in to see your site and what has changed on it.</p>
         <label class="pt-label" for="ptHandle">Your handle or email</label>
         <input class="pt-input" id="ptHandle" type="text" autocomplete="username"
                spellcheck="false" placeholder="pivaz" required/>
@@ -159,8 +153,9 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/js/db.js?v=119a8abb35"></script>
-<script src="/js/tabs.js?v=372fe2d530" defer></script>
-<script src="/js/portal.js?v=bc9ff70037" defer></script>
+<script src="/js/db.js?v=1cc38d6a40"></script>
+<script src="/js/tabs.js?v=3389d437d1" defer></script>
+<script src="/js/preview-open.js?v=102b336719" defer></script>
+<script src="/js/portal.js?v=66a2b1027f" defer></script>
 </body>
 </html>

@@ -151,10 +151,37 @@
     el('ptaDrop').hidden = false;
 
     var v = project ? (project.preview_version || 0) : 0;
-    box.innerHTML = v
-      ? '<p class="pta-live">Version <b>' + esc(v) + '</b> is live for this client. ' +
-        '<a href="/preview/' + esc(handle) + '/v' + esc(v) + '/" target="_blank" rel="noopener">Open it yourself</a></p>'
-      : '<p class="pta-none">Nothing uploaded yet.</p>';
+    if (!v) {
+      box.innerHTML = '<p class="pta-none">Nothing uploaded yet.</p>';
+      return;
+    }
+
+    box.innerHTML =
+      '<p class="pta-live">Version <b>' + esc(v) + '</b> is live for this client. ' +
+      '<a id="ptaOpen">Preparing…</a></p>' +
+      '<p class="pta-hint" id="ptaOpenNote"></p>';
+
+    /* This used to be a plain link to /preview/<handle>/v<n>/, which meant
+       the one button that would have told us previews were broken was itself
+       broken — it pointed at an edge function that never deployed. It now
+       goes through exactly the same code the client's portal uses, so what
+       you see here is what they get, and if it fails for them it fails for
+       you first. */
+    var a = el('ptaOpen');
+    var note = el('ptaOpenNote');
+    if (!a || !window.wbaSitePreview) return;
+
+    window.wbaSitePreview.attach(a, sb, handle + '/v' + v, {
+      ready: 'Open it yourself',
+      busy: 'Preparing…',
+      onReady: function (r) {
+        note.textContent = r.count + ' file' + (r.count === 1 ? '' : 's') +
+                           ', signed for the next eight hours.';
+      },
+      onError: function (e) {
+        note.textContent = (e && e.message) || 'Could not open that preview.';
+      }
+    }).catch(function () {});
   }
 
   /* Reading a dropped folder.
@@ -300,14 +327,71 @@
               title: 'New version of your site is up',
               body: 'Version ' + version + ' — have a look and tell us what to change.'
             }]).then(function () {
-              toast('Uploaded. Version ' + version + ' is live for this client.');
-              loadClient(current);
+              return prune(version).then(function (gone) {
+                toast('Uploaded. Version ' + version + ' is live for this client.' +
+                      (gone ? ' Tidied ' + gone + ' old file' + (gone === 1 ? '' : 's') + '.' : ''));
+                loadClient(current);
+              });
             });
           });
       });
     }).catch(function (e) {
       bar.hidden = true;
       toast('Upload failed: ' + (e && e.message ? e.message : e), true);
+    });
+  }
+
+  /* ----------------------------------------------------------------- pruning
+     Each upload is a NEW version, never an overwrite — that is what stops a
+     half-finished upload from breaking the preview a client is looking at
+     right now. The cost is that every old version stayed in the bucket
+     forever. Twelve uploads of a 40 MB site is half a gigabyte of files
+     nobody will ever open again, against a 1 GB allowance.
+
+     So: keep the live version and the one before it (somewhere to fall back
+     to), and delete the rest. Runs after the version has been bumped, and a
+     failure here is logged and swallowed — losing old files is not a reason
+     to tell somebody their upload failed when it plainly did not. */
+  var KEEP = 2;
+
+  function listAll(prefix, sub, out) {
+    out = out || [];
+    var path = sub ? prefix + '/' + sub : prefix;
+    return sb.storage.from('previews').list(path, { limit: 100 }).then(function (r) {
+      var rows = (r.data || []).filter(function (f) { return f.name !== '.emptyFolderPlaceholder'; });
+      var deeper = [];
+      rows.forEach(function (f) {
+        var rel = sub ? sub + '/' + f.name : f.name;
+        if (f.id === null || f.id === undefined) deeper.push(rel);
+        else out.push(path + '/' + f.name);
+      });
+      return Promise.all(deeper.map(function (d) { return listAll(prefix, d, out); }))
+        .then(function () { return out; });
+    });
+  }
+
+  function prune(current) {
+    return sb.storage.from('previews').list(handle, { limit: 100 }).then(function (r) {
+      var old = (r.data || [])
+        .map(function (f) { return f.name; })
+        .filter(function (n) {
+          var m = /^v(\d+)$/.exec(n);
+          return m && Number(m[1]) <= current - KEEP;
+        });
+      if (!old.length) return 0;
+
+      return old.reduce(function (chain, v) {
+        return chain.then(function (n) {
+          return listAll(handle + '/' + v).then(function (paths) {
+            if (!paths.length) return n;
+            return sb.storage.from('previews').remove(paths)
+              .then(function () { return n + paths.length; });
+          });
+        });
+      }, Promise.resolve(0));
+    }).catch(function (e) {
+      console.warn('Could not tidy old preview versions:', e && e.message);
+      return 0;
     });
   }
 

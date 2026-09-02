@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Preview — WBA</title>
+<meta name="robots" content="noindex, nofollow"/>
+<link rel="icon" href="/img/wba-icon.png"/>
+<style>
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0b1220;color:#e8edf7;
+       font:16px/1.6 ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif;padding:2rem}
+  .c{max-width:32rem;text-align:center}
+  h1{font-size:1.35rem;margin:0 0 .6rem;color:#fff}
+  p{margin:0 0 1.4rem;color:#9fb0cc}
+  a{display:inline-block;padding:.7rem 1.2rem;border-radius:.5rem;background:#f5c416;
+    color:#0b1220;font-weight:600;text-decoration:none}
+  .spin{width:1.6rem;height:1.6rem;margin:0 auto 1.2rem;border:2px solid #24354f;
+        border-top-color:#f5c416;border-radius:50%;animation:s .8s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- ==========================================================================
+     The self-healing step.
+
+     A preview URL is answered by preview/sw.js. If the worker has been
+     evicted - a long gap between visits, storage pressure, "clear site data"
+     - the request goes to the network instead, the host has no such file, and
+     the host rewrites it here (see netlify.toml).
+
+     So this page puts the worker back and, if the map for this preview is
+     still in IndexedDB and still valid, reloads once. From the client's side
+     a link that should have died just works.
+
+     Once, though. A reload loop on a preview that genuinely is not there
+     would be a page that flickers forever, which is far worse than an
+     honest message.
+     ========================================================================== -->
+
+<div class="c">
+  <div class="spin" id="spin"></div>
+  <h1 id="title">Opening your preview</h1>
+  <p id="body">One moment.</p>
+  <a href="/portal/" id="cta" hidden>Back to your portal</a>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var spin = document.getElementById('spin');
+  var title = document.getElementById('title');
+  var body = document.getElementById('body');
+  var cta = document.getElementById('cta');
+
+  function stop(t, b) {
+    spin.hidden = true;
+    title.textContent = t;
+    body.innerHTML = b;
+    cta.hidden = false;
+  }
+
+  var parts = location.pathname.replace(/^\/preview\/?/, '').split('/').filter(Boolean);
+  var prefix = parts.length >= 2 ? parts[0] + '/' + parts[1] : null;
+
+  if (!prefix) {
+    stop('Previews open from your portal',
+         'Sign in and press <b>Open my site</b> and this page will not appear again.');
+    return;
+  }
+
+  var FLAG = 'wba-pv-retry:' + prefix;
+
+  function giveUp(t, b) { try { sessionStorage.removeItem(FLAG); } catch (e) {} stop(t, b); }
+
+  if (!('serviceWorker' in navigator)) {
+    giveUp('This browser cannot show previews',
+           'Private windows in Firefox switch off the feature previews rely on. ' +
+           'Try an ordinary window.');
+    return;
+  }
+
+  /* Is the map still here? No point reinstalling the worker to serve nothing. */
+  function look() {
+    return new Promise(function (res) {
+      var r = indexedDB.open('wba-preview', 1);
+      r.onupgradeneeded = function () {
+        var d = r.result;
+        if (!d.objectStoreNames.contains('sites')) d.createObjectStore('sites', { keyPath: 'prefix' });
+      };
+      r.onsuccess = function () {
+        try {
+          var q = r.result.transaction('sites', 'readonly').objectStore('sites').get(prefix);
+          q.onsuccess = function () { res(q.result || null); };
+          q.onerror = function () { res(null); };
+        } catch (e) { res(null); }
+      };
+      r.onerror = function () { res(null); };
+    });
+  }
+
+  look().then(function (rec) {
+    if (!rec || !rec.files) {
+      giveUp('Open this from your portal',
+             'Previews are unlocked by signing in, so this address cannot be opened ' +
+             'on its own. Sign in and press <b>Open my site</b>.');
+      return;
+    }
+    if (rec.exp && Date.now() > rec.exp) {
+      giveUp('This preview has expired',
+             'Preview links last eight hours. Open it again from your portal and it ' +
+             'will pick up where it left off.');
+      return;
+    }
+
+    var tried = false;
+    try { tried = sessionStorage.getItem(FLAG) === '1'; } catch (e) {}
+    if (tried) {
+      giveUp('Could not start the preview',
+             'The preview service would not start in this browser. Open it again ' +
+             'from your portal, and tell us if it keeps happening.');
+      return;
+    }
+
+    navigator.serviceWorker.register('/preview/sw.js', { scope: '/preview/' })
+      .then(function (reg) {
+        function go() {
+          if (!reg.active || reg.active.state !== 'activated') return false;
+          try { sessionStorage.setItem(FLAG, '1'); } catch (e) {}
+          location.reload();
+          return true;
+        }
+        if (go()) return;
+        var w = reg.installing || reg.waiting || reg.active;
+        if (w) w.addEventListener('statechange', go);
+        setTimeout(function () {
+          if (!go()) {
+            giveUp('Could not start the preview',
+                   'Open it again from your portal, and tell us if it keeps happening.');
+          }
+        }, 8000);
+      })
+      .catch(function () {
+        giveUp('Could not start the preview',
+               'Open it again from your portal, and tell us if it keeps happening.');
+      });
+  });
+})();
+</script>
+</body>
+</html>

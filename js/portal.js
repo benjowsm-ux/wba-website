@@ -87,13 +87,6 @@
       })
     : window.sbc;                  /* fall back rather than break entirely */
 
-  /* Where previews are served from.
-
-     Not the main domain: a preview is half-finished client work, and on the
-     same origin its scripts could read the portal's session out of storage.
-     Until DNS moves to Cloudflare this is the workers.dev address; change
-     the one line when preview.westonbusinessauthority.co.uk exists. */
-  var PREVIEW_BASE = (document.body.getAttribute('data-preview-base') || '').replace(/\/$/, '');
   var gate = document.getElementById('ptGate');
   var deck = document.getElementById('ptDeck');
   if (!sb || !gate || !deck) return;
@@ -372,12 +365,22 @@
       box.innerHTML =
         '<p class="pt-site-lede">Your site is ready to look at. It opens in a new tab, ' +
         'full size — click around it exactly as a visitor would.</p>' +
-        '<button type="button" class="btn btn-gold pt-open" id="ptOpenPv" data-path="' +
-          esc(d.handle) + '/v' + esc(version) + '">Open my site</button>' +
+        '<a class="btn btn-gold pt-open" id="ptOpenPv">Preparing your site…</a>' +
+        '<p class="pt-site-note" id="ptPvNote" hidden></p>' +
         (project && project.live_url
           ? '<p class="pt-site-note"><a href="' + esc(safeHref(project.live_url)) +
             '" target="_blank" rel="noopener">Your live site</a></p>'
           : '');
+
+      /* The folder name is the handle in lower case, because that is what
+         the storage policy compares against. A client whose handle was
+         typed with a capital would otherwise be told their own site is
+         somebody else's. */
+      /* Demo mode has no session and therefore nothing to sign; asking
+         would put "Preview unavailable" on a deck being shown to a
+         prospect. */
+      if (!d.demo) openable(String(d.handle).toLowerCase() + '/v' + version);
+      else { el('ptOpenPv').textContent = 'Open my site'; }
     }
 
     /* ---- what's happened ---- */
@@ -395,40 +398,43 @@
 
   /* Opening a preview.
 
-     The preview lives on another origin, so it cannot see this one's session
-     and its assets cannot carry an Authorization header. We therefore pass
-     the access token once, in the URL, and the worker immediately swaps it
-     for a cookie on its own origin and redirects the token out of the address
-     bar. See the handoff note in cloudflare/preview-worker.js.
+     Every previous version of this signed the client in and then asked a
+     server to fetch their files. There is no server now — js/preview-open.js
+     signs a URL for each file up front and a service worker serves them. All
+     this has to do is start that, and turn the button into a real link when
+     it finishes.
 
-     noopener matters more than usual here: without it the opened page — which
-     is client work in progress — gets a handle on this window. */
-  document.addEventListener('click', function (e) {
-    var btn = e.target && e.target.closest ? e.target.closest('#ptOpenPv') : null;
-    if (!btn) return;
-    var path = btn.getAttribute('data-path') || '';
-    btn.disabled = true;
+     Preparing on RENDER rather than on CLICK is what makes it a plain
+     <a target="_blank" rel="noopener"> instead of a scripted window.open at
+     the end of a promise chain — which every browser blocks as a popup, and
+     which would hand the client's half-built site a handle on this window. */
+  function openable(prefix) {
+    var a = el('ptOpenPv');
+    var note = el('ptPvNote');
+    if (!a || !window.wbaSitePreview) return;
 
-    sb.auth.getSession().then(function (r) {
-      btn.disabled = false;
-      var token = r && r.data && r.data.session && r.data.session.access_token;
-      if (!token) { expired(); return; }
-
-      /* The preview is served from this same origin (Netlify proxies
-         /preview/* to the edge function), so the session travels as a plain
-         cookie — no token in a URL, nothing to strip afterwards.
-
-         Path is scoped to /preview so it is never sent with an ordinary page
-         request, and it is short-lived because it is a viewing pass, not a
-         login. */
-      document.cookie = 'wba_pv=' + encodeURIComponent(token) +
-        '; Path=/preview; Max-Age=28800; SameSite=Lax' +
-        (location.protocol === 'https:' ? '; Secure' : '');
-
-      window.open('/preview/' + path.split('/').map(encodeURIComponent).join('/') + '/',
-                  '_blank', 'noopener');
-    });
-  });
+    window.wbaSitePreview.attach(a, sb, prefix, {
+      ready: 'Open my site',
+      busy: 'Preparing your site…',
+      onReady: function (r) {
+        if (!note) return;
+        note.hidden = false;
+        note.textContent = r.count + (r.count === 1 ? ' file' : ' files') +
+                           ', ready for the next eight hours.';
+      },
+      onError: function (e) {
+        /* An expired token looks exactly like a permissions failure from
+           out here, and "we could not read your site" is the wrong thing to
+           tell someone whose session simply lapsed overnight. */
+        var m = (e && e.message) || '';
+        if (/jwt|expired|401/i.test(m)) { expired(); return; }
+        if (note) {
+          note.hidden = false;
+          note.textContent = m || 'We could not open that just now. Try again in a minute.';
+        }
+      }
+    }).catch(function () { /* reported above */ });
+  }
 
   function empty(title, body) {
     return '<div class="pt-empty"><b>' + esc(title) + '</b><span>' + esc(body) + '</span></div>';
@@ -453,6 +459,7 @@
   function demoData() {
     var now = Date.now(), d1 = 86400000;
     return {
+      demo: true,
       business: 'Pivaz Café', handle: 'pivaz', name: 'Sam',
       project: { name: 'Website', summary: 'Menus that read from the back of the queue.', version: 3 },
       updates: [

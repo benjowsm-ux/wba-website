@@ -7,3 +7,9 @@ package.json
 .supabase/
 .env.supabase
 .env.supabase.txt
+
+# The e2e scripts fetch project keys at run time, but portal-e2e.mjs still
+# accepts a keys.json. A service_role key bypasses every RLS policy in the
+# project, so that filename must never be committable.
+keys.json
+.env*.local

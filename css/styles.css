@@ -3371,6 +3371,25 @@ textarea.pta-in{width:100%;margin-top:.5rem;resize:vertical;}
 .pt-site-note a{color:rgba(255,255,255,.7);text-decoration:underline;text-underline-offset:3px;}
 .pt-site-note a:hover{color:var(--gold);}
 
+/* The preview button is an <a>, not a <button>, because the tab it opens has
+   to be a real link: a scripted window.open at the end of a promise chain is
+   not a user gesture and every browser blocks it. So while the files are
+   being signed it is a link that is deliberately not yet clickable, and it
+   has to LOOK it - an anchor ignores [disabled] entirely. */
+a.pt-open{text-decoration:none;cursor:pointer;}
+[aria-disabled="true"]{cursor:default;}
+.pt-open.is-preparing,.pta-card a.is-preparing{opacity:.55;}
+.pt-open.is-preparing{position:relative;}
+.pt-open.is-preparing::after{content:"";position:absolute;top:50%;right:.85rem;width:.75rem;height:.75rem;
+  margin-top:-.4rem;border:2px solid rgba(11,18,32,.25);border-top-color:rgba(11,18,32,.75);
+  border-radius:50%;animation:pt-spin .8s linear infinite;}
+.pt-open.is-preparing{padding-right:2.6rem;}
+@keyframes pt-spin{to{transform:rotate(360deg);}}
+
+/* Same treatment in the admin, where the link is plain text in a sentence. */
+.pta-live a[aria-disabled="true"]{opacity:.6;text-decoration:none;}
+
+
 /* Client login. Quiet on purpose — it is for the handful of people who
    already have an account, not a call to action competing with Contact. */
 .nav-login{

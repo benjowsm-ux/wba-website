@@ -16,8 +16,8 @@ hour, and about ten minutes of that is waiting for DNS.
 | Piece | Free tier | What actually breaks it |
 |---|---|---|
 | Supabase (database, auth) | 500 MB DB · 50,000 monthly users | Nothing at your scale. The 7-day pause never fires because the Feed workflow pings it every 5 minutes. |
-| Cloudflare R2 (preview files) | 10 GB · **zero egress, ever** | ~200 site previews. |
-| Cloudflare Workers (serving) | 100,000 requests/day | Not you. |
+| Supabase Storage (preview files) | 1 GB · 5 GB egress/month | ~20 site previews. Moving to Cloudflare R2 (10 GB, zero egress) is a bucket copy and one line in `js/preview-open.js`. |
+| Serving those previews | — | Nothing. It runs in the client's browser, so there is no per-request cost and nothing to cap. |
 | Resend (the login emails) | 3,000/month · 100/day | Not you. |
 
 The first real bill is **Supabase Pro, $25/month**, and the reason to pay it is
@@ -123,33 +123,59 @@ caller is a signed-in admin, twice: once by the platform and once against the
 > security entirely. It goes in Supabase secrets and nowhere else — never in
 > `js/`, never in the repo, never in a browser.
 
-### 4. Previews on Cloudflare R2 (15 minutes)
+### 4. Previews (nothing to do)
+
+There is no step here any more, and that is the fix rather than a shortcut.
+
+Previews used to need a server, and every server we tried failed:
+
+| Attempt | What happened |
+|---|---|
+| Supabase Storage direct | Returns `index.html` as `text/plain`. Not a setting — it rewrites the type. Every page rendered as visible source. |
+| Supabase Edge Function | Proxied the file; Supabase rewrote the header again. |
+| Netlify Edge Function | Would have worked. Never deployed — the account ran out of credits first. |
+
+So previews are now served **in the browser** by `preview/sw.js`, a service
+worker. The portal lists the client's folder, asks Supabase for a signed URL
+for every file in it, and stores that map; the worker intercepts `/preview/*`
+and serves each file with a `Content-Type` **it** chooses, from the file
+extension.
+
+That last part is the whole trick. Storage can call `index.html` whatever it
+likes — the header the browser sees is written on our side, so the failure
+that killed all three previous attempts cannot recur.
+
+Consequences worth knowing:
+
+- **No hosting cost and no deploy budget.** It is two static files.
+- **No rewriting of the client's HTML.** The URLs are real, so relative links,
+  stylesheets, scripts and images resolve on their own. The site behaves
+  exactly as it will on its own domain.
+- **Signed URLs last eight hours.** After that the worker says so plainly and
+  the client opens it again from the portal.
+- **Permission is not the worker's to give.** It holds no key. The listing and
+  the signing both run as whoever is signed in, under the same policies as
+  everything else.
+
+> **The one trade.** Previews are served from the main origin, so a preview's
+> scripts share it with the portal. These are sites we built, so that is
+> first-party code — but it is a real trade. When
+> `preview.westonbusinessauthority.co.uk` exists, `preview/sw.js` moves there
+> unchanged and the trade goes away.
+
+To put a build in front of a client: **Admin → Portal**, pick the client, drop
+the folder on the upload box. Each upload becomes a new version, and the
+client keeps seeing the old one until the new one is completely in place.
+
+Test the whole path without touching a browser:
 
 ```bash
-npx wrangler login
-npx wrangler r2 bucket create wba-previews
-cd cloudflare
-npx wrangler secret put SUPABASE_URL        # https://lynzhiyvggqyplssrapi.supabase.co
-npx wrangler secret put SUPABASE_ANON_KEY   # the publishable key
-npx wrangler deploy
+node scripts/preview-e2e.mjs
 ```
 
-Then add a DNS record for `preview.westonbusinessauthority.co.uk` pointing at
-the worker (Cloudflare → Workers → Triggers → Custom Domains).
-
-**Previews live on their own hostname on purpose.** A preview is a page we are
-still working on; if it were served from the main domain it could read the
-portal's storage, including the client's session token. A separate origin
-makes that impossible rather than unlikely.
-
-To put a build in front of a client:
-
-```bash
-npx wrangler r2 object put wba-previews/pivaz/v3 --file=./dist --recursive
-```
-
-…then in **Admin → Portal**, post an update of kind `preview`. (A drag-and-drop
-uploader in the admin is the next job; the CLI works today.)
+It creates a throwaway client, uploads a site with a real image, signs in as
+them, lists and signs every file, checks the bytes come back byte-identical,
+confirms another client's folder is refused, and cleans up after itself.
 
 ### 5. Make yourself a test client (2 minutes)
 
