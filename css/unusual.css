@@ -38,3 +38,5 @@ body.wba-public{--accent:#d2ff55;--accent-surface:#c8d6ac;--ease-out:cubic-bezie
 /* Preserve the desktop palette; reduce chroma on handheld/touch displays. */
 @media(min-width:761px) and (hover:hover) and (pointer:fine){body.wba-public{--accent-surface:#d2ff55}}
 @media(hover:none) and (pointer:coarse){body.wba-public{--accent:#bfd29b;--accent-surface:#c8d6b3}}
+/* Footer logo had no width rule, so it rendered at its intrinsic 438px and overflowed 320px screens. */
+.studio-footer .studio-logo img{width:96px;height:auto;max-width:100%}.footer-links>*{min-width:0}
