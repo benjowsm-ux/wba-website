@@ -19,3 +19,5 @@ docs
 netlify.toml
 README.md
 DEPLOY.md
+
+DESIGN-HANDOFF.md

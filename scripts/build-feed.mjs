@@ -273,7 +273,7 @@ function head(opts){
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link rel="manifest" href="/site.webmanifest"/>
-<meta name="theme-color" content="#0b1220"/>
+<meta name="theme-color" content="#eeede5"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="/css/styles.css"/><link rel="stylesheet" href="/css/studio.css"/><link rel="stylesheet" href="/css/unusual.css"/>
 <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>${ld ? `\n<script type="application/ld+json">${JSON.stringify(ld)}</script>` : ''}`;
@@ -435,9 +435,9 @@ ${rel.map(postCard).join('\n')}
 
 <section class="cta-band reveal">
   <div class="inner">
-    <h2 class="h-md">Want one of these?</h2>
+    <h2 class="h-md">Discuss your website</h2>
     <div class="cta-actions">
-      <a href="/sites/" class="btn btn-gold">Get a free site</a>
+      <a href="/sites/" class="btn btn-gold">Websites — £30/month</a>
       <a href="/contact/" class="btn btn-line inverse">Get in touch</a>
     </div>
   </div>
