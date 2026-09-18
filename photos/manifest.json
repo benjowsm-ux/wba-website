@@ -6,16 +6,10 @@
   "h": 810
  },
  {
-  "url": "/photos/captains-cabin-street.jpg",
-  "name": "captains-cabin-street.jpg",
-  "w": 1600,
-  "h": 720
- },
- {
-  "url": "/photos/full-basket-shopfront.jpg",
-  "name": "full-basket-shopfront.jpg",
-  "w": 1600,
-  "h": 720
+  "url": "/photos/harmony-building.jpg",
+  "name": "harmony-building.jpg",
+  "w": 1280,
+  "h": 722
  },
  {
   "url": "/photos/harmony-signage.jpg",
@@ -106,6 +100,12 @@
   "name": "sovereign-frontage.jpg",
   "w": 1400,
   "h": 3108
+ },
+ {
+  "url": "/photos/tidal-logo.png",
+  "name": "tidal-logo.png",
+  "w": 512,
+  "h": 512
  },
  {
   "url": "/photos/town-fountains.jpg",

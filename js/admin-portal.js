@@ -143,6 +143,7 @@
   /* --------------------------------------------------------------- the site */
   function renderSite(project) {
     var box = el('ptaSite');
+    if(el('ptaHostedUrl')) el('ptaHostedUrl').value = window.wbaSitePreview.hostedUrl(project && project.preview_path) || '';
     if (!handle) {
       box.innerHTML = '<p class="pta-none">Make a login first — the handle is also the folder name for their files.</p>';
       el('ptaDrop').hidden = true;
@@ -151,7 +152,8 @@
     el('ptaDrop').hidden = false;
 
     var v = project ? (project.preview_version || 0) : 0;
-    if (!v) {
+    var hosted = window.wbaSitePreview.hostedUrl(project && project.preview_path);
+    if (!v && !hosted) {
       box.innerHTML = '<p class="pta-none">Nothing uploaded yet.</p>';
       return;
     }
@@ -171,10 +173,11 @@
     var note = el('ptaOpenNote');
     if (!a || !window.wbaSitePreview) return;
 
-    window.wbaSitePreview.attach(a, sb, handle + '/v' + v, {
+    window.wbaSitePreview.attach(a, sb, hosted || (project && project.preview_path) || handle + '/v' + v, {
       ready: 'Open it yourself',
       busy: 'Preparing…',
       onReady: function (r) {
+        if (r.hosted) { note.textContent = 'Opens the hosted website directly.'; return; }
         note.textContent = r.count + ' file' + (r.count === 1 ? '' : 's') +
                            ', signed for the next eight hours.';
       },
@@ -182,6 +185,22 @@
         note.textContent = (e && e.message) || 'Could not open that preview.';
       }
     }).catch(function () {});
+  }
+
+  async function saveHostedPreview() {
+    if (!current) { toast('Choose a client first.', true); return; }
+    var url = window.wbaSitePreview.hostedUrl(el('ptaHostedUrl').value);
+    if (!url) { toast('Enter a complete HTTPS website address.', true); return; }
+    var btn=el('ptaHostedSave'); btn.disabled=true;
+    var clientAtSave=current;
+    try {
+      var project=await ensureProject();
+      if (!project) throw new Error('Could not load the project.');
+      var result=await sb.from('projects').update({preview_path:url,preview_version:(project.preview_version || 0)+1,updated_at:new Date().toISOString()}).eq('id',project.id).select('id');
+      if (!result.data || !result.data.length) { if (!result.error) result.error={message:'No project was updated. Check your access.'}; }
+      if (done(result,'Preview link saved.')) { if(current===clientAtSave) loadClient(current); }
+    } catch(e) { toast(e.message || 'Could not save the preview link.',true); }
+    finally { btn.disabled=false; }
   }
 
   /* Reading a dropped folder.
@@ -457,6 +476,7 @@
     window.wbaPortalLoaded = true;
 
     loadClients();
+    el('ptaHostedSave').addEventListener('click', saveHostedPreview);
     el('ptaClient').addEventListener('change', function () { loadClient(this.value); });
     el('ptaInvite').addEventListener('click', invite);
     el('ptaAddUpdate').addEventListener('click', addUpdate);

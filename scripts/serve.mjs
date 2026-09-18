@@ -47,7 +47,23 @@ async function file(p) {
 
 createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
-  let path = decodeURIComponent(url.pathname);
+  let path;
+  try { path=decodeURIComponent(url.pathname); } catch { res.writeHead(400).end('Invalid path'); return; }
+  if (/^\/(?:\.|scripts(?:\/|$)|supabase(?:\/|$)|docs(?:\/|$)|node_modules(?:\/|$)|worker\.js|wrangler\.jsonc|package(?:-lock)?\.json)/i.test(path)) { res.writeHead(404).end('Not found'); return; }
+  if (path.startsWith('/api/')) {
+    const fn=path.slice(5);
+    if (!['portal-login','portal-invite'].includes(fn)) { res.writeHead(404).end('Not found'); return; }
+    if(req.method!=='POST'){res.writeHead(405).end('Method not allowed');return;}
+    try {
+      let chunks=[], size=0;
+      for await(const chunk of req){size+=chunk.length;if(size>16384){res.writeHead(413).end('Too large');return;}chunks.push(chunk);}
+      const headers={'content-type':'application/json'};
+      if(req.headers.authorization)headers.authorization=req.headers.authorization;
+      const upstream=await fetch('https://lynzhiyvggqyplssrapi.supabase.co/functions/v1/'+fn,{method:'POST',headers,body:Buffer.concat(chunks),signal:AbortSignal.timeout(15000)});
+      res.writeHead(upstream.status,{'content-type':'application/json','cache-control':'no-store'}).end(await upstream.text());
+    } catch { res.writeHead(502,{'content-type':'application/json'}).end(JSON.stringify({error:'Connection unavailable. Try again shortly.'})); }
+    return;
+  }
 
   /* normalize() collapses ".." before it can climb out of the site root. A
      dev server is still a server. */

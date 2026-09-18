@@ -44,7 +44,7 @@ const PILLARS = ['build', 'create', 'grow'];
 const PILLAR_BLURB = {
   build:  'Tech that powers your business.',
   create: 'The identity your audience remembers.',
-  grow:   'Unrestrained growth.'
+  grow:   'Helping the right people find you.'
 };
 
 /* ==========================================================================
@@ -248,57 +248,13 @@ function renderBlocks(body){
 /* ==========================================================================
    Shared chrome — must match the hand-written pages
    ========================================================================== */
-function nav(active){
-  const link = (href, label, key) =>
-    `<a href="${href}"${active === key ? ' class="active"' : ''}>${label}</a>`;
-  return `<nav class="nav">
-  <div class="nav-inner">
-    <a href="/" class="nav-logo" aria-label="WBA home"><img src="${LOGO}" alt="WBA" width="438" height="248"/></a>
-    <button class="nav-toggle" aria-label="Menu" aria-expanded="false" onclick="toggleNav()"><span></span><span></span><span></span></button>
-    <div class="nav-links" id="navLinks">
-      ${link('/','Home','home')}
-      ${link('/sites/','Sites','sites')}
-      ${link('/services/','Services','services')}
-      ${link('/about/','About','about')}
-      ${link('/feed/','Feed','feed')}
-      <a href="/portal/" class="nav-login">Login</a>
-      <a href="/contact/" class="nav-cta">Contact</a>
-    </div>
-  </div>
-</nav>`;
-}
-
-const FOOTER = `<footer>
-  <div class="footer-grid">
-    <div class="footer-brand">
-      <img src="${LOGO}" alt="WBA" width="438" height="248"/>
-      <p data-edit="footer.body" data-edit-kind="rich" data-edit-scope="shared">Everyone needs a good tech guy.</p>
-    </div>
-    <div class="footer-col">
-      <h4 data-edit="footer.h4" data-edit-scope="shared">Site</h4>
-      <a href="/">Home</a><a href="/sites/">Sites</a><a href="/services/">Services</a><a href="/about/">About</a><a href="/feed/">Feed</a>
-    </div>
-    <div class="footer-col">
-      <h4 data-edit="footer.h4-2" data-edit-scope="shared">What we do</h4>
-      <a href="/services/#build">Build</a><a href="/services/#create">Create</a><a href="/services/#grow">Grow</a><a href="/contact/">Contact</a>
-    </div>
-    <div class="footer-col">
-      <h4 data-edit="footer.h4-3" data-edit-scope="shared">Get in touch</h4>
-      <a href="https://wa.me/447902376369" target="_blank" rel="noopener">WhatsApp 07902 376369</a>
-      <a href="mailto:info@westonbusinessauthority.co.uk">info@westonbusinessauthority.co.uk</a>
-      <a href="/contact/">Contact</a>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <span>© 2026 Weston Business Authority — Weston-super-Mare, Somerset.</span>
-    <span><a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · westonbusinessauthority.co.uk</span>
-  </div>
-</footer>`;
+function nav(){ return readFileSync('scripts/design/nav.html', 'utf8'); }
+const FOOTER = readFileSync('scripts/design/footer.html', 'utf8');
 
 const SCRIPTS = `<script src="/js/main.js" defer></script>
 <script src="/js/analytics.js" defer></script>
 <script src="/js/tabs.js" defer></script>
-<script src="/js/palette.js" defer></script>
+<script src="/js/studio.js" defer></script>
 <script src="/js/edit-boot.js" defer></script>`;
 
 function head(opts){
@@ -319,7 +275,7 @@ function head(opts){
 <link rel="manifest" href="/site.webmanifest"/>
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/css/styles.css"/>
+<link rel="stylesheet" href="/css/styles.css"/><link rel="stylesheet" href="/css/studio.css"/><link rel="stylesheet" href="/css/unusual.css"/>
 <noscript><style>.reveal{opacity:1!important;transform:none!important;}</style></noscript>${ld ? `\n<script type="application/ld+json">${JSON.stringify(ld)}</script>` : ''}`;
 }
 
@@ -410,17 +366,14 @@ function postPage(p, all){
 <head>
 ${head({ title: `${p.title} | WBA Weston-super-Mare`, desc, url, image: ogImg, type: 'article', ld })}
 </head>
-<body>
+<body class="wba-public">
 ${nav('feed')}
 
 <header class="page-hero">
-  <div class="hero-media"><img src="${heroPhoto(p)}" alt=""${dimAttrs(heroPhoto(p))} fetchpriority="high"/></div>
-  <div class="hero-scrim"></div>
   <div class="inner">
     <p class="crumb"><a href="/">Home</a> · <a href="/feed/">Feed</a>${pillar ? ` · <a href="/feed/?pillar=${pillar}">${esc(cap(pillar))}</a>` : ''}</p>
     <div class="hero-copy">
       <div class="hero-lead">
-        <span class="beacon" aria-hidden="true"></span>
         <h1 class="h-lg">${esc(p.title)}</h1>
       </div>
       ${p.excerpt ? `<p class="lede">${esc(p.excerpt)}</p>` : ''}
@@ -523,17 +476,14 @@ ${head({
   url: `${SITE}/feed/`
 })}
 </head>
-<body>
+<body class="wba-public">
 ${nav('feed')}
 
 <header class="page-hero">
-  <div class="hero-media"><img src="/photos/mural-weston-letters.jpg" width="1600" height="720" alt="Weston lettering mural" fetchpriority="high"/></div>
-  <div class="hero-scrim"></div>
   <div class="inner">
     <p class="crumb"><a href="/">Home</a> · Feed</p>
     <div class="hero-copy">
       <div class="hero-lead">
-        <span class="beacon" aria-hidden="true"></span>
         <h1 class="h-lg">The Feed.</h1>
       </div>
       <p class="lede">Work we've finished, and what we learned doing it.</p>
@@ -593,7 +543,7 @@ function redirectStub(to){
 <meta name="robots" content="noindex"/>
 <title>Moved — WBA</title>
 </head>
-<body><p>The blog is now the <a href="${to}">Feed</a>.</p>
+<body class="wba-public"><p>The blog is now the <a href="${to}">Feed</a>.</p>
 <script>location.replace('${to}');</script>
 </body>
 </html>`;
@@ -605,6 +555,11 @@ function sitemap(posts){
     ['/sites/', '1.0', 'monthly'],
     ['/services/', '0.9', 'monthly'],
     ['/about/', '0.7', 'monthly'],
+    ['/work/', '0.9', 'monthly'],
+    ['/work/harmony/', '0.8', 'monthly'],
+    ['/work/tidal-tails/', '0.8', 'monthly'],
+    ['/work/pivaz/', '0.8', 'monthly'],
+    ['/work/deniz/', '0.8', 'monthly'],
     ['/feed/', '0.9', 'weekly'],
     ['/contact/', '0.8', 'monthly'],
     ['/free-website-terms/', '0.4', 'yearly'],
@@ -800,7 +755,7 @@ if(posts.length === 0 && !process.env.WBA_ALLOW_EMPTY){
 }
 
 posts = posts
-  .map(p => ({ ...p, slug: cleanSlug(p.slug) }))
+  .map(p => ({ ...p, cover_image: /captains-cabin-street|full-basket-shopfront/.test(p.cover_image || '') ? '/photos/seafront-pier.jpg' : p.cover_image, slug: cleanSlug(p.slug) }))
   .filter(p => p.slug && p.title);
 
 /* Rebuild /feed from scratch so deleted posts really disappear. */
@@ -1101,6 +1056,8 @@ function stampAssets(){
   const versions = new Map();
   const add = f => { const h = hashOf(f); if (h) versions.set('/' + f, h); };
   add('css/styles.css');
+  add('css/studio.css');
+  add('css/unusual.css');
   if (existsSync('js')) {
     for (const e of readdirSync('js', { withFileTypes: true })) {
       if (e.isFile() && e.name.endsWith('.js')) add('js/' + e.name);

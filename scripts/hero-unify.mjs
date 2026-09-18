@@ -73,7 +73,7 @@ const PAGES = {
       live: 'Replying',
       rows: [
         ['Email', 'info@westonbusiness<wbr>authority.co.uk', null],
-        ['Phone', '07902 376369', 'Mon–Fri, 9–6'],
+        ['Phone', '07447 571425', 'Mon–Fri, 9–6'],
         ['Typical reply', 'Same day', null],
         ['First call', 'Free', 'No pitch deck']
       ]

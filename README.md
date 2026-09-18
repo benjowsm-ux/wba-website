@@ -1,9 +1,6 @@
-# WBA — Design & Tech Agency
+# WBA — Business UNusual
 
-The rebuilt site. `WBA-Site` (the old one) is untouched — this is a separate,
-self-contained folder.
-
----
+See DESIGN-HANDOFF.md for the current design, validation and deployment notes. Public styles now use css/unusual.css; the complete £30/month package replaces free-build marketing.
 
 ## The shape of it
 

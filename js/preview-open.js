@@ -190,6 +190,16 @@
 
   /* -------------------------------------------------------------------- api */
   var jobs = {};
+  // Existing preview_path stores either a private storage prefix or a hosted HTTPS URL.
+  function hostedUrl(value) {
+    try {
+      var u = new URL(String(value || '').trim());
+      if (u.protocol !== 'https:' || u.username || u.password) return '';
+      if (u.hostname === 'localhost' || u.hostname === '127.0.0.1') return '';
+      return u.href;
+    } catch (e) { return ''; }
+  }
+
 
   /* prefix is "<handle>/v<n>". Resolves with {count, exp, url}. */
   function prepare(sb, prefix) {
@@ -236,6 +246,16 @@
   function attach(a, sb, prefix, opts) {
     opts = opts || {};
     var ready = opts.ready || 'Open my site';
+    var hosted = hostedUrl(prefix);
+    if (hosted) {
+      a.href = hosted; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      a.removeAttribute('aria-disabled'); a.classList.remove('is-preparing');
+      a.textContent = ready;
+      var direct = { url: hosted, hosted: true };
+      if (opts.onReady) opts.onReady(direct);
+      return Promise.resolve(direct);
+    }
+
     var busy = opts.busy || 'Preparing your site...';
 
     a.setAttribute('href', url(prefix));
@@ -274,5 +294,5 @@
      after this file loads — so it won. The symptom was the admin's Open
      button sitting on "Preparing..." forever while the console said nothing,
      because a function is truthy and the guard above it passed. */
-  window.wbaSitePreview = { prepare: prepare, attach: attach, url: url };
+  window.wbaSitePreview = { prepare: prepare, attach: attach, url: url, hostedUrl: hostedUrl };
 })();

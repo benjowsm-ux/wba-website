@@ -180,6 +180,7 @@ async function wbaSubmitTalk(ev){
   }
 
   if(s){ s.className = 'send-status'; s.textContent = 'Sending…'; }
+  var label = btn ? btn.textContent : '';
   if(btn) btn.disabled = true;
 
   try{
@@ -197,8 +198,8 @@ async function wbaSubmitTalk(ev){
 
     if(btn){
       btn.classList.add('celebrate');
-      btn.textContent = "You're in \u{1F389}";
-      wbaConfetti(btn);
+      btn.textContent = 'Message sent';
+
     }
     if(s){ s.className = 'send-status ok'; s.textContent = "Got it — we'll be in touch asap."; }
 
@@ -208,12 +209,12 @@ async function wbaSubmitTalk(ev){
     setTimeout(function(){
       if(!btn) return;
       btn.classList.remove('celebrate');
-      btn.textContent = 'Send';
+      btn.textContent = label;
       btn.disabled = false;
     }, 4000);
   }catch(e){
     if(btn) btn.disabled = false;
-    if(s){ s.className = 'send-status err'; s.textContent = 'Something went wrong — WhatsApp us on 07902 376369.'; }
+    if(s){ s.className = 'send-status err'; s.textContent = 'Something went wrong — WhatsApp us on 07447 571425.'; }
   }
   return false;
 }
@@ -245,7 +246,7 @@ async function submitForm(){
     showModal();
   }catch(e){
     s.className = 'send-status err';
-    s.textContent = 'Something went wrong — please WhatsApp us on 07902 376369.';
+    s.textContent = 'Something went wrong — please WhatsApp us on 07447 571425.';
   }
 }
 
@@ -434,7 +435,7 @@ async function submitForm(){
         if(!r.ok) throw new Error('http ' + r.status);
         formEl.innerHTML = '<p class="act-form-label">Received — a real person will read it. Thanks for making this better.</p>';
       })
-      .catch(function(){ s.className = 'send-status err'; s.textContent = 'Something went wrong — WhatsApp us instead: 07902 376369.'; });
+      .catch(function(){ s.className = 'send-status err'; s.textContent = 'Something went wrong — WhatsApp us instead: 07447 571425.'; });
   });
 })();
 
@@ -446,7 +447,7 @@ async function submitForm(){
   if(active) active.setAttribute('aria-current', 'page');
 
   var main = document.querySelector('.hero, .page-hero, main');
-  if(main){
+  if(main && !document.querySelector(".studio-skip, a.skip-link")){
     if(!main.id) main.id = 'main';
     var skip = document.createElement('a');
     skip.href = '#main';
@@ -457,11 +458,11 @@ async function submitForm(){
 
   document.querySelectorAll('img').forEach(function(img){
     img.decoding = 'async';
-    if(!img.closest('.nav') && !img.closest('.hero')) img.loading = 'lazy';
+    if(!img.closest('.nav, .studio-nav') && !img.closest('.hero, .studio-hero')) img.loading = 'lazy';
   });
 
   var fab = document.createElement('a');
-  fab.href = 'https://wa.me/447902376369';
+  fab.href = 'https://wa.me/447447571425';
   fab.target = '_blank';
   fab.rel = 'noopener';
   fab.className = 'wa-fab';
@@ -655,3 +656,4 @@ async function submitForm(){
     });
   });
 })();
+

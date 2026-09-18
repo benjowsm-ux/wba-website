@@ -53,8 +53,8 @@
 
     { t: 'Start a free website', s: 'Straight to the form', u: '/contact/#talk', g: 'Do', i: 'spark' },
     { t: 'Email us',  s: 'info@westonbusinessauthority.co.uk', u: 'mailto:info@westonbusinessauthority.co.uk', g: 'Do', i: 'mail' },
-    { t: 'Call us',   s: '07902 376369', u: 'tel:+447902376369', g: 'Do', i: 'phone' },
-    { t: 'WhatsApp us', s: 'Usually the quickest', u: 'https://wa.me/447902376369', g: 'Do', i: 'chat' }
+    { t: 'Call us',   s: '07447 571425', u: 'tel:+447447571425', g: 'Do', i: 'phone' },
+    { t: 'WhatsApp us', s: 'Usually the quickest', u: 'https://wa.me/447447571425', g: 'Do', i: 'chat' }
   ];
 
   var ICONS = {

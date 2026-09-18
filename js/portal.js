@@ -155,7 +155,7 @@
       step1.hidden = true; step2.hidden = false;
       /* Same words whether or not the account exists. Telling someone their
          guess was wrong is telling them the other guesses are worth making. */
-      say('If that account exists, a code is on its way.');
+      say('If that account exists, an access code is on its way.');
       var rb = el('ptResend');
       if (rb && rb._cool) rb._cool(30);
       codeInput.focus();
@@ -165,7 +165,7 @@
   step2.addEventListener('submit', function (e) {
     e.preventDefault();
     var code = codeInput.value.replace(/\D/g, '');
-    if (code.length < 6) { say('That code is six digits.', true); return; }
+    if (code.length < 6) { say('Your access code is six digits.', true); return; }
 
     /* Decided BEFORE verifyOtp, because that call is what writes the session
        — by then the storage adapter has to already know where to put it. */
@@ -178,7 +178,7 @@
     sb.auth.verifyOtp({ email: pending, token: code, type: 'email' })
       .then(function (r) {
         busy(el('ptVerify'), false);
-        if (r.error) { say('That code did not work. Codes expire after ten minutes.', true); return; }
+        if (r.error) { say('That access code did not work. Access codes expire after ten minutes.', true); return; }
         start();
       });
   });
@@ -194,7 +194,7 @@
     function paint() {
       var left = Math.ceil((until - Date.now()) / 1000);
       if (left > 0) { btn.disabled = true; btn.textContent = 'Send again in ' + left + 's'; }
-      else { btn.disabled = false; btn.textContent = 'Send another code'; clearInterval(tick); tick = null; }
+      else { btn.disabled = false; btn.textContent = 'Send another access code'; clearInterval(tick); tick = null; }
     }
     function cool(seconds) {
       until = Date.now() + seconds * 1000;
@@ -210,7 +210,7 @@
       sb.auth.signInWithOtp({ email: pending, options: { shouldCreateUser: false } })
         .then(function (r) {
           if (r.error) say(friendly(r.error), true);
-          else say('Another code is on its way.');
+          else say('Another access code is on its way.');
         });
     });
   })();
@@ -265,8 +265,8 @@
   function friendly(err) {
     var m = (err && err.message) || '';
     if (/rate|too many/i.test(m)) return 'Too many attempts. Give it a minute and try again.';
-    if (/not found|signups|disabled/i.test(m)) return 'If that account exists, a code is on its way.';
-    return 'Something went wrong sending that code. Try again shortly.';
+    if (/not found|signups|disabled/i.test(m)) return 'If that account exists, an access code is on its way.';
+    return 'Something went wrong sending that access code. Try again shortly.';
   }
 
   /* ==================================================================== deck */
@@ -291,7 +291,14 @@
         problem(r.error.message); return;
       }
       if (!r.data || !r.data.handle) { locked(); return; }
-      render(r.data);
+      var data = r.data;
+      if (!data.project || !data.project.id) { render(data); return; }
+      // Same authenticated session and existing row-level security; no schema change.
+      sb.from('projects').select('preview_path').eq('id',data.project.id).maybeSingle().then(function(preview){
+        if (preview.error) { problem('We could not load the preview. Please try again.'); return; }
+        data.project.preview_path=preview.data && preview.data.preview_path;
+        render(data);
+      }).catch(function(){ problem('We could not load the preview. Please try again.'); });
     });
   }
 
@@ -305,7 +312,7 @@
       document.body.classList.remove('is-signed-in');
       el('ptOut').hidden = true;
       el('ptWho').hidden = true;
-      say('You were signed out. Pop your handle in and we will send a fresh code.');
+      say('You were signed out. Pop your handle in and we will send a fresh access code.');
       handleInput.focus();
     });
     return here;
@@ -320,7 +327,7 @@
       '<div class="win-body"><div class="pt-pad">' +
       '<p>Your account is fine — we could not fetch it. Try again in a minute, ' +
       'and tell us if it keeps happening.</p>' +
-      '<p><button type="button" class="btn btn-gold" onclick="location.reload()">Try again</button></p>' +
+      '<p><button type="button" class="btn btn-gold" onclick="location.reload()">Try again</button> <a href="https://wa.me/447447571425">Message WBA</a></p>' +
       (detail ? '<p class="pt-acc-note">' + esc(detail) + '</p>' : '') +
       '</div></div></div>';
   }
@@ -357,7 +364,8 @@
 
     /* ---- the site ---- */
     var box = el('ptPreview');
-    if (!version) {
+    var hosted = window.wbaSitePreview && window.wbaSitePreview.hostedUrl(project && project.preview_path);
+    if (!version && !hosted) {
       box.innerHTML = empty('Nothing to look at yet',
         'The moment there is something to see, it turns up here and we will tell you.');
     } else {
@@ -379,8 +387,8 @@
       /* Demo mode has no session and therefore nothing to sign; asking
          would put "Preview unavailable" on a deck being shown to a
          prospect. */
-      if (!d.demo) openable(String(d.handle).toLowerCase() + '/v' + version);
-      else { el('ptOpenPv').textContent = 'Open my site'; }
+      if (!d.demo) openable(hosted || (project && project.preview_path) || String(d.handle).toLowerCase() + '/v' + version);
+      else { el('ptOpenPv').textContent = 'View example project'; el('ptOpenPv').href='/work/pivaz/'; }
     }
 
     /* ---- what's happened ---- */
@@ -419,6 +427,7 @@
       onReady: function (r) {
         if (!note) return;
         note.hidden = false;
+        if(r.hosted){ note.textContent='Have a look around, then send us your thoughts.'; return; }
         note.textContent = r.count + (r.count === 1 ? ' file' : ' files') +
                            ', ready for the next eight hours.';
       },

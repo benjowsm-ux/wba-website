@@ -22,6 +22,8 @@ const hashOf = f => createHash('sha1').update(readFileSync(f)).digest('hex').sli
 const versions = new Map();
 const add = f => { if (existsSync(f)) versions.set('/' + f, hashOf(f)); };
 add('css/styles.css');
+add('css/studio.css');
+add('css/unusual.css');
 for (const e of readdirSync('js', { withFileTypes: true })) {
   if (e.isFile() && e.name.endsWith('.js')) add('js/' + e.name);
 }

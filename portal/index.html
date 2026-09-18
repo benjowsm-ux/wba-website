@@ -12,13 +12,13 @@
 <meta name="theme-color" content="#0b1220"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="/css/styles.css?v=4d23039906"/>
-</head>
+<link rel="stylesheet" href="/css/studio.css?v=d5a25c5367"></head>
 <body class="portal-body">
 
 <!-- NAV — cut down. Nobody signs in to browse the marketing site. -->
 <nav class="nav">
   <div class="nav-inner">
-    <a href="/" class="nav-logo" aria-label="WBA home"><img src="/img/wba-logo.png" alt="WBA" width="438" height="248"/></a>
+    <a href="/" class="nav-logo" aria-label="WBA home"><img src="/img/wba-logo.png" alt="WBA" width="438" height="239"></a>
     <div class="nav-links" id="navLinks">
       <span class="pt-who" id="ptWho" hidden></span>
       <button type="button" class="nav-find" id="ptOut" hidden>Sign out</button>
@@ -47,14 +47,14 @@
         <p class="pt-lede">Sign in to see your site and what has changed on it.</p>
         <label class="pt-label" for="ptHandle">Your handle or email</label>
         <input class="pt-input" id="ptHandle" type="text" autocomplete="username"
-               spellcheck="false" placeholder="pivaz" required/>
-        <button class="btn btn-gold pt-btn" type="submit" id="ptSend">Send my code</button>
-        <p class="pt-note">We'll email a six-digit code. It works once and expires in ten minutes.</p>
+               spellcheck="false" required/>
+        <button class="btn btn-gold pt-btn" type="submit" id="ptSend">Send access code</button>
+        <p class="pt-note">We'll email a six-digit access code. It works once and expires in ten minutes.</p>
       </form>
 
       <form id="ptStep2" class="pt-step" hidden>
-        <p class="pt-lede">Check your email. The code is six digits.</p>
-        <label class="pt-label" for="ptCode">Your code</label>
+        <p class="pt-lede">Check your email for your six-digit access code.</p>
+        <label class="pt-label" for="ptCode">Access code</label>
         <input class="pt-input pt-code" id="ptCode" type="text" inputmode="numeric"
                autocomplete="one-time-code" pattern="[0-9]*" maxlength="6"
                placeholder="000000" required/>
@@ -65,7 +65,7 @@
         <p class="pt-note pt-note-tight">Leave this off on a shared or public computer — you'll be signed out when the browser closes.</p>
 
         <button class="btn btn-gold pt-btn" type="submit" id="ptVerify">Sign in</button>
-        <button class="pt-resend" type="button" id="ptResend">Send another code</button>
+        <button class="pt-resend" type="button" id="ptResend">Send another access code</button>
         <button class="pt-back" type="button" id="ptBack">Use a different account</button>
       </form>
 
@@ -74,7 +74,7 @@
   </div>
 
   <p class="pt-help">
-    No access yet? <a href="/contact/">Ask us to set you up</a>.
+    Need a hand? <a href="https://wa.me/447447571425">Message us on WhatsApp</a>. <a href="/">Back to WBA</a>.
   </p>
 </main>
 
@@ -136,8 +136,8 @@
         <div class="pt-pad">
           <div class="hp-rows">
             <div class="hp-row"><span class="hp-k">Email</span><span class="hp-v"><a href="mailto:info@westonbusinessauthority.co.uk">info@westonbusiness<wbr>authority.co.uk</a></span></div>
-            <div class="hp-row"><span class="hp-k">Phone</span><span class="hp-v"><a href="tel:+447902376369">07902 376369</a><span class="sub">Mon–Fri, 9–6</span></span></div>
-            <div class="hp-row"><span class="hp-k">WhatsApp</span><span class="hp-v"><a href="https://wa.me/447902376369" target="_blank" rel="noopener">Usually quickest</a></span></div>
+            <div class="hp-row"><span class="hp-k">Phone</span><span class="hp-v"><a href="tel:+447447571425">07447 571425</a><span class="sub">Mon–Fri, 9–6</span></span></div>
+            <div class="hp-row"><span class="hp-k">WhatsApp</span><span class="hp-v"><a href="https://wa.me/447447571425" target="_blank" rel="noopener">Usually quickest</a></span></div>
           </div>
         </div>
       </div>
@@ -146,16 +146,16 @@
   </div>
 
   <p class="pt-foot">
-    Windows drag by their title bar and fold from the chevron.
+    Your project, in one place.
     <span class="pt-foot-sep">·</span>
     <a href="/">Back to the site</a>
   </p>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/js/db.js?v=119a8abb35"></script>
-<script src="/js/tabs.js?v=372fe2d530" defer></script>
-<script src="/js/preview-open.js?v=102b336719" defer></script>
-<script src="/js/portal.js?v=66a2b1027f" defer></script>
+<script src="/js/db.js?v=1cc38d6a40"></script>
+<script src="/js/tabs.js?v=3389d437d1" defer></script>
+<script src="/js/preview-open.js?v=1851a0c378" defer></script>
+<script src="/js/portal.js?v=788d7c5c3c" defer></script>
 </body>
 </html>
