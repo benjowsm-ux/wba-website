@@ -1,4 +1,7 @@
-# WBA — Business UNusual
+# WBA-Site-V3 — Business UNusual
+
+Third site. `WBA-Site-V2` (blue, free-websites) and `WBA-Site` are kept untouched as rollbacks.
+Edit here → mirror into `_wba-deploy` → commit → push; Netlify does the rest.
 
 See DESIGN-HANDOFF.md for the current design, validation and deployment notes. Public styles now use css/unusual.css; the complete £30/month package replaces free-build marketing.
 

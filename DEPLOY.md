@@ -24,7 +24,7 @@ Two consequences worth knowing:
 ## The fast way — one command
 
 A commit replacing the whole site is already staged and committed in
-`Desktop\Claude Stuff\_wba-deploy`. It clones the live repo, removes every old
+`Desktop\Claude Stuff\_wba-deploy` (mirror `WBA-Site-V3` into it first). It clones the live repo, removes every old
 file, and adds the new one. All that's left is to send it:
 
 ```bash

@@ -1,6 +1,6 @@
 # WBA — Business UNusual
 
-Working site: sharedStuff/WBA-Site-V2
+Working site: Desktop\Claude Stuff\WBA-Site-V3 (V2 = the previous blue site, kept as rollback)
 Preview: http://localhost:4321/
 Original concept remains unchanged at http://localhost:3000/.
 
