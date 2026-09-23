@@ -22,7 +22,7 @@ const BASE = process.argv[2] || 'http://localhost:8093';
 
 const PAGES = ['/', '/sites/', '/services/', '/about/', '/feed/',
                '/feed/back-of-house-app-harmony/', '/contact/',
-               '/terms/', '/privacy/', '/free-website-terms/', '/404.html'];
+               '/terms/', '/privacy/', '/website-terms/', '/404.html'];
 
 const WIDTHS = [
   { w: 320,  h: 720,  mobile: true  },

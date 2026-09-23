@@ -562,7 +562,7 @@ function sitemap(posts){
     ['/work/deniz/', '0.8', 'monthly'],
     ['/feed/', '0.9', 'weekly'],
     ['/contact/', '0.8', 'monthly'],
-    ['/free-website-terms/', '0.4', 'yearly'],
+    ['/website-terms/', '0.4', 'yearly'],
     ['/privacy/', '0.3', 'yearly'],
     ['/terms/', '0.3', 'yearly']
   ];
@@ -666,7 +666,7 @@ function injectPillarMedia(posts){
    its title gets rewritten in the admin. */
 const SITES_TOPICS = [
   'website', 'websites', 'web', 'design', 'branding', 'brand', 'seo',
-  'performance', 'free', 'build', 'process', 'template', 'copywriting'
+  'performance', 'subscription', 'build', 'process', 'template', 'copywriting'
 ];
 
 function relevance(post){

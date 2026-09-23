@@ -4,7 +4,7 @@
    Press Ctrl+K (Cmd+K on a Mac) or / anywhere on the site and a search box
    opens over the page: type two or three letters, hit Enter, you are there.
    Every page, every article, and the handful of things people actually want
-   to do — email us, ring us, start a free site — in one list.
+   to do — email us, ring us, start a website — in one list.
 
    Why a marketing site has one at all: we sell websites and internal tools to
    local businesses, and the fastest way to show what "properly built" means
@@ -42,16 +42,16 @@
      "email" wants the mailto, not the contact page. */
   var BASE = [
     { t: 'Home',      s: 'The short version of everything', u: '/',          g: 'Pages' },
-    { t: 'Sites',     s: 'Free build, £30 a month',          u: '/sites/',    g: 'Pages' },
+    { t: 'Sites',     s: 'No upfront fee, £30 a month',      u: '/sites/',    g: 'Pages' },
     { t: 'Services',  s: 'Build, Create and Grow',           u: '/services/', g: 'Pages' },
     { t: 'About',     s: 'Who we are and where we are',      u: '/about/',    g: 'Pages' },
     { t: 'Feed',      s: 'Work finished and lessons learnt', u: '/feed/',     g: 'Pages' },
     { t: 'Contact',   s: 'Tell us what you are about',       u: '/contact/',  g: 'Pages' },
     { t: 'Terms of service', s: '', u: '/terms/',   g: 'Pages' },
     { t: 'Privacy notice',   s: '', u: '/privacy/', g: 'Pages' },
-    { t: 'Free site terms',  s: 'What is included and what it costs', u: '/free-website-terms/', g: 'Pages' },
+    { t: 'Website terms',  s: 'What is included and what it costs', u: '/website-terms/', g: 'Pages' },
 
-    { t: 'Start a free website', s: 'Straight to the form', u: '/contact/#talk', g: 'Do', i: 'spark' },
+    { t: 'Start a website', s: 'Straight to the form', u: '/contact/#talk', g: 'Do', i: 'spark' },
     { t: 'Email us',  s: 'info@westonbusinessauthority.co.uk', u: 'mailto:info@westonbusinessauthority.co.uk', g: 'Do', i: 'mail' },
     { t: 'Call us',   s: '07447 571425', u: 'tel:+447447571425', g: 'Do', i: 'phone' },
     { t: 'WhatsApp us', s: 'Usually the quickest', u: 'https://wa.me/447447571425', g: 'Do', i: 'chat' }

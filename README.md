@@ -24,7 +24,7 @@ host, GitHub Pages included, with no configuration.
 | `/contact/` | `contact/index.html` | Enquiry form |
 | `/admin/` | `admin/index.html` | Write the Feed, read the inbox, track clients |
 
-Legal: `/privacy/`, `/terms/`, `/free-website-terms/`. Plus `/post/` — the
+Legal: `/privacy/`, `/terms/`, `/website-terms/`. Plus `/post/` — the
 preview and fallback viewer, which readers don't normally land on.
 
 Three things must stay at the repo root: `index.html`, `404.html` (GitHub Pages

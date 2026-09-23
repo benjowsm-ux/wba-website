@@ -35,7 +35,7 @@ Git Credential Manager is installed, so the first push opens a browser window to
 sign in to GitHub. Netlify picks the commit up within a minute or two.
 
 That commit removes, in the same change: `about.html`, `services.html`,
-`contact.html`, `privacy.html`, `terms.html`, `free-website-terms.html`,
+`contact.html`, `privacy.html`, `terms.html`, `website-terms.html`,
 `free-websites.html`, `post.html`, `admin.html`, `pricing.html`, `work.html`,
 `weston.html`, `submit.html`, `news.html`, `news.json`, `serve.json`,
 `scripts/build-blog.mjs`, and replaces `.github/workflows/blog.yml` with
