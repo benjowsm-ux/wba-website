@@ -46,3 +46,8 @@
 /preview/sw.js
   Cache-Control: no-cache
   Service-Worker-Allowed: /preview/
+
+# Facebook post images, fetched by Meta Business Suite when scheduling.
+/social/*
+  Access-Control-Allow-Origin: *
+  X-Robots-Tag: noindex
