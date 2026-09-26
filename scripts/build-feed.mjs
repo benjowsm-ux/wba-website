@@ -37,7 +37,7 @@ const SUPABASE_URL = process.env.WBA_SUPABASE_URL || 'https://lynzhiyvggqyplssra
 const KEY  = process.env.WBA_SUPABASE_KEY || 'sb_publishable_j_RkzVTMyM-QtmFnLsf_Vw_ulanlx9K';
 const SITE = 'https://westonbusinessauthority.co.uk';
 const LOGO = '/img/wba-logo.png';
-const FAV  = '/img/wba-icon.png';
+const FAV  = '/img/wba-icon-v3.png';
 const DEFAULT_OG = `${SITE}/photos/seafront-pier.jpg`;
 
 const PILLARS = ['build', 'create', 'grow'];

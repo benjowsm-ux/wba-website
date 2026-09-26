@@ -4,11 +4,11 @@
   "description": "WBA — a design & tech agency in Weston-super-Mare. Build, create, grow.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0b1220",
-  "theme_color": "#0b1220",
+  "background_color": "#172923",
+  "theme_color": "#172923",
   "icons": [
     {
-      "src": "https://res.cloudinary.com/du3psvz2u/image/upload/v1780318702/android-chrome-512x512_nzg5wu.png",
+      "src": "/img/wba-icon-v3.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
